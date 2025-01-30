@@ -2,7 +2,11 @@ package common
 
 import "fmt"
 
-// SecurityLevel represents the security level (1, 3, or 5)
+// 3 NIST security levels
+// Category 1: 128 AES gates, roughly 143 bits of security
+// Category 3: 192 AES gates, roughly 207 bits of security
+// Category 5: 256 AES gates, roughly 272 bits of security
+
 type SecurityLevel int
 
 const (
