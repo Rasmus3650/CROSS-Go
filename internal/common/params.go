@@ -14,9 +14,9 @@ const (
 type SecurityData struct {
 	category int
 	csprng   string
-	params   CROSSParam
+	params   Params
 }
-type CROSSParam struct {
+type Params struct {
 	p int
 	z int
 	n int
@@ -29,7 +29,7 @@ func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
 		return SecurityData{
 			category: 1,
 			csprng:   "SHAKE128", // SHAKE-128 with 256 bit output
-			params: CROSSParam{
+			params: Params{
 				p: 127,
 				z: 7,
 				n: 127,
@@ -41,7 +41,7 @@ func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
 		return SecurityData{
 			category: 3,
 			csprng:   "SHAKE256", // SHAKE-256 with 384 bit output
-			params: CROSSParam{
+			params: Params{
 				p: 127,
 				z: 7,
 				n: 187,
@@ -53,7 +53,7 @@ func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
 		return SecurityData{
 			category: 5,
 			csprng:   "SHAKE256", // SHAKE-256 with 512 bit output
-			params: CROSSParam{
+			params: Params{
 				p: 127,
 				z: 7,
 				n: 251,
