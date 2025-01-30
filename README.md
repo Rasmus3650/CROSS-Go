@@ -18,7 +18,7 @@
 │   └── matrix/          # Matrix operations (Example folder setup)
 │       ├── matrix.go
 │       └── operations.go
-├── pkg/                # Library code that can be used by external applications (Example folder setup)
+├── pkg/                # Library code that can be used by external applications
 │   ├── vanilla/        # Vanilla implementation
 │   │   ├── signing.go
 │   │   ├── verify.go
