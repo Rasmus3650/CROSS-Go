@@ -1,0 +1,4 @@
+Code:
+aux.go: Faster/better random sampling of bits
+
+key_gen.go: Switch on SHAKE128/SHAKE256 based on security level, switch on G-variant

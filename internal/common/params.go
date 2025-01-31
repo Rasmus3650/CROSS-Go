@@ -8,52 +8,56 @@ import "fmt"
 // Category 5: 256 AES gates, roughly 272 bits of security
 
 type SecurityData struct {
-	category int
-	csprng   string
-	params   Params
+	Category int
+	Csprng   string
+	Lambda   int
+	Params   Params
 }
 type Params struct {
-	p int
-	z int
-	n int
-	k int
+	P int
+	Z int
+	N int
+	K int
 }
 
 func GetSecurityConfig(level int) (SecurityData, error) {
 	switch level {
 	case 1:
 		return SecurityData{
-			category: 1,
-			csprng:   "SHAKE128", // SHAKE-128 with 256 bit output
-			params: Params{
-				p: 127,
-				z: 7,
-				n: 127,
-				k: 76,
+			Category: 1,
+			Csprng:   "SHAKE128", // SHAKE-128 with 256 bit output
+			Lambda:   128,
+			Params: Params{
+				P: 127,
+				Z: 7,
+				N: 127,
+				K: 76,
 			},
 		}, nil
 
 	case 3:
 		return SecurityData{
-			category: 3,
-			csprng:   "SHAKE256", // SHAKE-256 with 384 bit output
-			params: Params{
-				p: 127,
-				z: 7,
-				n: 187,
-				k: 111,
+			Category: 3,
+			Csprng:   "SHAKE256", // SHAKE-256 with 384 bit output
+			Lambda:   192,
+			Params: Params{
+				P: 127,
+				Z: 7,
+				N: 187,
+				K: 111,
 			},
 		}, nil
 
 	case 5:
 		return SecurityData{
-			category: 5,
-			csprng:   "SHAKE256", // SHAKE-256 with 512 bit output
-			params: Params{
-				p: 127,
-				z: 7,
-				n: 251,
-				k: 150,
+			Category: 5,
+			Csprng:   "SHAKE256", // SHAKE-256 with 512 bit output
+			Lambda:   256,
+			Params: Params{
+				P: 127,
+				Z: 7,
+				N: 251,
+				K: 150,
 			},
 		}, nil
 
