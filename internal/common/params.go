@@ -7,14 +7,6 @@ import "fmt"
 // Category 3: 192 AES gates, roughly 207 bits of security
 // Category 5: 256 AES gates, roughly 272 bits of security
 
-type SecurityLevel int
-
-const (
-	low    SecurityLevel = 1
-	medium SecurityLevel = 3
-	high   SecurityLevel = 5
-)
-
 type SecurityData struct {
 	category int
 	csprng   string
@@ -27,9 +19,9 @@ type Params struct {
 	k int
 }
 
-func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
+func GetSecurityConfig(level int) (SecurityData, error) {
 	switch level {
-	case low:
+	case 1:
 		return SecurityData{
 			category: 1,
 			csprng:   "SHAKE128", // SHAKE-128 with 256 bit output
@@ -41,7 +33,7 @@ func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
 			},
 		}, nil
 
-	case medium:
+	case 3:
 		return SecurityData{
 			category: 3,
 			csprng:   "SHAKE256", // SHAKE-256 with 384 bit output
@@ -53,7 +45,7 @@ func GetSecurityConfig(level SecurityLevel) (SecurityData, error) {
 			},
 		}, nil
 
-	case high:
+	case 5:
 		return SecurityData{
 			category: 5,
 			csprng:   "SHAKE256", // SHAKE-256 with 512 bit output
