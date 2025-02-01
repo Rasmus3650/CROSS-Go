@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func KeyGen(params common.SecurityData) {
+func KeyGen(params common.SchemeData) {
 	// Generate seed_sk
 	seed_sk := make([]byte, (2*params.Lambda)/8)
 	_, err := rand.Read(seed_sk)
