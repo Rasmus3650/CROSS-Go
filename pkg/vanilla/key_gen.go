@@ -22,10 +22,10 @@ func KeyGen(params common.SchemeData) {
 	_, seed_pk := seede_seed_pub[:2*params.Lambda/8], seede_seed_pub[2*params.Lambda/8:]
 
 	// Generate V (USIKKER!)
-	entries := (params.Params.N - params.Params.K) * params.Params.K
+	entries := (params.N - params.K) * params.Params.K
 	temp := make([]byte, entries)
 	sha3.ShakeSum128(temp, seed_pk)
-	V := matrix.ListToMatrix(temp, params.Params.N-params.Params.K, params.Params.K, params.Params.P)
+	V := matrix.ListToMatrix(temp, params.N-params.K, params.K, params.P)
 	fmt.Println(V)
 	fmt.Println(len(V))
 }

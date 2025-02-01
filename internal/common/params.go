@@ -7,11 +7,18 @@ import "fmt"
 // Category 3: 192 AES gates, roughly 207 bits of security
 // Category 5: 256 AES gates, roughly 272 bits of security
 
+type ProtocolData struct {
+	ProtocolName string
+	T            int
+	W            int
+	SchemeData
+}
+
 type SchemeData struct {
 	SecurityLevel int
 	Csprng        string
 	Lambda        int
-	Params        Params
+	Params
 }
 type Params struct {
 	P int
@@ -20,7 +27,11 @@ type Params struct {
 	K int
 }
 
-func GetSecurityConfig(level int) (SchemeData, error) {
+func GetProtocolCOnfig() int {
+	// TODO implement logic to populate the ProtocolData struct
+	return 0
+}
+func GetSchemeConfig(level int) (SchemeData, error) {
 	switch level {
 	case 1:
 		return SchemeData{
