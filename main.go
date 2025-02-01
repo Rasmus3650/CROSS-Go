@@ -1,8 +1,8 @@
 package main
 
 import (
-	common "github.com/rasmus3650/PQC-Master-Thesis/internal/common"
-	pkg "github.com/rasmus3650/PQC-Master-Thesis/pkg/vanilla"
+	"PQC-Master-Thesis/internal/common"
+	"PQC-Master-Thesis/pkg/vanilla"
 )
 
 func main() {
@@ -10,6 +10,5 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	pkg.KeyGen(data)
-
+	vanilla.KeyGen(data)
 }

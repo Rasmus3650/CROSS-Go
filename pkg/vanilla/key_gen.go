@@ -1,10 +1,10 @@
 package vanilla
 
 import (
+	"PQC-Master-Thesis/internal/common"
 	"crypto/rand"
 	"fmt"
 
-	common "github.com/rasmus3650/PQC-Master-Thesis/internal/common"
 	"golang.org/x/crypto/sha3"
 )
 
