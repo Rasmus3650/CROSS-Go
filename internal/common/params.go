@@ -8,9 +8,8 @@ import "fmt"
 // Category 5: 256 AES gates, roughly 272 bits of security
 
 type ProtocolData struct {
-	ProtocolName string
-	T            int
-	W            int
+	T int
+	W int
 	SchemeData
 }
 
@@ -27,15 +26,40 @@ type Params struct {
 	K int
 }
 
-func GetProtocolCOnfig() int {
+func GetProtocolCOnfig(level int) (ProtocolData, error) {
 	// TODO implement logic to populate the ProtocolData struct
-	return 0
+	schemeData, err := GetSchemeConfig(level)
+	if err != nil {
+		return ProtocolData{}, err
+	}
+	switch level {
+	case 1:
+		return ProtocolData{
+			T:          252,
+			W:          212,
+			SchemeData: schemeData,
+		}, nil
+	case 3:
+		return ProtocolData{
+			T:          398,
+			W:          340,
+			SchemeData: schemeData,
+		}, nil
+	case 5:
+		return ProtocolData{
+			T:          507,
+			W:          427,
+			SchemeData: schemeData,
+		}, nil
+	default:
+		return ProtocolData{}, fmt.Errorf("invalid security level: %d. Must be 1, 3, or 5", level)
+	}
 }
 func GetSchemeConfig(level int) (SchemeData, error) {
 	switch level {
 	case 1:
 		return SchemeData{
-			SecurityLevel: 1,
+			SecurityLevel: level,
 			Csprng:        "SHAKE128-256", // SHAKE-128 with 256 bit output
 			Lambda:        128,
 			Params: Params{
@@ -48,7 +72,7 @@ func GetSchemeConfig(level int) (SchemeData, error) {
 
 	case 3:
 		return SchemeData{
-			SecurityLevel: 3,
+			SecurityLevel: level,
 			Csprng:        "SHAKE256-384", // SHAKE-256 with 384 bit output
 			Lambda:        192,
 			Params: Params{
@@ -61,7 +85,7 @@ func GetSchemeConfig(level int) (SchemeData, error) {
 
 	case 5:
 		return SchemeData{
-			SecurityLevel: 5,
+			SecurityLevel: level,
 			Csprng:        "SHAKE256-512", // SHAKE-256 with 512 bit output
 			Lambda:        256,
 			Params: Params{
