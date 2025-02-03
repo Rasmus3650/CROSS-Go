@@ -26,7 +26,7 @@ type Params struct {
 	K int
 }
 
-func GetProtocolCOnfig(level int) (ProtocolData, error) {
+func GetProtocolConfig(level int) (ProtocolData, error) {
 	// TODO implement logic to populate the ProtocolData struct
 	schemeData, err := GetSchemeConfig(level)
 	if err != nil {
@@ -55,6 +55,7 @@ func GetProtocolCOnfig(level int) (ProtocolData, error) {
 		return ProtocolData{}, fmt.Errorf("invalid security level: %d. Must be 1, 3, or 5", level)
 	}
 }
+
 func GetSchemeConfig(level int) (SchemeData, error) {
 	switch level {
 	case 1:

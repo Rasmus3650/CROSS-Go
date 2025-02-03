@@ -6,9 +6,11 @@ import (
 )
 
 func main() {
-	data, err := common.GetSecurityConfig(1)
+	data, err := common.GetSchemeConfig(1)
 	if err != nil {
 		panic(err)
 	}
-	vanilla.KeyGen(data)
+	//Change to generator
+	g := 1
+	vanilla.KeyGen(g, data)
 }
