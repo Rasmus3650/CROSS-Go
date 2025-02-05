@@ -7,7 +7,6 @@ import (
 )
 
 // TODO: RecomputeMerkleRoot, MerkleProof, VerifyMerkleRoot
-// SeedTreePaths, SeedTreeLeaves, RebuildSeedTreeLeaves
 
 type Node struct {
 	Left   *Node
@@ -96,5 +95,5 @@ func (m *MerkleTree) buildTree(nodes []*Node) *Node {
 }
 
 func (m *MerkleTree) MerkleProof(index int) ([][]byte, error) {
-
+	return [][]byte{}, nil
 }

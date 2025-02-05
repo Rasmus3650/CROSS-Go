@@ -1,4 +1,4 @@
-package merkle
+package test
 
 import (
 	"PQC-Master-Thesis/internal/merkle"
