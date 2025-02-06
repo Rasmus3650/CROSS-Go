@@ -20,12 +20,14 @@ func TestLeaves(t *testing.T) {
 
 func TestSeedPath(t *testing.T) {
 	mseed := make([]byte, 32)
+	salt := make([]byte, 64)
 	rand.Read(mseed)
-	fmt.Println("mseed", mseed)
+	rand.Read(salt)
 	b := []bool{true, true, true, true, true, false, true, false}
-	leaves, tree := seedtree.SeedTreePaths(mseed, b, 8)
+	leaves, _ := seedtree.SeedTreePaths(salt, mseed, b, 8)
 	for _, leaf := range leaves {
 		fmt.Println("Leaf:", leaf.String())
 	}
-	fmt.Println("tree", tree.String())
+	tree2 := seedtree.NewSeedTree(mseed, salt, 8)
+	fmt.Println("tree", tree2.String())
 }

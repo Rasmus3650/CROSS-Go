@@ -13,7 +13,6 @@ type SeedTree struct {
 	Root       *Node
 	Nodes      map[int]*Node // Store all nodes by their index
 	LeafNodes  []*Node       // Store leaf nodes separately
-	UseSalt    bool
 	DataLength int
 }
 
@@ -40,7 +39,7 @@ func printNode(node *Node, sb *strings.Builder, prefix string) {
 	}
 
 	// Print the current node
-	sb.WriteString(fmt.Sprintf("%s- Node Index: %d, IsLeaf: %t, DataLength: %d\n", prefix, node.Index, node.IsLeaf, len(node.Data)))
+	sb.WriteString(fmt.Sprintf("%s- Node Index: %d, IsLeaf: %t, DataByte: %d\n", prefix, node.Index, node.IsLeaf, node.Data[0]))
 
 	// Recursively print left and right children
 	if node.Left != nil || node.Right != nil {
@@ -67,10 +66,9 @@ func (st *SeedTree) String() string {
 	return sb.String()
 }
 
-func NewSeedTree(mseed, salt []byte, t int, useSalt bool) *SeedTree {
+func NewSeedTree(mseed, salt []byte, t int) *SeedTree {
 	tree := &SeedTree{
-		Nodes:   make(map[int]*Node),
-		UseSalt: useSalt,
+		Nodes: make(map[int]*Node),
 	}
 
 	// Calculate tree depth needed for t leaves
@@ -78,12 +76,7 @@ func NewSeedTree(mseed, salt []byte, t int, useSalt bool) *SeedTree {
 
 	// Create root node
 	var rootData []byte
-	if useSalt {
-		rootData = append(append(mseed, salt...), byte(0))
-	} else {
-		rootData = append(mseed, byte(0))
-	}
-
+	rootData = append(append(mseed, salt...), byte(0))
 	tree.Root = &Node{
 		Data:   rootData,
 		IsLeaf: false,
@@ -105,12 +98,7 @@ func (st *SeedTree) generateChildData(parentData, salt []byte, index int) []byte
 	output := make([]byte, st.DataLength)
 
 	var input []byte
-	if st.UseSalt {
-		input = append(append(parentData, salt...), IntToBytes(index)...)
-	} else {
-		input = append(parentData, IntToBytes(index)...)
-	}
-
+	input = append(append(parentData, salt...), IntToBytes(index)...)
 	sha3.ShakeSum128(output, input)
 	return output
 }
@@ -184,7 +172,7 @@ func IntToBytes(n int) []byte {
 }
 
 func SeedTreeLeaves(t int, mseed, salt []byte, useSalt bool) []*Node {
-	tree := NewSeedTree(mseed, salt, t, useSalt)
+	tree := NewSeedTree(mseed, salt, t)
 	return tree.LeafNodes[:t]
 }
 
@@ -206,8 +194,8 @@ func remove(nodes []*Node, target *Node) []*Node {
 	return nodes
 }
 
-func SeedTreePaths(mseed []byte, b []bool, t int) ([]*Node, *SeedTree) {
-	tree := NewSeedTree(mseed, nil, t, false)
+func SeedTreePaths(salt, mseed []byte, b []bool, t int) ([]*Node, *SeedTree) {
+	tree := NewSeedTree(mseed, salt, t)
 	reveal_nodes := make([]*Node, 0)
 	for i := range b {
 		if b[i] == true {
@@ -225,5 +213,5 @@ func SeedTreePaths(mseed []byte, b []bool, t int) ([]*Node, *SeedTree) {
 			}
 		}
 	}
-	return reveal_nodes, tree
+	return reveal_nodes[:t], tree
 }
