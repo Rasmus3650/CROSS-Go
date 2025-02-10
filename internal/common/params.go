@@ -131,7 +131,8 @@ func GetProtocolConfig(schemeType, variant string, level int) (ProtocolData, err
 	default:
 		return ProtocolData{}, fmt.Errorf("invalid problem variant: %s. Must be RSDP-G or RSDP", variant)
 	}
-
+	data.SchemeData, _ = GetSchemeConfig(schemeType, variant, level)
+	return data, nil
 }
 
 func GetSchemeConfig(schemeType, variant string, level int) (SchemeData, error) {
