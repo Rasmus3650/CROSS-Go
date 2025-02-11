@@ -89,7 +89,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.TN = 167
 		params.Subroots = 3
 	} else if level == 5 && variant == "RSDP" && schemeType == "balanced" {
-		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0}
+		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
 		params.LPL = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 512}
 		params.LSI = []int{511}
@@ -267,7 +267,6 @@ func BuildTree(schemeType string, seed, salt []byte, proto_params common.Protoco
 				}
 			}
 		}
-		// Possible fix -> refactor back to tree structure
 		result := [][]byte{}
 		for i := 0; i <= 3; i++ {
 			hash := make([]byte, (children[i]*proto_params.Lambda)/8)
@@ -330,10 +329,6 @@ func ComputeNodesToPublish(chall_2 []bool, tree_params TreeParams) []int {
 	}
 	leafset := LeafSet(tree_params)
 	for i := len(result) - 1; i >= 0; i-- {
-		//fmt.Println("leaf-set: ", leafset)
-		//fmt.Println("first cond: ", !contains(leafset, i))
-		//fmt.Println("second cond: ", result[LeftChild(i)])
-		//fmt.Println("third cond: ", result[LeftChild(i)+1])
 		level := GetLevelOfNode(i, tree_params)
 		if !contains(leafset, i) && result[LeftChild(i, level, tree_params)] && result[LeftChild(i, level, tree_params)+1] {
 			result[i] = true
@@ -367,7 +362,7 @@ func SeedPath(schemeType string, seed, salt []byte, chall_2 []bool, proto_params
 		if err != nil {
 			return nil, err
 		}
-		result := make([][]byte, tree_params.TN)
+		var result [][]byte
 		for i := 0; i < len(chall_2); i++ {
 			if chall_2[i] {
 				result = append(result, leaves[i])
@@ -387,6 +382,16 @@ func contains(slice []int, elem int) bool {
 	return false
 }
 
+func CountTrue(chall []bool) int {
+	count := 0
+	for _, val := range chall {
+		if val {
+			count++
+		}
+	}
+	return count
+}
+
 func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool, proto_params common.ProtocolData, tree_params TreeParams) ([][]byte, error) {
 	if schemeType == "balanced" || schemeType == "small" {
 		T_prime := ComputeNodesToPublish(chall_2, tree_params)
@@ -400,12 +405,6 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 				left_child := LeftChild(node, level, tree_params)
 				right_child := left_child + 1
 				if contains(T_prime, node) && !contains(T_prime, parent) {
-					fmt.Println("------------------------------------------------")
-					fmt.Println("parent: ", parent)
-					fmt.Println("node: ", node)
-					fmt.Println("level: ", level)
-					fmt.Println("pub_nodes: ", pub_nodes)
-					fmt.Println("path length: ", len(path))
 					T[node] = path[pub_nodes]
 					pub_nodes++
 				}
@@ -414,9 +413,6 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 					sha3.ShakeSum128(hash, append(append(T[node], salt...), ParentIndex(node)...))
 					T[left_child] = hash[:proto_params.Lambda/8]
 					T[right_child] = hash[proto_params.Lambda/8:]
-					if node == 63 {
-						fmt.Println("T_prime: ", T_prime)
-					}
 					T_prime = append(T_prime, left_child)
 					T_prime = append(T_prime, right_child)
 				}
@@ -427,17 +423,17 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 		leaves := Leaves(T, tree_params)
 		for i := 0; i < len(leaves); i++ {
 			if chall_2[i] {
-				if leaves[i] == nil {
-					fmt.Println(i, " WAS DAS FUCK!?!?!?!?!??!?!?")
-				}
+				/*if leaves[i] == nil {
+					return nil, fmt.Errorf("Leaf %d is nil", i)
+				}*/
 				result = append(result, leaves[i])
 			}
 		}
 
 		return result, nil
 	} else if schemeType == "fast" {
-		// Verify path length and chall_2 length
-		if len(path) != len(chall_2) {
+		// Verify path length and chall_2
+		if len(path) != CountTrue(chall_2) {
 			return nil, fmt.Errorf("Path length and chall_2 length do not match")
 		}
 		return path, nil
