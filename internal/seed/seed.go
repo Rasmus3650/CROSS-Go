@@ -17,6 +17,7 @@ type TreeParams struct {
 	NCL         []int // Number of consecutive leaves
 	TN          int   // Nodes to store
 	Total_nodes int   // Total number of nodes in tree
+	Subroots    int   // Number of subroots
 }
 
 func sum(slice []int) int {
@@ -37,6 +38,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{185, 93, 30}
 		params.NCL = []int{128, 28, 1}
 		params.TN = 82
+		params.Subroots = 3
 	} else if level == 1 && variant == "RSDP" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256}
@@ -44,6 +46,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{255}
 		params.NCL = []int{256}
 		params.TN = 108
+		params.Subroots = 1
 	} else if level == 1 && variant == "RSDP" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 16, 16, 16, 16, 16, 16}
 		params.NPL = []int{1, 2, 4, 8, 16, 16, 32, 64, 128, 256, 512}
@@ -51,6 +54,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{527, 23}
 		params.NCL = []int{512, 8}
 		params.TN = 129
+		params.Subroots = 2
 	} else if level == 3 && variant == "RSDP" && schemeType == "fast" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 2, 30}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 126, 224}
@@ -58,6 +62,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{253, 239, 126}
 		params.NCL = []int{224, 14, 1}
 		params.TN = 125
+		params.Subroots = 3
 		params.Total_nodes = sum(params.NPL)
 	} else if level == 3 && variant == "RSDP" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 256}
@@ -66,6 +71,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{511, 383}
 		params.NCL = []int{256, 128}
 		params.TN = 165
+		params.Subroots = 2
 	} else if level == 3 && variant == "RSDP" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 8, 8, 8, 8, 136, 136}
 		params.NPL = []int{1, 2, 4, 8, 16, 24, 48, 96, 192, 256, 512}
@@ -73,6 +79,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{647, 327, 27}
 		params.NCL = []int{512, 64, 4}
 		params.TN = 184
+		params.Subroots = 3
 	} else if level == 5 && variant == "RSDP" && schemeType == "fast" {
 		params.Off = []int{0, 0, 0, 2, 2, 2, 2, 2, 2, 130}
 		params.NPL = []int{1, 2, 4, 6, 12, 24, 48, 96, 192, 256}
@@ -80,6 +87,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{385, 321, 6}
 		params.NCL = []int{256, 64, 1}
 		params.TN = 167
+		params.Subroots = 3
 	} else if level == 5 && variant == "RSDP" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
@@ -87,6 +95,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{511}
 		params.NCL = []int{512}
 		params.TN = 220
+		params.Subroots = 1
 	} else if level == 5 && variant == "RSDP" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 128}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 384, 768}
@@ -94,6 +103,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{895, 447}
 		params.NCL = []int{768, 64}
 		params.TN = 251
+		params.Subroots = 2
 	} else if level == 1 && variant == "RSDP-G" && schemeType == "fast" {
 		params.Off = []int{0, 0, 0, 0, 2, 6, 6, 38, 38}
 		params.NPL = []int{1, 2, 4, 8, 14, 24, 48, 64, 128}
@@ -101,6 +111,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{165, 85, 27, 14}
 		params.NCL = []int{128, 16, 2, 1}
 		params.TN = 76
+		params.Subroots = 4
 	} else if level == 1 && variant == "RSDP-G" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256}
@@ -108,6 +119,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{255}
 		params.NCL = []int{256}
 		params.TN = 101
+		params.Subroots = 1
 	} else if level == 1 && variant == "RSDP-G" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
@@ -115,6 +127,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{511}
 		params.NCL = []int{512}
 		params.TN = 117
+		params.Subroots = 1
 	} else if level == 3 && variant == "RSDP-G" && schemeType == "fast" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 64}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 192}
@@ -122,6 +135,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{255, 223}
 		params.NCL = []int{192, 32}
 		params.TN = 119
+		params.Subroots = 2
 	} else if level == 3 && variant == "RSDP-G" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 8, 24, 24, 24, 24}
 		params.NPL = []int{1, 2, 4, 8, 16, 24, 32, 64, 128, 256}
@@ -129,6 +143,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{279, 47, 27}
 		params.NCL = []int{256, 8, 4}
 		params.TN = 138
+		params.Subroots = 3
 	} else if level == 3 && variant == "RSDP-G" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 64, 128, 256, 512}
@@ -136,6 +151,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{511}
 		params.NCL = []int{512}
 		params.TN = 165
+		params.Subroots = 1
 	} else if level == 5 && variant == "RSDP-G" && schemeType == "fast" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 8, 24, 88, 88}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 56, 96, 128, 256}
@@ -143,6 +159,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{343, 183, 111, 59}
 		params.NCL = []int{256, 32, 8, 4}
 		params.TN = 153
+		params.Subroots = 4
 	} else if level == 5 && variant == "RSDP-G" && schemeType == "balanced" {
 		params.Off = []int{0, 0, 0, 0, 0, 0, 8, 8, 8, 200}
 		params.NPL = []int{1, 2, 4, 8, 16, 32, 56, 112, 224, 256}
@@ -150,6 +167,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{455, 359, 59}
 		params.NCL = []int{256, 96, 4}
 		params.TN = 185
+		params.Subroots = 3
 	} else if level == 5 && variant == "RSDP-G" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 260}
 		params.NPL = []int{1, 2, 4, 8, 12, 24, 48, 96, 192, 384, 512}
@@ -157,6 +175,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.LSI = []int{771, 643, 13}
 		params.NCL = []int{512, 128, 2}
 		params.TN = 220
+		params.Subroots = 3
 	} else {
 		return TreeParams{}, fmt.Errorf("invalid parameters for tree structures")
 	}
@@ -164,8 +183,8 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 	return params, nil
 }
 
-func LeftChild(node_index int) int {
-	return 2*node_index + 1
+func LeftChild(node_index, level int, tree_params TreeParams) int {
+	return (2*node_index + 1) - tree_params.Off[level]
 }
 func Parent(node_index int) int {
 	return (node_index - 1) / 2
@@ -198,8 +217,7 @@ func BuildTree(schemeType string, seed, salt []byte, proto_params common.Protoco
 		for level := 0; level <= int(math.Ceil(math.Log2(float64(proto_params.T)))-1); level++ {
 			for i := 0; i <= tree_params.NPL[level]-tree_params.LPL[level]-1; i++ {
 				parent := start_node + i
-
-				left_child := LeftChild(parent) - tree_params.Off[level]
+				left_child := LeftChild(parent, level, tree_params)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
 				hash := make([]byte, (2*proto_params.Lambda)/8)
@@ -289,6 +307,16 @@ func LeafSet(tree_params TreeParams) []int {
 	return result
 }
 
+func GetLevelOfNode(node_index int, tree_params TreeParams) int {
+	acc := node_index
+	for i := 0; i < len(tree_params.NPL); i++ {
+		acc -= tree_params.NPL[i]
+		if acc <= 0 {
+			return i
+		}
+	}
+	return -1
+}
 func ComputeNodesToPublish(chall_2 []bool, tree_params TreeParams) []int {
 	result := make([]bool, tree_params.Total_nodes)
 	ctr := 0
@@ -306,10 +334,11 @@ func ComputeNodesToPublish(chall_2 []bool, tree_params TreeParams) []int {
 		//fmt.Println("first cond: ", !contains(leafset, i))
 		//fmt.Println("second cond: ", result[LeftChild(i)])
 		//fmt.Println("third cond: ", result[LeftChild(i)+1])
-		if !contains(leafset, i) && result[LeftChild(i)] && result[LeftChild(i)+1] {
+		level := GetLevelOfNode(i, tree_params)
+		if !contains(leafset, i) && result[LeftChild(i, level, tree_params)] && result[LeftChild(i, level, tree_params)+1] {
 			result[i] = true
-			result[LeftChild(i)] = false
-			result[LeftChild(i)+1] = false
+			result[LeftChild(i, level, tree_params)] = false
+			result[LeftChild(i, level, tree_params)+1] = false
 		}
 	}
 	path := []int{}
@@ -368,9 +397,15 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 			for i := 0; i <= tree_params.NPL[level]; i++ {
 				node := start_node + i
 				parent := Parent(node) + (tree_params.Off[level-1] / 2)
-				left_child := LeftChild(node) - tree_params.Off[level]
+				left_child := LeftChild(node, level, tree_params)
 				right_child := left_child + 1
 				if contains(T_prime, node) && !contains(T_prime, parent) {
+					fmt.Println("------------------------------------------------")
+					fmt.Println("parent: ", parent)
+					fmt.Println("node: ", node)
+					fmt.Println("level: ", level)
+					fmt.Println("pub_nodes: ", pub_nodes)
+					fmt.Println("path length: ", len(path))
 					T[node] = path[pub_nodes]
 					pub_nodes++
 				}

@@ -3,6 +3,7 @@ package seed_test
 import (
 	"PQC-Master-Thesis/internal/common"
 	seedtree "PQC-Master-Thesis/internal/seed"
+	"bytes"
 	"crypto/rand"
 	"fmt"
 	math "math/rand"
@@ -53,15 +54,17 @@ func TestFastSeedLeaves(t *testing.T) {
 }
 
 func TestIntegration(t *testing.T) {
-
 	// Run through all configs 10 times, and make sure nothing returns an error
 	// Fix LeftChild()
-	tree_params, err := seedtree.GetTreeParams("small", "RSDP", 1)
+	schemeType := "fast"
+	variant := "RSDP"
+	securityLevel := 1
+	tree_params, err := seedtree.GetTreeParams(schemeType, variant, securityLevel)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 
 	}
-	proto_params, err := common.GetProtocolConfig("small", "RSDP", 1)
+	proto_params, err := common.GetProtocolConfig(schemeType, variant, securityLevel)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
@@ -69,7 +72,7 @@ func TestIntegration(t *testing.T) {
 	salt := make([]byte, 64)
 	rand.Read(seed)
 	rand.Read(salt)
-	_, err = seedtree.SeedLeaves("small", seed, salt, proto_params, tree_params)
+	leaves, err := seedtree.SeedLeaves(schemeType, seed, salt, proto_params, tree_params)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
@@ -85,13 +88,20 @@ func TestIntegration(t *testing.T) {
 	for i := 8; i < proto_params.T; i++ {
 		chall_2[i] = math.Intn(2) == 0
 	}
-	path, err := seedtree.SeedPath("small", seed, salt, chall_2, proto_params, tree_params)
+	path, err := seedtree.SeedPath(schemeType, seed, salt, chall_2, proto_params, tree_params)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
-	_, err = seedtree.RebuildLeaves("small", path, salt, chall_2, proto_params, tree_params)
+	leaves_prime, err := seedtree.RebuildLeaves(schemeType, path, salt, chall_2, proto_params, tree_params)
 	if err != nil {
 		t.Errorf("Error: %s", err)
+	}
+	ctr := 0
+	for i := 0; i < len(chall_2)-1; i++ {
+		if chall_2[i] {
+			fmt.Println(bytes.Equal(leaves[i], leaves_prime[ctr]))
+			ctr++
+		}
 	}
 
 }
