@@ -74,6 +74,7 @@ func GetTreeParams(schemeType, variant string, level int) (TreeParams, error) {
 		params.Subroots = 2
 	} else if level == 3 && variant == "RSDP" && schemeType == "small" {
 		params.Off = []int{0, 0, 0, 0, 0, 8, 8, 8, 8, 136, 136}
+		//params.Off = []int{0, 0, 0, 0, 0, 8, 16, 32, 64, 200, 400}
 		params.NPL = []int{1, 2, 4, 8, 16, 24, 48, 96, 192, 256, 512}
 		params.LPL = []int{0, 0, 0, 0, 4, 0, 0, 0, 64, 0, 512}
 		params.LSI = []int{647, 327, 27}
@@ -187,12 +188,16 @@ func LeftChild(node_index, level int, tree_params TreeParams) int {
 	return (2*node_index + 1) - tree_params.Off[level]
 }
 func Parent(node_index int) int {
-	return (node_index - 1) / 2
+	if node_index%2 == 1 {
+		return (node_index - 1) / 2 //+ (tree_params.Off[level-1] / 2)
+	} else {
+		return (node_index - 2) / 2 //+ (tree_params.Off[level-1] / 2)
+
+	}
 
 }
 func ParentIndex(index int) []byte {
 	data := make([]byte, 2)
-
 	// Convert to little-endian
 	binary.LittleEndian.PutUint16(data, uint16(index))
 	return data
@@ -297,12 +302,19 @@ func SeedLeaves(schemeType string, seed, salt []byte, proto_params common.Protoc
 // List of all leaf indices for the tree
 func LeafSet(tree_params TreeParams) []int {
 	var result []int
-	for i, start := range tree_params.LSI {
+	for i := 0; i < len(tree_params.LSI); i++ {
 		count := tree_params.NCL[i]
+		start := tree_params.LSI[i]
 		for j := 0; j < count; j++ {
 			result = append(result, start+j)
 		}
 	}
+	/*for i, start := range tree_params.LSI {
+		count := tree_params.NCL[i]
+		for j := 0; j < count; j++ {
+			result = append(result, start+j)
+		}
+	}*/
 	return result
 }
 
@@ -352,8 +364,12 @@ func SeedPath(schemeType string, seed, salt []byte, chall_2 []bool, proto_params
 			return nil, err
 		}
 		path := ComputeNodesToPublish(chall_2, tree_params)
+		//fmt.Println("Path:", path)
 		seedPath := [][]byte{}
 		for i := 0; i < len(path); i++ {
+			/*if path[i] == 510 {
+				fmt.Println("Within func:", T[path[i]])
+			}*/
 			seedPath = append(seedPath, T[path[i]])
 		}
 		return seedPath, nil
@@ -401,7 +417,7 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 		for level := 1; level <= int(math.Ceil(math.Log2(float64(proto_params.T)))); level++ {
 			for i := 0; i <= tree_params.NPL[level]; i++ {
 				node := start_node + i
-				parent := Parent(node) + (tree_params.Off[level-1] / 2)
+				parent := Parent(node)
 				left_child := LeftChild(node, level, tree_params)
 				right_child := left_child + 1
 				if contains(T_prime, node) && !contains(T_prime, parent) {
@@ -415,7 +431,9 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 					T[right_child] = hash[proto_params.Lambda/8:]
 					T_prime = append(T_prime, left_child)
 					T_prime = append(T_prime, right_child)
+					//fmt.Println("T_prime: ", T_prime)
 				}
+				//fmt.Println("T_prime: ", T_prime)
 			}
 			start_node += tree_params.NPL[level]
 		}
