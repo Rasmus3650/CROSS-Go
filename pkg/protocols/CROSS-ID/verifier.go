@@ -11,6 +11,7 @@ func VerifierHandleConnection(msg_type string) {
 		Chal1Msg()
 	case "chal2":
 		msg := Chal2Msg()
+		fmt.Println(msg)
 	case "verify":
 		VerifyMsg()
 	default:

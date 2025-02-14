@@ -11,7 +11,7 @@ import (
 )
 
 func TestSeedLeaves(t *testing.T) {
-	tree_params, err := seedtree.GetTreeParams("small", "RSDP", 1)
+	tree_params, err := common.GetTreeParams("small", "RSDP", 1)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 
@@ -33,7 +33,7 @@ func TestSeedLeaves(t *testing.T) {
 }
 
 func TestFastSeedLeaves(t *testing.T) {
-	tree_params, err := seedtree.GetTreeParams("fast", "RSDP", 1)
+	tree_params, err := common.GetTreeParams("fast", "RSDP", 1)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 
@@ -61,7 +61,7 @@ func TestIntegration(t *testing.T) {
 	for _, schemeType := range types {
 		for _, variant := range variants {
 			for _, securityLevel := range securityLevels {
-				tree_params, err := seedtree.GetTreeParams(schemeType, variant, securityLevel)
+				tree_params, err := common.GetTreeParams(schemeType, variant, securityLevel)
 				fmt.Println("tree_params: ", tree_params)
 				fmt.Println("schemeType: ", schemeType)
 				fmt.Println("variant: ", variant)
