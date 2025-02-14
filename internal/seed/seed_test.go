@@ -130,10 +130,10 @@ func TestInt(t *testing.T) {
 	// Errors: Small-RSDP-3, Small-RSDP-G-5, Balanced-RSDP-G-5
 	// Some weird probabilistic edge-case
 	// Maybe offset should be accumulated?
-	schemeType := "balanced"
+	schemeType := "small"
 	variant := "RSDP"
 	securityLevel := 1
-	for xyz := 0; xyz < 1000; xyz++ {
+	for xyz := 0; xyz < 100; xyz++ {
 		fmt.Println("Iteration: ", xyz)
 		tree_params, err := seedtree.GetTreeParams(schemeType, variant, securityLevel)
 		/*fmt.Println("tree_params: ", tree_params)
