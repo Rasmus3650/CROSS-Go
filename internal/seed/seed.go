@@ -44,14 +44,18 @@ func BuildTree(schemeType string, seed, salt []byte, proto_params common.Protoco
 		T := make([][]byte, tree_params.Total_nodes)
 		T[0] = seed
 		start_node := 0
-		for level := 0; level <= int(math.Ceil(math.Log2(float64(proto_params.T)))-1); level++ {
+		res := make([][]byte, tree_params.Total_nodes)
+		ctr := 0
+		for level := 0; level <= len(tree_params.NPL)-1; level++ {
 			for i := 0; i <= tree_params.NPL[level]-tree_params.LPL[level]-1; i++ {
-				parent := start_node + i
-				left_child := LeftChild(parent, level, tree_params)
+				node := start_node + i
+				left_child := LeftChild(node, level, tree_params)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
+				res[ctr] = append(append(T[node], salt...), ParentIndex(node)...)
+				ctr++
 				hash := make([]byte, (2*proto_params.Lambda)/8)
-				sha3.ShakeSum128(hash, append(append(T[parent], salt...), ParentIndex(parent)...))
+				sha3.ShakeSum128(hash, append(append(T[node], salt...), ParentIndex(node)...))
 				T[left_child] = hash[:proto_params.Lambda/8]
 				T[right_child] = hash[proto_params.Lambda/8:]
 			}
@@ -134,12 +138,6 @@ func LeafSet(tree_params common.TreeParams) []int {
 			result = append(result, start+j)
 		}
 	}
-	/*for i, start := range tree_params.LSI {
-		count := tree_params.NCL[i]
-		for j := 0; j < count; j++ {
-			result = append(result, start+j)
-		}
-	}*/
 	return result
 }
 
@@ -147,7 +145,7 @@ func GetLevelOfNode(node_index int, tree_params common.TreeParams) int {
 	acc := node_index
 	for i := 0; i < len(tree_params.NPL); i++ {
 		acc -= tree_params.NPL[i]
-		if acc <= 0 {
+		if acc < 0 {
 			return i
 		}
 	}
@@ -189,12 +187,8 @@ func SeedPath(schemeType string, seed, salt []byte, chall_2 []bool, proto_params
 			return nil, err
 		}
 		path := ComputeNodesToPublish(chall_2, tree_params)
-		//fmt.Println("Path:", path)
 		seedPath := [][]byte{}
 		for i := 0; i < len(path); i++ {
-			/*if path[i] == 510 {
-				fmt.Println("Within func:", T[path[i]])
-			}*/
 			seedPath = append(seedPath, T[path[i]])
 		}
 		return seedPath, nil
@@ -237,10 +231,12 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 	if schemeType == "balanced" || schemeType == "small" {
 		T_prime := ComputeNodesToPublish(chall_2, tree_params)
 		T := make([][]byte, tree_params.Total_nodes)
-		start_node := 0
+		start_node := 1
 		pub_nodes := 0
-		for level := 1; level <= int(math.Ceil(math.Log2(float64(proto_params.T)))); level++ {
-			for i := 0; i <= tree_params.NPL[level]; i++ {
+		res := make([][]byte, tree_params.Total_nodes)
+		ctr := 0
+		for level := 1; level <= len(tree_params.NPL)-1; level++ {
+			for i := 0; i <= tree_params.NPL[level]-1; i++ {
 				node := start_node + i
 				parent := Parent(node, level, tree_params)
 				left_child := LeftChild(node, level, tree_params)
@@ -251,28 +247,26 @@ func RebuildLeaves(schemeType string, path [][]byte, salt []byte, chall_2 []bool
 				}
 				if contains(T_prime, node) && i < tree_params.NPL[level]-tree_params.LPL[level] {
 					hash := make([]byte, (2*proto_params.Lambda)/8)
+					res[ctr] = append(append(T[node], salt...), ParentIndex(node)...)
+					ctr++
 					sha3.ShakeSum128(hash, append(append(T[node], salt...), ParentIndex(node)...))
 					T[left_child] = hash[:proto_params.Lambda/8]
 					T[right_child] = hash[proto_params.Lambda/8:]
 					T_prime = append(T_prime, left_child)
 					T_prime = append(T_prime, right_child)
-					//fmt.Println("T_prime: ", T_prime)
 				}
-				//fmt.Println("T_prime: ", T_prime)
 			}
 			start_node += tree_params.NPL[level]
 		}
+		res_prime := [][]byte{}
 		result := [][]byte{}
 		leaves := Leaves(T, tree_params)
 		for i := 0; i < len(leaves); i++ {
 			if chall_2[i] {
-				/*if leaves[i] == nil {
-					return nil, fmt.Errorf("Leaf %d is nil", i)
-				}*/
 				result = append(result, leaves[i])
+				res_prime = append(res_prime, res[i])
 			}
 		}
-
 		return result, nil
 	} else if schemeType == "fast" {
 		// Verify path length and chall_2
