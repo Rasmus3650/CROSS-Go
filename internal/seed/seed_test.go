@@ -58,15 +58,15 @@ func TestIntegration(t *testing.T) {
 	types := []string{"small", "balanced", "fast"}
 	variants := []string{"RSDP-G", "RSDP"}
 	securityLevels := []int{1, 3, 5}
-	for xyz := 0; xyz < 10; xyz++ {
+	for xyz := 0; xyz < 100; xyz++ {
 		for _, schemeType := range types {
 			for _, variant := range variants {
 				for _, securityLevel := range securityLevels {
 					tree_params, err := common.GetTreeParams(schemeType, variant, securityLevel)
-					fmt.Println("tree_params: ", tree_params)
-					fmt.Println("schemeType: ", schemeType)
-					fmt.Println("variant: ", variant)
-					fmt.Println("securityLevel: ", securityLevel)
+					//fmt.Println("tree_params: ", tree_params)
+					//fmt.Println("schemeType: ", schemeType)
+					//fmt.Println("variant: ", variant)
+					//fmt.Println("securityLevel: ", securityLevel)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 
@@ -75,6 +75,7 @@ func TestIntegration(t *testing.T) {
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
+					// TODO: Make seed and salt dependent on the security level
 					seed := make([]byte, 32)
 					salt := make([]byte, 64)
 					rand.Read(seed)

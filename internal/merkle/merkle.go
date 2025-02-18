@@ -104,13 +104,27 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 	}
 }
 
+func ComputeMerkleNodesToPublish(chall_2 []bool, tree_params common.TreeParams) []bool {
+	result := make([]bool, tree_params.Total_nodes)
+	ctr := 0
+	for i := 0; i < len(tree_params.LSI); i++ {
+		for j := 0; j < tree_params.NCL[i]; j++ {
+			if chall_2[ctr] {
+				result[tree_params.LSI[i]+j] = chall_2[ctr]
+			}
+			ctr++
+		}
+	}
+	return result
+}
+
 func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
 		T, err := ComputeMerkleTree(schemeType, commitments, proto_params, tree_params)
 		if err != nil {
 			return nil, err
 		}
-		T_prime := seed.ComputeNodesToPublish(chall_2, tree_params)
+		T_prime := ComputeMerkleNodesToPublish(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
 		pub_nodes := 0
 		proof := make([][]byte, tree_params.Total_nodes)
@@ -119,11 +133,11 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 				node := start_node + i
 				//parent := seed.Parent(node, level, tree_params)
 				//Potentially set parent to 1 in T_prime if either child is 1
-				if T_prime[node] == 0 && T_prime[node+1] == 1 {
+				if !T_prime[node] && T_prime[node+1] {
 					proof[pub_nodes] = T[node]
 					pub_nodes++
 				}
-				if T_prime[node] == 1 && T_prime[node+1] == 0 {
+				if T_prime[node] && !T_prime[node+1] {
 					proof[pub_nodes] = T[node+1]
 					pub_nodes++
 				}
@@ -133,7 +147,7 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 		return proof, nil
 	} else if schemeType == "fast" {
 		if len(chall_2) != len(commitments) {
-			return nil, fmt.Errorf("Length mismatch between commitments (len: ", len(commitments), ") and challenge (len: ", len(chall_2), ")")
+			return nil, fmt.Errorf("Length mismatch between commitments (len: %d) and challenge (len: %d)", len(commitments), len(chall_2))
 		}
 		var result [][]byte
 		for i, elem := range chall_2 {
@@ -161,15 +175,15 @@ func ComputeNodesToPublish(chall_2 []bool, tree_params common.TreeParams) []bool
 	return result
 }
 
-func RecomputeRoot(schemeType string, proof, commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
+func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
 		T := make([][]byte, tree_params.Total_nodes)
 		commitment_offset := 0
 		for i := 0; i < len(tree_params.LSI); i++ {
 			remainder := tree_params.NCL[i]
-			for j := 0; j < len(commitments); j++ {
+			for j := 0; j < len(cmt_0); j++ {
 				if chall_2[j+commitment_offset] {
-					T[tree_params.LSI[i]+j+commitment_offset] = commitments[j+commitment_offset]
+					T[tree_params.LSI[i]+j+commitment_offset] = cmt_0[j+commitment_offset]
 					remainder--
 					if remainder == 0 {
 						commitment_offset += j
@@ -212,7 +226,6 @@ func RecomputeRoot(schemeType string, proof, commitments [][]byte, chall_2 []boo
 		return T[0], nil
 	} else if schemeType == "fast" {
 		pub_nodes := 0
-		cmt_0 := make([][]byte, proto_params.T-1)
 		for i := 0; i <= proto_params.T-1; i++ {
 			if chall_2[i] {
 				cmt_0[i] = proof[pub_nodes]
