@@ -2,3 +2,11 @@ Code:
 aux.go: Faster/better random sampling of bits
 
 key_gen.go: Switch on SHAKE128/SHAKE256 based on security level, switch on G-variant
+
+
+Remove "nodes to store" parameter
+
+
+Seed & Merkle: ComputeNodesToPublish should give bool tree rather than index list to avoid the O(n) contains check
+
+Seed & Merkle: Make file for auxiliary functions for trees

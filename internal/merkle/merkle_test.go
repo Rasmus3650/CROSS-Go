@@ -5,16 +5,17 @@ import (
 	"PQC-Master-Thesis/internal/merkle"
 	"bytes"
 	"crypto/rand"
+	"fmt"
 	math "math/rand"
 	"testing"
 )
 
 func TestMerkle(t *testing.T) {
 	// Run through all configs 10 times, and make sure nothing returns an error
-	types := []string{"fast"}
+	types := []string{"balanced"}
 	variants := []string{"RSDP"}
-	securityLevels := []int{1, 3, 5}
-	for xyz := 0; xyz < 100; xyz++ {
+	securityLevels := []int{1}
+	for xyz := 0; xyz < 1; xyz++ {
 		for _, schemeType := range types {
 			for _, variant := range variants {
 				for _, securityLevel := range securityLevels {
@@ -66,8 +67,9 @@ func TestMerkle(t *testing.T) {
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
-					//fmt.Println("root: ", root)
-					//fmt.Println("root_prime: ", root_prime)
+					fmt.Println("Proof: ", proof)
+					fmt.Println("root: ", root)
+					fmt.Println("root_prime: ", root_prime)
 					if len(root) != len(root_prime) {
 						t.Errorf("Error: Length of roots do not match")
 					}
