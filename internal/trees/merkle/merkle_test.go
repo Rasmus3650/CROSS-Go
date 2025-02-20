@@ -2,7 +2,7 @@ package merkle_test
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/merkle"
+	"PQC-Master-Thesis/internal/trees/merkle"
 	"bytes"
 	"crypto/rand"
 	math "math/rand"

@@ -2,15 +2,13 @@ package merkle
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/seed"
+	"PQC-Master-Thesis/internal/trees"
 	"bytes"
 	"fmt"
 	"math"
 
 	"golang.org/x/crypto/sha3"
 )
-
-// TODO: RecomputeMerkleRoot, MerkleProof, VerifyMerkleRoot
 
 func TreeRoot(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
 	T, err := ComputeMerkleTree(schemeType, commitments, proto_params, tree_params)
@@ -20,42 +18,15 @@ func TreeRoot(schemeType string, commitments [][]byte, proto_params common.Proto
 	return T[0], nil
 }
 
-func byteContains(tree [][]byte, elem []byte) bool {
-	for _, value := range tree {
-		if bytes.Equal(value, elem) {
-			return true
-		}
-	}
-	return false
-}
-func byteContainsIndex(tree [][]byte, elem []byte) int {
-	for i, value := range tree {
-		if bytes.Equal(value, elem) {
-			return i
-		}
-	}
-	return -1
-}
-
-func findDiff(tree [][]byte, tree2 [][]byte) []int {
-	var result []int
-	for i := 0; i < len(tree); i++ {
-		if !bytes.Equal(tree[i], tree2[i]) {
-			result = append(result, i)
-		}
-	}
-	return result
-}
-
 func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
-		T := PlaceOnLeaves(commitments, tree_params)
+		T := placeOnLeaves(commitments, tree_params)
 		startNode := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
 				left_child := startNode + i
 				right_child := left_child + 1
-				parent := seed.Parent(left_child, level, tree_params)
+				parent := trees.Parent(left_child, level, tree_params)
 				hash := make([]byte, (2*proto_params.Lambda)/8)
 				sha3.ShakeSum128(hash, append(T[left_child], T[right_child]...))
 				T[parent] = hash
@@ -119,7 +90,7 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 	}
 }
 
-func Label_leaves(chall_2 []bool, tree_params common.TreeParams) []bool {
+func label_leaves(chall_2 []bool, tree_params common.TreeParams) []bool {
 	T_prime := make([]bool, tree_params.Total_nodes)
 	c := 0
 	for i := 0; i < len(tree_params.LSI); i++ {
@@ -133,7 +104,7 @@ func Label_leaves(chall_2 []bool, tree_params common.TreeParams) []bool {
 	return T_prime
 }
 
-func PlaceOnLeaves(cmt_0 [][]byte, tree_params common.TreeParams) [][]byte {
+func placeOnLeaves(cmt_0 [][]byte, tree_params common.TreeParams) [][]byte {
 	T := make([][]byte, tree_params.Total_nodes)
 	c := 0
 	for i := 0; i < len(tree_params.LSI); i++ {
@@ -151,14 +122,14 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 		if err != nil {
 			return nil, err
 		}
-		T_prime := Label_leaves(chall_2, tree_params)
+		T_prime := label_leaves(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
 		proof := make([][]byte, tree_params.Total_nodes)
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
 				node := start_node + i
-				parent := seed.Parent(node, level, tree_params)
-				sibling := seed.Sibling(node, level, tree_params)
+				parent := trees.Parent(node, level, tree_params)
+				sibling := trees.Sibling(node, level, tree_params)
 				if T_prime[node] || T_prime[sibling] {
 					T_prime[parent] = true
 				}
@@ -191,15 +162,15 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 
 func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
-		T := PlaceOnLeaves(cmt_0, tree_params)
+		T := placeOnLeaves(cmt_0, tree_params)
 		// End of PlaceCMTonLeaves
-		T_prime := Label_leaves(chall_2, tree_params)
+		T_prime := label_leaves(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
 				node := start_node + i
-				parent := seed.Parent(node, level, tree_params)
-				sibling := seed.Sibling(node, level, tree_params)
+				parent := trees.Parent(node, level, tree_params)
+				sibling := trees.Sibling(node, level, tree_params)
 				var left_child []byte
 				var right_child []byte
 				if !T_prime[node] && !T_prime[sibling] {
