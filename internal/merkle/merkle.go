@@ -28,23 +28,28 @@ func byteContains(tree [][]byte, elem []byte) bool {
 	}
 	return false
 }
+func byteContainsIndex(tree [][]byte, elem []byte) int {
+	for i, value := range tree {
+		if bytes.Equal(value, elem) {
+			return i
+		}
+	}
+	return -1
+}
+
+func findDiff(tree [][]byte, tree2 [][]byte) []int {
+	var result []int
+	for i := 0; i < len(tree); i++ {
+		if !bytes.Equal(tree[i], tree2[i]) {
+			result = append(result, i)
+		}
+	}
+	return result
+}
 
 func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
-		T := make([][]byte, tree_params.Total_nodes)
-		commitment_offset := 0
-		// Place leaves on Tree (PlaceOnLeaves())
-		for i := 0; i < len(tree_params.LSI); i++ {
-			remainder := tree_params.NCL[i]
-			for j := 0; j < len(commitments); j++ {
-				T[tree_params.LSI[i]+j+commitment_offset] = commitments[j+commitment_offset]
-				remainder--
-				if remainder == 0 {
-					commitment_offset += j
-					break
-				}
-			}
-		}
+		T := PlaceOnLeaves(commitments, tree_params)
 		startNode := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
@@ -57,7 +62,6 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 			}
 			startNode -= tree_params.NPL[level-1]
 		}
-		fmt.Println("Tree error: ", byteContains(T, nil))
 		return T, nil
 	} else if schemeType == "fast" {
 		T := make([][]byte, proto_params.T+5)
@@ -117,16 +121,28 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 
 func Label_leaves(chall_2 []bool, tree_params common.TreeParams) []bool {
 	T_prime := make([]bool, tree_params.Total_nodes)
-	counter2 := 0
+	c := 0
 	for i := 0; i < len(tree_params.LSI); i++ {
 		for j := 0; j < tree_params.NCL[i]; j++ {
-			if !chall_2[counter2] {
+			if !chall_2[c] {
 				T_prime[(tree_params.LSI[i] + j)] = true
 			}
-			counter2++
+			c++
 		}
 	}
 	return T_prime
+}
+
+func PlaceOnLeaves(cmt_0 [][]byte, tree_params common.TreeParams) [][]byte {
+	T := make([][]byte, tree_params.Total_nodes)
+	c := 0
+	for i := 0; i < len(tree_params.LSI); i++ {
+		for j := 0; j < tree_params.NCL[i]; j++ {
+			T[(tree_params.LSI[i] + j)] = cmt_0[c]
+			c++
+		}
+	}
+	return T
 }
 
 func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
@@ -175,14 +191,7 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 
 func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
-		T := make([][]byte, tree_params.Total_nodes)
-		cnt := 0
-		for i := 0; i < len(tree_params.LSI); i++ {
-			for j := 0; j < tree_params.NCL[i]; j++ {
-				T[(tree_params.LSI[i] + j)] = cmt_0[cnt]
-				cnt++
-			}
-		}
+		T := PlaceOnLeaves(cmt_0, tree_params)
 		// End of PlaceCMTonLeaves
 		T_prime := Label_leaves(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
@@ -210,11 +219,6 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 				}
 				hash := make([]byte, (2*proto_params.Lambda)/8)
 				if left_child == nil || right_child == nil {
-					fmt.Println("Node: ", node)
-					fmt.Println("proof node: ", proof[node])
-					fmt.Println("proof sibling: ", proof[sibling])
-					fmt.Println("Left child: ", left_child)
-					fmt.Println("Right child: ", right_child)
 					return nil, fmt.Errorf("Left or right child is nil")
 				}
 				sha3.ShakeSum128(hash, append(left_child, right_child...))
@@ -223,7 +227,6 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 			}
 			start_node -= tree_params.NPL[level-1]
 		}
-		//fmt.Println("Recreated tree: ", T)
 		return T[0], nil
 	} else if schemeType == "fast" {
 		pub_nodes := 0
