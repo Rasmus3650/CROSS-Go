@@ -12,6 +12,14 @@ import (
 func LeftChild(node_index, level int, tree_params common.TreeParams) int {
 	return (2*node_index + 1) - tree_params.Off[level]
 }
+
+func Sibling(node_index, level int, tree_params common.TreeParams) int {
+	if node_index%2 == 1 {
+		return node_index + 1
+	} else {
+		return node_index - 1
+	}
+}
 func Parent(node_index, level int, tree_params common.TreeParams) int {
 	if node_index%2 == 1 {
 		return (node_index-1)/2 + (tree_params.Off[level-1] / 2)

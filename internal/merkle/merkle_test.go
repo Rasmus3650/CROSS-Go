@@ -13,9 +13,9 @@ import (
 func TestMerkle(t *testing.T) {
 	// Run through all configs 10 times, and make sure nothing returns an error
 	types := []string{"balanced"}
-	variants := []string{"RSDP"}
+	variants := []string{"RSDP", "RSDP-G"}
 	securityLevels := []int{1}
-	for xyz := 0; xyz < 1; xyz++ {
+	for xyz := 0; xyz < 100; xyz++ {
 		for _, schemeType := range types {
 			for _, variant := range variants {
 				for _, securityLevel := range securityLevels {
@@ -67,7 +67,6 @@ func TestMerkle(t *testing.T) {
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
-					fmt.Println("Proof: ", proof)
 					fmt.Println("root: ", root)
 					fmt.Println("root_prime: ", root_prime)
 					if len(root) != len(root_prime) {

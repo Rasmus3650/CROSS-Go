@@ -114,21 +114,21 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 		}
 		T_prime := seed.ComputeNodesToPublish(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
-		var proof [][]byte // Shorter than the chall_2[i]=1, since we merge 2 adjacent nodes
+		proof := make([][]byte, tree_params.Total_nodes)
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
 				node := start_node + i
 				parent := seed.Parent(node, level, tree_params)
-				//Potentially set parent to 1 in T_prime if either child is 1
-				if T_prime[node] || T_prime[node+1] {
+				sibling := seed.Sibling(node, level, tree_params)
+				if T_prime[node] && T_prime[sibling] {
 					T_prime[parent] = true
 				}
 
-				if !T_prime[node] && T_prime[node+1] {
-					proof = append(proof, T[node])
+				if !T_prime[node] && T_prime[sibling] {
+					proof[sibling] = T[sibling]
 				}
-				if T_prime[node] && !T_prime[node+1] {
-					proof = append(proof, T[node+1])
+				if T_prime[node] && !T_prime[sibling] {
+					proof[node] = T[node]
 				}
 			}
 			start_node -= tree_params.NPL[level-1]
@@ -150,68 +150,61 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 	}
 }
 
-func ComputeNodesToPublish(chall_2 []bool, tree_params common.TreeParams) []bool {
-	result := make([]bool, tree_params.Total_nodes)
-	ctr := 0
-	for i := 0; i < len(tree_params.LSI); i++ {
-		for j := 0; j < tree_params.NCL[i]; j++ {
-			if chall_2[ctr] {
-				result[tree_params.LSI[i]+j] = chall_2[ctr]
-			}
-			ctr++
-		}
-	}
-	return result
-}
-
 func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
 		T := make([][]byte, tree_params.Total_nodes)
-		commitment_offset := 0
+		cnt := 0
 		for i := 0; i < len(tree_params.LSI); i++ {
-			remainder := tree_params.NCL[i]
-			for j := 0; j < len(cmt_0); j++ {
-				if chall_2[j+commitment_offset] {
-					T[tree_params.LSI[i]+j+commitment_offset] = cmt_0[j+commitment_offset]
-					remainder--
-					if remainder == 0 {
-						commitment_offset += j
-						break
-					}
-				}
+			for j := 0; j < tree_params.NCL[i]; j++ {
+				T[(tree_params.LSI[i] + j)] = cmt_0[cnt]
+				cnt++
 			}
 		}
-		// End of PlaceCMTonLeaves, probably wrong
-		T_prime := ComputeNodesToPublish(chall_2, tree_params)
+		// End of PlaceCMTonLeaves
+		T_prime := make([]bool, tree_params.Total_nodes)
+		counter2 := 0
+		for i := 0; i < len(tree_params.LSI); i++ {
+			for j := 0; j < tree_params.NCL[i]; j++ {
+				if !chall_2[counter2] {
+					T_prime[(tree_params.LSI[i] + j)] = true
+				}
+				counter2++
+			}
+		}
 		start_node := tree_params.LSI[0]
-		pub_nodes := 0
-		for level := int(math.Ceil(math.Log2(float64(proto_params.T)))); level >= 1; level-- {
+		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
 				node := start_node + i
 				parent := seed.Parent(node, level, tree_params)
+				sibling := seed.Sibling(node, level, tree_params)
 				var left_child []byte
 				var right_child []byte
-				if !T_prime[node] && !T_prime[node+1] {
+				if !T_prime[node] && !T_prime[sibling] {
 					continue
 				}
 				if T_prime[node] {
 					left_child = T[node]
 				} else {
-					left_child = proof[pub_nodes]
-					pub_nodes++
+					left_child = proof[node]
+					T[node] = left_child
 				}
-				if T_prime[node+1] {
-					right_child = T[node+1]
+				if T_prime[sibling] {
+					right_child = T[sibling]
 				} else {
-					right_child = proof[pub_nodes]
-					pub_nodes++
+					right_child = proof[sibling]
+					T[sibling] = right_child
 				}
 				hash := make([]byte, (2*proto_params.Lambda)/8)
+				if left_child == nil || right_child == nil {
+					return nil, fmt.Errorf("Left or right child is nil")
+				}
 				sha3.ShakeSum128(hash, append(left_child, right_child...))
 				T[parent] = hash
+				T_prime[parent] = true
 			}
 			start_node -= tree_params.NPL[level-1]
 		}
+		//fmt.Println("Recreated tree: ", T)
 		return T[0], nil
 	} else if schemeType == "fast" {
 		pub_nodes := 0
