@@ -20,6 +20,15 @@ func TreeRoot(schemeType string, commitments [][]byte, proto_params common.Proto
 	return T[0], nil
 }
 
+func byteContains(tree [][]byte, elem []byte) bool {
+	for _, value := range tree {
+		if bytes.Equal(value, elem) {
+			return true
+		}
+	}
+	return false
+}
+
 func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
 		T := make([][]byte, tree_params.Total_nodes)
@@ -36,7 +45,6 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 				}
 			}
 		}
-
 		startNode := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
@@ -49,6 +57,7 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 			}
 			startNode -= tree_params.NPL[level-1]
 		}
+		fmt.Println("Tree error: ", byteContains(T, nil))
 		return T, nil
 	} else if schemeType == "fast" {
 		T := make([][]byte, proto_params.T+5)
@@ -106,13 +115,27 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 	}
 }
 
+func Label_leaves(chall_2 []bool, tree_params common.TreeParams) []bool {
+	T_prime := make([]bool, tree_params.Total_nodes)
+	counter2 := 0
+	for i := 0; i < len(tree_params.LSI); i++ {
+		for j := 0; j < tree_params.NCL[i]; j++ {
+			if !chall_2[counter2] {
+				T_prime[(tree_params.LSI[i] + j)] = true
+			}
+			counter2++
+		}
+	}
+	return T_prime
+}
+
 func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
 	if schemeType == "small" || schemeType == "balanced" {
 		T, err := ComputeMerkleTree(schemeType, commitments, proto_params, tree_params)
 		if err != nil {
 			return nil, err
 		}
-		T_prime := seed.ComputeNodesToPublish(chall_2, tree_params)
+		T_prime := Label_leaves(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
 		proof := make([][]byte, tree_params.Total_nodes)
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
@@ -120,15 +143,15 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 				node := start_node + i
 				parent := seed.Parent(node, level, tree_params)
 				sibling := seed.Sibling(node, level, tree_params)
-				if T_prime[node] && T_prime[sibling] {
+				if T_prime[node] || T_prime[sibling] {
 					T_prime[parent] = true
 				}
 
 				if !T_prime[node] && T_prime[sibling] {
-					proof[sibling] = T[sibling]
+					proof[node] = T[node]
 				}
 				if T_prime[node] && !T_prime[sibling] {
-					proof[node] = T[node]
+					proof[sibling] = T[sibling]
 				}
 			}
 			start_node -= tree_params.NPL[level-1]
@@ -161,16 +184,7 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 			}
 		}
 		// End of PlaceCMTonLeaves
-		T_prime := make([]bool, tree_params.Total_nodes)
-		counter2 := 0
-		for i := 0; i < len(tree_params.LSI); i++ {
-			for j := 0; j < tree_params.NCL[i]; j++ {
-				if !chall_2[counter2] {
-					T_prime[(tree_params.LSI[i] + j)] = true
-				}
-				counter2++
-			}
-		}
+		T_prime := Label_leaves(chall_2, tree_params)
 		start_node := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
 			for i := tree_params.NPL[level] - 2; i >= 0; i -= 2 {
@@ -196,6 +210,11 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 				}
 				hash := make([]byte, (2*proto_params.Lambda)/8)
 				if left_child == nil || right_child == nil {
+					fmt.Println("Node: ", node)
+					fmt.Println("proof node: ", proof[node])
+					fmt.Println("proof sibling: ", proof[sibling])
+					fmt.Println("Left child: ", left_child)
+					fmt.Println("Right child: ", right_child)
 					return nil, fmt.Errorf("Left or right child is nil")
 				}
 				sha3.ShakeSum128(hash, append(left_child, right_child...))
