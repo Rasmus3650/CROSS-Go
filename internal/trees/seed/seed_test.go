@@ -2,7 +2,7 @@ package seed_test
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	seedtree "PQC-Master-Thesis/internal/seed"
+	seedtree "PQC-Master-Thesis/internal/trees/seed"
 	"bytes"
 	"crypto/rand"
 	"fmt"
@@ -26,7 +26,7 @@ func TestSeedLeaves(t *testing.T) {
 	salt := make([]byte, 64)
 	rand.Read(seed)
 	rand.Read(salt)
-	_, err = seedtree.SeedLeaves("small", seed, salt, proto_params, tree_params)
+	_, err = seedtree.SeedLeaves(seed, salt, proto_params, tree_params)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
@@ -46,7 +46,7 @@ func TestFastSeedLeaves(t *testing.T) {
 	salt := make([]byte, 64)
 	rand.Read(seed)
 	rand.Read(salt)
-	leaves, err := seedtree.SeedLeaves("fast", seed, salt, proto_params, tree_params)
+	leaves, err := seedtree.SeedLeaves(seed, salt, proto_params, tree_params)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
@@ -80,7 +80,7 @@ func TestIntegration(t *testing.T) {
 					salt := make([]byte, 64)
 					rand.Read(seed)
 					rand.Read(salt)
-					leaves, err := seedtree.SeedLeaves(schemeType, seed, salt, proto_params, tree_params)
+					leaves, err := seedtree.SeedLeaves(seed, salt, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
@@ -96,11 +96,11 @@ func TestIntegration(t *testing.T) {
 					for i := 8; i < proto_params.T; i++ {
 						chall_2[i] = math.Intn(2) == 0
 					}
-					path, err := seedtree.SeedPath(schemeType, seed, salt, chall_2, proto_params, tree_params)
+					path, err := seedtree.SeedPath(seed, salt, chall_2, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
-					leaves_prime, err := seedtree.RebuildLeaves(schemeType, path, salt, chall_2, proto_params, tree_params)
+					leaves_prime, err := seedtree.RebuildLeaves(path, salt, chall_2, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
@@ -155,7 +155,7 @@ func TestInt(t *testing.T) {
 		salt := make([]byte, 64)
 		rand.Read(seed)
 		rand.Read(salt)
-		leaves, err := seedtree.SeedLeaves(schemeType, seed, salt, proto_params, tree_params)
+		leaves, err := seedtree.SeedLeaves(seed, salt, proto_params, tree_params)
 		//fmt.Println("leaves: ", leaves[len(leaves)-1])
 		if err != nil {
 			t.Errorf("Error: %s", err)
@@ -174,12 +174,12 @@ func TestInt(t *testing.T) {
 		}
 		chall_2[len(chall_2)-1] = true
 		chall_2[len(chall_2)-2] = false
-		path, err := seedtree.SeedPath(schemeType, seed, salt, chall_2, proto_params, tree_params)
+		path, err := seedtree.SeedPath(seed, salt, chall_2, proto_params, tree_params)
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
 		// EVERYTHING WORKS UNTIL HERE
-		leaves_prime, err := seedtree.RebuildLeaves(schemeType, path, salt, chall_2, proto_params, tree_params)
+		leaves_prime, err := seedtree.RebuildLeaves(path, salt, chall_2, proto_params, tree_params)
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}

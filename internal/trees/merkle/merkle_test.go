@@ -36,7 +36,7 @@ func TestMerkle(t *testing.T) {
 						commitments[i] = make([]byte, (2*proto_params.Lambda)/8)
 						rand.Read(commitments[i])
 					}
-					root, err := merkle.TreeRoot(schemeType, commitments, proto_params, tree_params)
+					root, err := merkle.TreeRoot(commitments, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
@@ -52,7 +52,7 @@ func TestMerkle(t *testing.T) {
 					for i := 8; i < proto_params.T; i++ {
 						chall_2[i] = math.Intn(2) == 0
 					}
-					proof, err := merkle.TreeProof(schemeType, commitments, chall_2, proto_params, tree_params)
+					proof, err := merkle.TreeProof(commitments, chall_2, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}
@@ -62,7 +62,7 @@ func TestMerkle(t *testing.T) {
 							cmt_0[i] = commitments[i]
 						}
 					}
-					root_prime, err := merkle.RecomputeRoot(schemeType, cmt_0, proof, chall_2, proto_params, tree_params)
+					root_prime, err := merkle.RecomputeRoot(cmt_0, proof, chall_2, proto_params, tree_params)
 					if err != nil {
 						t.Errorf("Error: %s", err)
 					}

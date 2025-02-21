@@ -10,16 +10,16 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func TreeRoot(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
-	T, err := ComputeMerkleTree(schemeType, commitments, proto_params, tree_params)
+func TreeRoot(commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
+	T, err := ComputeMerkleTree(commitments, proto_params, tree_params)
 	if err != nil {
 		return nil, err
 	}
 	return T[0], nil
 }
 
-func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if schemeType == "small" || schemeType == "balanced" {
+func ComputeMerkleTree(commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
+	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
 		T := placeOnLeaves(commitments, tree_params)
 		startNode := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
@@ -34,7 +34,7 @@ func ComputeMerkleTree(schemeType string, commitments [][]byte, proto_params com
 			startNode -= tree_params.NPL[level-1]
 		}
 		return T, nil
-	} else if schemeType == "fast" {
+	} else if proto_params.SchemeType == "fast" {
 		T := make([][]byte, proto_params.T+5)
 		copy(T[5:proto_params.T+5], commitments)
 		children := make([]int, 4)
@@ -116,9 +116,9 @@ func placeOnLeaves(cmt_0 [][]byte, tree_params common.TreeParams) [][]byte {
 	return T
 }
 
-func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if schemeType == "small" || schemeType == "balanced" {
-		T, err := ComputeMerkleTree(schemeType, commitments, proto_params, tree_params)
+func TreeProof(commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
+	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
+		T, err := ComputeMerkleTree(commitments, proto_params, tree_params)
 		if err != nil {
 			return nil, err
 		}
@@ -144,7 +144,7 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 			start_node -= tree_params.NPL[level-1]
 		}
 		return proof, nil
-	} else if schemeType == "fast" {
+	} else if proto_params.SchemeType == "fast" {
 		if len(chall_2) != len(commitments) {
 			return nil, fmt.Errorf("Length mismatch between commitments (len: %d) and challenge (len: %d)", len(commitments), len(chall_2))
 		}
@@ -160,8 +160,8 @@ func TreeProof(schemeType string, commitments [][]byte, chall_2 []bool, proto_pa
 	}
 }
 
-func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
-	if schemeType == "small" || schemeType == "balanced" {
+func RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
+	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
 		T := placeOnLeaves(cmt_0, tree_params)
 		// End of PlaceCMTonLeaves
 		T_prime := label_leaves(chall_2, tree_params)
@@ -199,7 +199,7 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 			start_node -= tree_params.NPL[level-1]
 		}
 		return T[0], nil
-	} else if schemeType == "fast" {
+	} else if proto_params.SchemeType == "fast" {
 		pub_nodes := 0
 		for i := 0; i <= proto_params.T-1; i++ {
 			if chall_2[i] {
@@ -207,7 +207,7 @@ func RecomputeRoot(schemeType string, cmt_0, proof [][]byte, chall_2 []bool, pro
 				pub_nodes++
 			}
 		}
-		return TreeRoot(schemeType, cmt_0, proto_params, tree_params)
+		return TreeRoot(cmt_0, proto_params, tree_params)
 	} else {
 		return nil, fmt.Errorf("Invalid scheme type")
 	}
