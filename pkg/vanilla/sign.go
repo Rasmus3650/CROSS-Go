@@ -2,8 +2,10 @@ package vanilla
 
 import (
 	"PQC-Master-Thesis/internal/common"
+	"PQC-Master-Thesis/internal/trees/merkle"
 	seedtree "PQC-Master-Thesis/internal/trees/seed"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -124,5 +126,44 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 		sha3.ShakeSum128(cmt_1_buffer, append(append(commitments[i], salt...), byte(i+c)))
 		cmt_1[i] = cmt_1_buffer
 	}
+	digest_cmt_0, err := merkle.TreeRoot(cmt_0, proto_params, tree_params)
+	digest_cmt_1 := make([]byte, (2*proto_params.Lambda)/8)
+	flat_cmt_1 := make([]byte, 0)
+	for _, b := range cmt_1 {
+		flat_cmt_1 = append(flat_cmt_1, b...)
+	}
+	sha3.ShakeSum128(digest_cmt_1, flat_cmt_1)
+	digest_cmt := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_cmt, append(digest_cmt_0, digest_cmt_1...))
 
+	digest_msg := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_msg, msg)
+	digest_chall_1 := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_chall_1, append(append(digest_msg, digest_cmt...), salt...))
+	//TODO: CSPRNG output needs to be in (F_p^*)^t, and fix value, gives us a problem with y[i] =
+	chall_1 := make([]byte, proto_params.T)
+	sha3.ShakeSum128(chall_1, append(digest_chall_1, byte(proto_params.T+c)))
+	for i := range chall_1 {
+		// -1, +1 to avoid 0
+		chall_1[i] = chall_1[i]%byte(proto_params.P-1) + 1
+	}
+	e_prime := make([][]byte, proto_params.T)
+	y := make([][]byte, proto_params.T)
+	for i := 0; i < proto_params.T; i++ {
+		e_prime_i := make([]byte, proto_params.N)
+		for j := 0; j < proto_params.N; j++ {
+			//TODO: FIX THIS BULLSHIT MOST LIKELY QUITE WRONG!
+			result := new(big.Int).Exp(g, big.NewInt(int64(e_bar_prime[i][j])), big.NewInt(int64(proto_params.P)))
+			e_prime_i[j] = result.Bytes()[0]
+			ctr := 0
+			for _ = range e_prime_i[j] {
+				ctr++
+			}
+			fmt.Println("Length of e_prime_i[j] = ", ctr, " Should be 1")
+		}
+		e_prime[i] = e_prime_i
+		//TODO: FIX THIS !!!!! Chall_1 mostlikely generated wrong, which cause problem here
+		y[i] = u_prime[i] + chall_1[i]*e_prime[i]
+
+	}
 }
