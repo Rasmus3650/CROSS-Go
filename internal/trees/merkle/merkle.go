@@ -133,7 +133,6 @@ func TreeProof(commitments [][]byte, chall_2 []bool, proto_params common.Protoco
 				if T_prime[node] || T_prime[sibling] {
 					T_prime[parent] = true
 				}
-
 				if !T_prime[node] && T_prime[sibling] {
 					proof[node] = T[node]
 				}

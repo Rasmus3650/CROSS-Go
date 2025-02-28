@@ -153,7 +153,7 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 		e_prime_i := make([]byte, proto_params.N)
 		for j := 0; j < proto_params.N; j++ {
 			//TODO: FIX THIS BULLSHIT MOST LIKELY QUITE WRONG!
-			result := new(big.Int).Exp(g, big.NewInt(int64(e_bar_prime[i][j])), big.NewInt(int64(proto_params.P)))
+			result := new(big.Int).Exp(big.NewInt(int64(g)), big.NewInt(int64(e_bar_prime[i][j])), big.NewInt(int64(proto_params.P)))
 			e_prime_i[j] = result.Bytes()[0]
 			ctr := 0
 			for _ = range e_prime_i[j] {
@@ -162,7 +162,7 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 			fmt.Println("Length of e_prime_i[j] = ", ctr, " Should be 1")
 		}
 		e_prime[i] = e_prime_i
-		//TODO: FIX THIS !!!!! Chall_1 mostlikely generated wrong, which cause problem here
+		//TODO: Implement scalar vector multiplication for byte and []byte
 		y[i] = u_prime[i] + chall_1[i]*e_prime[i]
 
 	}
