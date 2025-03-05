@@ -72,7 +72,7 @@ func element_wise_mul(v, u_prime []byte, Z int) []byte {
 	return result
 }
 
-func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
+func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) ([]byte, error) {
 	e_bar, H := expandSK(sk, proto_params)
 	c := 2*proto_params.T - 1
 	seed := make([]byte, proto_params.Lambda/8)
@@ -81,11 +81,11 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 	rand.Read(salt)
 	tree_params, err := common.GetTreeParams(proto_params.SchemeType, proto_params.ProblemVariant, proto_params.SecurityLevel)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("Error getting tree params: %v", err)
 	}
 	commitments, err := seedtree.SeedLeaves(seed, salt, proto_params, tree_params)
 	if err != nil {
-		panic(err)
+		return nil, fmt.Errorf("Error building seed leaves: %v", err)
 	}
 	e_bar_prime := make([][]byte, proto_params.T)
 	u_prime := make([][]byte, proto_params.T)
@@ -117,7 +117,7 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 		}
 		v[i] = v_buffer
 		u[i] = element_wise_mul(v[i], u_prime[i], proto_params.Z)
-		s_prime[i] = multiplyVectorMatrix(u[i], transposeByteMatrix(H))
+		s_prime[i] = common.MultiplyVectorMatrix(u[i], common.TransposeByteMatrix(H))
 		cmt_0_buffer := make([]byte, (2*proto_params.Lambda)/8)
 		sha3.ShakeSum128(cmt_0_buffer, append(append(append(s_prime[i], v_bar[i]...), salt...), byte(i+c)))
 		cmt_0[i] = cmt_0_buffer
@@ -147,8 +147,8 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 		// -1, +1 to avoid 0
 		chall_1[i] = chall_1[i]%byte(proto_params.P-1) + 1
 	}
+	var y []byte
 	e_prime := make([][]byte, proto_params.T)
-	y := make([][]byte, proto_params.T)
 	for i := 0; i < proto_params.T; i++ {
 		e_prime_i := make([]byte, proto_params.N)
 		for j := 0; j < proto_params.N; j++ {
@@ -163,7 +163,47 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) {
 		}
 		e_prime[i] = e_prime_i
 		//TODO: Implement scalar vector multiplication for byte and []byte
-		y[i] = u_prime[i] + chall_1[i]*e_prime[i]
-
+		//TODO: Make sure this is correct
+		y = common.ScalarVecMulByte(e_prime[i], chall_1[i])
+		for j := 0; j < len(y); j++ {
+			y[j] = (y[j] + u_prime[i][j]) % byte(255)
+		}
 	}
+	digest_chall_2 := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_chall_2, append(y[:proto_params.T], digest_chall_1...))
+	chall_2 := expand_digest_to_fixed_weight(digest_chall_2, proto_params)
+	proof, err := merkle.TreeProof(cmt_0, chall_2, proto_params, tree_params)
+	if err != nil {
+		return nil, fmt.Errorf("Error generating proof: %v", err)
+	}
+	path, err := seedtree.SeedPath(seed, salt, chall_2, proto_params, tree_params)
+	if err != nil {
+		return nil, fmt.Errorf("Error generating seed path: %v", err)
+	}
+	//TODO: Ensure compatibility with refernce code for this
+	resp_0 := make([][]byte, proto_params.T)
+	resp_1 := make([][]byte, proto_params.T)
+	for i := 0; i < proto_params.T; i++ {
+		if chall_2[i] == false {
+			resp_0[i] = append([]byte{y[i]}, v_bar[i]...)
+			resp_1[i] = cmt_1[i]
+		}
+	}
+	sgn := append(append(append(append(append(append(salt, digest_cmt...), digest_chall_2...), common.Flatten(path)...),
+		common.Flatten(proof)...), common.Flatten(resp_0)...), common.Flatten(resp_1)...)
+	return sgn, nil
+
+}
+
+// TODO: This needs to Fisher-Yates shuffle
+func expand_digest_to_fixed_weight(digest_chall_2 []byte, proto_params common.ProtocolData) []bool {
+	chall_2 := make([]byte, proto_params.T)
+	sha3.ShakeSum128(chall_2, append(digest_chall_2, byte(3*proto_params.T))) // 3*T = T+c+1
+
+	bool_chall_2 := make([]bool, proto_params.T)
+	for i := range chall_2 {
+		bool_chall_2[i] = chall_2[i]%2 == 1
+	}
+
+	return bool_chall_2
 }

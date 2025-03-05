@@ -3,6 +3,7 @@ package vanilla
 import (
 	"PQC-Master-Thesis/internal/common"
 	"crypto/rand"
+	"fmt"
 	"math/big"
 
 	"golang.org/x/crypto/sha3"
@@ -19,7 +20,7 @@ type KeyPair struct {
 }
 
 // TODO: Implement the switch case for RSDP-G, along with setting the correct CSPRNG
-func KeyGen(g int, proto_params common.ProtocolData) KeyPair {
+func KeyGen(g int, proto_params common.ProtocolData) (KeyPair, error) {
 	seed_sk := make([]byte, (2*proto_params.Lambda)/8)
 	_, err := rand.Read(seed_sk)
 	if err != nil {
@@ -44,7 +45,7 @@ func KeyGen(g int, proto_params common.ProtocolData) KeyPair {
 			// Ensure values are in Fp
 			V[i][j] = buffer[idx]%byte(proto_params.P-1) + 1
 			if V[i][j] > byte(proto_params.P) {
-				panic("V[i][j] > P")
+				return KeyPair{}, fmt.Errorf("V[i][j] > P")
 			}
 			idx++
 		}
@@ -70,5 +71,5 @@ func KeyGen(g int, proto_params common.ProtocolData) KeyPair {
 	}
 
 	s := common.MultiplyVectorMatrix(e, common.TransposeByteMatrix(H))
-	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: s}}
+	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: s}}, nil
 }

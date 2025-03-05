@@ -12,3 +12,7 @@ Seed & Merkle: ComputeNodesToPublish should give bool tree rather than index lis
 Seed & Merkle: Make file for auxiliary functions for trees
 
 Make the implementation class based (signer, verifier), this will allow us to remove all the params that use proto_params and tree_params
+
+
+Util:
+Make tests
