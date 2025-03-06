@@ -72,7 +72,7 @@ func element_wise_mul(v, u_prime []byte, Z int) []byte {
 	return result
 }
 
-func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) ([]byte, error) {
+func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) ([][]byte, error) {
 	e_bar, H := expandSK(sk, proto_params)
 	c := 2*proto_params.T - 1
 	seed := make([]byte, proto_params.Lambda/8)
@@ -162,7 +162,6 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) ([]byt
 			fmt.Println("Length of e_prime_i[j] = ", ctr, " Should be 1")
 		}
 		e_prime[i] = e_prime_i
-		//TODO: Implement scalar vector multiplication for byte and []byte
 		//TODO: Make sure this is correct
 		y = common.ScalarVecMulByte(e_prime[i], chall_1[i])
 		for j := 0; j < len(y); j++ {
@@ -189,8 +188,17 @@ func Sign(g int, sk []byte, msg []byte, proto_params common.ProtocolData) ([]byt
 			resp_1[i] = cmt_1[i]
 		}
 	}
-	sgn := append(append(append(append(append(append(salt, digest_cmt...), digest_chall_2...), common.Flatten(path)...),
-		common.Flatten(proof)...), common.Flatten(resp_0)...), common.Flatten(resp_1)...)
+	//TODO: Temporary way of creating the signature, needs to pack properly
+	sgn := make([][]byte, 7)
+	sgn[0] = salt
+	sgn[1] = digest_cmt
+	sgn[2] = digest_chall_2
+	sgn[3] = common.Flatten(path)
+	sgn[4] = common.Flatten(proof)
+	sgn[5] = common.Flatten(resp_0)
+	sgn[6] = common.Flatten(resp_1)
+	//sgn := append(append(append(append(append(append(salt, digest_cmt...), digest_chall_2...), common.Flatten(path)...),
+	//		common.Flatten(proof)...), common.Flatten(resp_0)...), common.Flatten(resp_1)...)
 	return sgn, nil
 
 }

@@ -67,3 +67,7 @@ func Flatten(matrix [][]byte) []byte {
 	}
 	return result
 }
+
+func Unflatten(vec []byte, rows int) [][]byte {
+	cols := len(vec) / rows
+}
