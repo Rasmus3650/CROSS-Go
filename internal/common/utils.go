@@ -1,5 +1,7 @@
 package common
 
+import "fmt"
+
 //TODO: Test and verify these functions behave as intended
 //TODO: Ensure these functions are constant time
 //Potential TODO: Consider if they need to be masked
@@ -68,6 +70,31 @@ func Flatten(matrix [][]byte) []byte {
 	return result
 }
 
-func Unflatten(vec []byte, rows int) [][]byte {
-	cols := len(vec) / rows
+func MatrixMultiplicationByte(matrix [][]byte, vector []byte) ([]byte, error) {
+	// Check if dimensions match for multiplication
+	if len(matrix) == 0 {
+		return nil, fmt.Errorf("empty matrix")
+	}
+	if len(vector) == 0 {
+		return nil, fmt.Errorf("empty vector")
+	}
+	if len(matrix[0]) != len(vector) {
+		return nil, fmt.Errorf("dimension mismatch: matrix columns (%d) must equal vector length (%d)", len(matrix[0]), len(vector))
+	}
+
+	// Initialize result vector
+	result := make([]byte, len(matrix))
+
+	// Perform matrix-vector multiplication
+	for i := 0; i < len(matrix); i++ {
+		var sum byte = 0
+		for j := 0; j < len(vector); j++ {
+			// Multiplication and accumulation
+			product := matrix[i][j] * vector[j]
+			sum += product
+		}
+		result[i] = sum
+	}
+
+	return result, nil
 }

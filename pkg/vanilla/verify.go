@@ -2,7 +2,9 @@ package vanilla
 
 import (
 	"PQC-Master-Thesis/internal/common"
+	"PQC-Master-Thesis/internal/trees/merkle"
 	"PQC-Master-Thesis/internal/trees/seed"
+	"bytes"
 	"fmt"
 	"math/big"
 
@@ -95,6 +97,7 @@ func Verify(pk Pub, msg []byte, sig []byte, g int, proto_params common.ProtocolD
 		return false, fmt.Errorf("Error rebuilding leaves: %v", err)
 	}
 	cmt_1 := make([][]byte, proto_params.T)
+	cmt_0 := make([][]byte, proto_params.T)
 	e_bar_prime := make([][]byte, proto_params.T)
 	u_prime := make([][]byte, proto_params.T)
 	var y [][]byte
@@ -152,9 +155,35 @@ func Verify(pk Pub, msg []byte, sig []byte, g int, proto_params common.ProtocolD
 				y_prime[idx] = v[idx] * y[i][idx]
 			}
 			//TODO: Implement @
-			s_prime := y_prime*common.TransposeByteMatrix(H) - chall_1[i]*pk.S
+			H_matrix, err := common.MatrixMultiplicationByte(common.TransposeByteMatrix(H), y_prime)
+			if err != nil {
+				return false, fmt.Errorf("Error multiplying matrix: %v", err)
+			}
+			s_chall_1 := common.ScalarVecMulByte(pk.S, chall_1[i])
+			s_prime := make([]byte, n_minus_k)
+			for idx, _ := range H_matrix {
+				s_prime[idx] = H_matrix[idx] - s_chall_1[idx]
+			}
+			cmt_0_buffer := make([]byte, (2*proto_params.Lambda)/8)
+			sha3.ShakeSum128(cmt_0_buffer, append(append(append([]byte{s_prime[i]}, v_bar[i]), salt...), byte(i+c)))
+			cmt_0[i] = cmt_0_buffer
 		}
 
 	}
-
+	digest_cmt_0, err := merkle.RecomputeRoot(cmt_0, proof, chall_2, proto_params, tree_params)
+	if err != nil {
+		return false, fmt.Errorf("Error recomputing root: %v", err)
+	}
+	//TODO: Check if any of these need additional domain seperator inputs
+	digest_cmt_1 := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_cmt_1, common.Flatten(cmt_1))
+	digest_prime_cmt := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_prime_cmt, append(digest_cmt_0, digest_cmt_1...))
+	digest_prime_chall_2 := make([]byte, (2*proto_params.Lambda)/8)
+	sha3.ShakeSum128(digest_prime_chall_2, append(common.Flatten(y), digest_chall_1...))
+	// TODO: Probably replace true with the error variable throughout it all
+	if bytes.Equal(digest_prime_cmt, digest_cmt) && bytes.Equal(digest_prime_chall_2, digest_chall_2) {
+		return true, nil
+	}
+	return false, nil
 }
