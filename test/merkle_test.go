@@ -1,4 +1,4 @@
-package merkle_test
+package test_suite
 
 import (
 	"PQC-Master-Thesis/internal/common"
