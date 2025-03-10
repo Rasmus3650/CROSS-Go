@@ -1,4 +1,4 @@
-# Install script for directory: /home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking
+# Install script for directory: /home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -29,7 +29,7 @@ endif()
 
 # Install shared libraries without execute permission?
 if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
-  set(CMAKE_INSTALL_SO_NO_EXE "1")
+  set(CMAKE_INSTALL_SO_NO_EXE "0")
 endif()
 
 # Is this installation the result of a crosscompile?
@@ -37,23 +37,23 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set default install directory permissions.
+# Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/libcross_static.a")
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE STATIC_LIBRARY FILES "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/libcross_static.a")
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libcross_shared.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libcross_shared.so")
     file(RPATH_CHECK
          FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libcross_shared.so"
          RPATH "")
   endif()
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/libcross_shared.so")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/libcross_shared.so")
   if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libcross_shared.so" AND
      NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libcross_shared.so")
     if(CMAKE_INSTALL_DO_STRIP)
@@ -62,33 +62,45 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
   endif()
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
 endif()
 
-if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include" TYPE FILE FILES
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/sha3.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/csprng_hash.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/restr_arith.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/fp_arith.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/api.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/CROSS.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/pack_unpack.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/fips202.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/keccakf1600.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/parameters.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/seedtree.h"
-    "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/merkle_tree.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/sha3.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/csprng_hash.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/restr_arith.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/fp_arith.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/api.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/CROSS.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/pack_unpack.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/fips202.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/keccakf1600.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/parameters.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/seedtree.h"
+    "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/../../Reference_Implementation/include/merkle_tree.h"
     )
-endif()
-
-if(CMAKE_INSTALL_COMPONENT)
-  set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
-else()
-  set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/kristianlibo/Documents/master/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/${CMAKE_INSTALL_MANIFEST}"
+if(CMAKE_INSTALL_LOCAL_ONLY)
+  file(WRITE "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/install_local_manifest.txt"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
+endif()
+if(CMAKE_INSTALL_COMPONENT)
+  if(CMAKE_INSTALL_COMPONENT MATCHES "^[a-zA-Z0-9_.+-]+$")
+    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
+  else()
+    string(MD5 CMAKE_INST_COMP_HASH "${CMAKE_INSTALL_COMPONENT}")
+    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INST_COMP_HASH}.txt")
+    unset(CMAKE_INST_COMP_HASH)
+  endif()
+else()
+  set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  file(WRITE "/home/rasmuso/Desktop/uni/PQC-Master-Thesis/debug_CROSS_submission/Additional_Implementations/Benchmarking/build/${CMAKE_INSTALL_MANIFEST}"
+     "${CMAKE_INSTALL_MANIFEST_CONTENT}")
+endif()
