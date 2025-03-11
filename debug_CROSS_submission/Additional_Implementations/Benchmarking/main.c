@@ -19,7 +19,16 @@ void print_seed_array(uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES]) {
         printf("\n");
     }
 }
-int test_csprng(){
+
+void print_hash(const uint8_t *digest, size_t length) {
+    printf("Digest message: ");
+    for (size_t i = 0; i < length; i++) {
+        printf("%u ", digest[i]);  // Print each byte as a two-digit hexadecimal
+    }
+    printf("\n");
+}
+
+void test_csprng(){
     printf("Testing csprng\n");
     const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
     //printf("dsc_csprng_seed_pk: %u\n", dsc_csprng_seed_pk);
@@ -32,15 +41,29 @@ int test_csprng(){
     uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
     csprng_randombytes((uint8_t *)seed_e_seed_pk, 2*KEYPAIR_SEED_LENGTH_BYTES, &csprng_state_mat);
     print_seed_array(seed_e_seed_pk);
-    return 0;
+    return;
+}
+
+void test_hash(){
+    printf("Testing hash\n");
+    uint8_t digest_msg_cmt_salt[2*HASH_DIGEST_LENGTH+SALT_LENGTH_BYTES];
+    printf("HASH DOMAIN SEP CONST: %u\n", HASH_DOMAIN_SEP_CONST);
+    printf("SALT LENGTH BYTES: %u\n", SALT_LENGTH_BYTES);
+    const char *const m = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const uint64_t mlen = 32;
+    /* place digest_msg at the beginning of the input of the hash generating digest_chall_1 */
+    hash(digest_msg_cmt_salt, (uint8_t*) m, mlen, HASH_DOMAIN_SEP_CONST);
+    print_hash(digest_msg_cmt_salt, 2*HASH_DIGEST_LENGTH+SALT_LENGTH_BYTES);
+    //print_csprng_state(digest_msg_cmt_salt, 2*HASH_DIGEST_LENGTH+SALT_LENGTH_BYTES);
+    return;
 }
 
 int main() {
-    return test_csprng();
+    test_hash();
+    return 0;
 }
 
+//Row 0: 15 121 106 185 65 60 38 57 192 11 100 5 36 234 50 253 115 61 99 71 54 20 106 223 64 83 75 131 107 171 179 163 
+//Row 1: 197 184 200 221 6 37 92 70 124 127 54 125 11 163 142 207 26 21 208 178 226 28 152 49 104 87 51 136 32 87 109 243 
 
 
-
-// 65 32 72 101 108 108 111 44 32 109 105 115 116 101 114 46 32 73 32 97 109 32 97 32 115 101 101 100 115 115 32 116 2 3 31
-// 65 32 72 101 108 108 111 44 32 109 105 115 116 101 114 46 32 73 32 97 109 32 97 32 115 101 101 100 115 115 115 115 2 3 31
