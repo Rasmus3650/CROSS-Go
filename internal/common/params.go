@@ -12,6 +12,7 @@ import (
 type ProtocolData struct {
 	T int
 	W int
+	G int
 	SchemeData
 }
 
@@ -43,6 +44,7 @@ func GetProtocolConfig(schemeType, variant string, level int) (ProtocolData, err
 	data := ProtocolData{}
 	switch variant {
 	case "RSDP-G":
+		data.G = 16
 		switch level {
 		case 1:
 			switch schemeType {
@@ -90,6 +92,7 @@ func GetProtocolConfig(schemeType, variant string, level int) (ProtocolData, err
 			return ProtocolData{}, fmt.Errorf("invalid security level: %d. Must be 1, 3, or 5", level)
 		}
 	case "RSDP":
+		data.G = 2
 		switch level {
 		case 1:
 			switch schemeType {

@@ -70,6 +70,11 @@ func Flatten(matrix [][]byte) []byte {
 	return result
 }
 
+// TODO: Implement this function
+func Unflatten(matrix []byte, t int) [][]byte {
+	return [][]byte{}
+}
+
 func MatrixMultiplicationByte(matrix [][]byte, vector []byte) ([]byte, error) {
 	// Check if dimensions match for multiplication
 	if len(matrix) == 0 {

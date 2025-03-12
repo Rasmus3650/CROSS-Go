@@ -1,4 +1,4 @@
-package seed
+package seedtree
 
 import (
 	"PQC-Master-Thesis/internal/common"
