@@ -1,1 +1,0 @@
-/usr/bin/cc  -Wall -pedantic -Wuninitialized -march=native -O3 -g3  -Wl,--dependency-file=CMakeFiles/main.dir/link.d CMakeFiles/main.dir/main.c.o -o main  libcross_static.a
