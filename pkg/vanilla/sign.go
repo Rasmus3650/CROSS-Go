@@ -92,11 +92,7 @@ func (c *CROSS) Sign(sk, msg []byte) ([][]byte, error) {
 	salt := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	rand.Read(seed)
 	rand.Read(salt)
-	tree_params, err := common.GetTreeParams(c.ProtocolData.SchemeType, c.ProtocolData.ProblemVariant, c.ProtocolData.SecurityLevel)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting tree params: %v", err)
-	}
-	commitments, err := seedtree.SeedLeaves(seed, salt, c.ProtocolData, tree_params)
+	commitments, err := seedtree.SeedLeaves(seed, salt, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error building seed leaves: %v", err)
 	}
@@ -139,7 +135,7 @@ func (c *CROSS) Sign(sk, msg []byte) ([][]byte, error) {
 		sha3.ShakeSum128(cmt_1_buffer, append(append(commitments[i], salt...), byte(i+C)))
 		cmt_1[i] = cmt_1_buffer
 	}
-	digest_cmt_0, err := merkle.TreeRoot(cmt_0, c.ProtocolData, tree_params)
+	digest_cmt_0, err := merkle.TreeRoot(cmt_0, c.ProtocolData, c.TreeParams)
 	digest_cmt_1 := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	flat_cmt_1 := make([]byte, 0)
 	for _, b := range cmt_1 {
@@ -184,11 +180,11 @@ func (c *CROSS) Sign(sk, msg []byte) ([][]byte, error) {
 	digest_chall_2 := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	sha3.ShakeSum128(digest_chall_2, append(y[:c.ProtocolData.T], digest_chall_1...))
 	chall_2 := c.expand_digest_to_fixed_weight(digest_chall_2)
-	proof, err := merkle.TreeProof(cmt_0, chall_2, c.ProtocolData, tree_params)
+	proof, err := merkle.TreeProof(cmt_0, chall_2, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error generating proof: %v", err)
 	}
-	path, err := seedtree.SeedPath(seed, salt, chall_2, c.ProtocolData, tree_params)
+	path, err := seedtree.SeedPath(seed, salt, chall_2, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error generating seed path: %v", err)
 	}
@@ -219,11 +215,7 @@ func (c *CROSS) Sign(sk, msg []byte) ([][]byte, error) {
 func (c *CROSS) DummySign(sk, msg, seed, salt []byte) ([][]byte, error) {
 	e_bar, H := c.expandSK(sk)
 	C := 2*c.ProtocolData.T - 1
-	tree_params, err := common.GetTreeParams(c.ProtocolData.SchemeType, c.ProtocolData.ProblemVariant, c.ProtocolData.SecurityLevel)
-	if err != nil {
-		return nil, fmt.Errorf("Error getting tree params: %v", err)
-	}
-	commitments, err := seedtree.SeedLeaves(seed, salt, c.ProtocolData, tree_params)
+	commitments, err := seedtree.SeedLeaves(seed, salt, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error building seed leaves: %v", err)
 	}
@@ -266,7 +258,7 @@ func (c *CROSS) DummySign(sk, msg, seed, salt []byte) ([][]byte, error) {
 		sha3.ShakeSum128(cmt_1_buffer, append(append(commitments[i], salt...), byte(i+C)))
 		cmt_1[i] = cmt_1_buffer
 	}
-	digest_cmt_0, err := merkle.TreeRoot(cmt_0, c.ProtocolData, tree_params)
+	digest_cmt_0, err := merkle.TreeRoot(cmt_0, c.ProtocolData, c.TreeParams)
 	digest_cmt_1 := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	flat_cmt_1 := make([]byte, 0)
 	for _, b := range cmt_1 {
@@ -311,11 +303,11 @@ func (c *CROSS) DummySign(sk, msg, seed, salt []byte) ([][]byte, error) {
 	digest_chall_2 := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	sha3.ShakeSum128(digest_chall_2, append(y[:c.ProtocolData.T], digest_chall_1...))
 	chall_2 := c.expand_digest_to_fixed_weight(digest_chall_2)
-	proof, err := merkle.TreeProof(cmt_0, chall_2, c.ProtocolData, tree_params)
+	proof, err := merkle.TreeProof(cmt_0, chall_2, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error generating proof: %v", err)
 	}
-	path, err := seedtree.SeedPath(seed, salt, chall_2, c.ProtocolData, tree_params)
+	path, err := seedtree.SeedPath(seed, salt, chall_2, c.ProtocolData, c.TreeParams)
 	if err != nil {
 		return nil, fmt.Errorf("Error generating seed path: %v", err)
 	}

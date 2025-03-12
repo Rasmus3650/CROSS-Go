@@ -21,7 +21,7 @@ func Leaves(tree [][]byte, tree_params common.TreeParams) [][]byte {
 }
 
 func BuildTree(seed, salt []byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "balanced" || proto_params.SchemeType == "small" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := make([][]byte, tree_params.Total_nodes)
 		T[0] = seed
 		start_node := 0
@@ -44,7 +44,7 @@ func BuildTree(seed, salt []byte, proto_params common.ProtocolData, tree_params 
 
 		}
 		return T, nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		T := make([][]byte, tree_params.Total_nodes)
 		T[0] = seed
 		hash := make([]byte, (4*proto_params.Lambda)/8)
@@ -96,13 +96,13 @@ func BuildTree(seed, salt []byte, proto_params common.ProtocolData, tree_params 
 	}
 }
 func SeedLeaves(seed, salt []byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "balanced" || proto_params.SchemeType == "small" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T, err := BuildTree(seed, salt, proto_params, tree_params)
 		if err != nil {
 			return nil, fmt.Errorf("Error: %s", err)
 		}
 		return Leaves(T, tree_params), nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		return BuildTree(seed, salt, proto_params, tree_params)
 	} else {
 		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
@@ -146,7 +146,7 @@ func computeNodesToPublish(chall_2 []bool, tree_params common.TreeParams) []bool
 }
 
 func SeedPath(seed, salt []byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "balanced" || proto_params.SchemeType == "small" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T, err := BuildTree(seed, salt, proto_params, tree_params)
 		if err != nil {
 			return nil, err
@@ -159,7 +159,7 @@ func SeedPath(seed, salt []byte, chall_2 []bool, proto_params common.ProtocolDat
 			}
 		}
 		return seedPath, nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		leaves, err := SeedLeaves(seed, salt, proto_params, tree_params)
 		if err != nil {
 			return nil, err
@@ -177,7 +177,7 @@ func SeedPath(seed, salt []byte, chall_2 []bool, proto_params common.ProtocolDat
 }
 
 func RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "balanced" || proto_params.SchemeType == "small" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T_prime := computeNodesToPublish(chall_2, tree_params)
 		T := make([][]byte, tree_params.Total_nodes)
 		start_node := 1
@@ -217,7 +217,7 @@ func RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool, proto_params comm
 			}
 		}
 		return result, nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		return path, nil
 	} else {
 		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")

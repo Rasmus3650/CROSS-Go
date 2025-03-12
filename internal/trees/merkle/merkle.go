@@ -19,7 +19,7 @@ func TreeRoot(commitments [][]byte, proto_params common.ProtocolData, tree_param
 }
 
 func ComputeMerkleTree(commitments [][]byte, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := placeOnLeaves(commitments, tree_params)
 		startNode := tree_params.LSI[0]
 		for level := len(tree_params.NPL) - 1; level >= 1; level-- {
@@ -34,7 +34,7 @@ func ComputeMerkleTree(commitments [][]byte, proto_params common.ProtocolData, t
 			startNode -= tree_params.NPL[level-1]
 		}
 		return T, nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		T := make([][]byte, proto_params.T+5)
 		copy(T[5:proto_params.T+5], commitments)
 		children := make([]int, 4)
@@ -117,7 +117,7 @@ func placeOnLeaves(cmt_0 [][]byte, tree_params common.TreeParams) [][]byte {
 }
 
 func TreeProof(commitments [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([][]byte, error) {
-	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T, err := ComputeMerkleTree(commitments, proto_params, tree_params)
 		if err != nil {
 			return nil, err
@@ -143,7 +143,7 @@ func TreeProof(commitments [][]byte, chall_2 []bool, proto_params common.Protoco
 			start_node -= tree_params.NPL[level-1]
 		}
 		return proof, nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		if len(chall_2) != len(commitments) {
 			return nil, fmt.Errorf("Length mismatch between commitments (len: %d) and challenge (len: %d)", len(commitments), len(chall_2))
 		}
@@ -160,7 +160,7 @@ func TreeProof(commitments [][]byte, chall_2 []bool, proto_params common.Protoco
 }
 
 func RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool, proto_params common.ProtocolData, tree_params common.TreeParams) ([]byte, error) {
-	if proto_params.SchemeType == "small" || proto_params.SchemeType == "balanced" {
+	if proto_params.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := placeOnLeaves(cmt_0, tree_params)
 		// End of PlaceCMTonLeaves
 		T_prime := label_leaves(chall_2, tree_params)
@@ -198,7 +198,7 @@ func RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool, proto_params common.Pr
 			start_node -= tree_params.NPL[level-1]
 		}
 		return T[0], nil
-	} else if proto_params.SchemeType == "fast" {
+	} else if proto_params.IsType(common.TYPE_FAST) {
 		pub_nodes := 0
 		for i := 0; i <= proto_params.T-1; i++ {
 			if chall_2[i] {

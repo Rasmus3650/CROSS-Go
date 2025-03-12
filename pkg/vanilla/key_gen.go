@@ -115,7 +115,7 @@ func (c *CROSS) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 		e_bar[i] = v%byte(c.ProtocolData.Z-1) + 1
 	}
 	e := make([]byte, c.ProtocolData.N)
-	for j := 1; j <= c.ProtocolData.N; j++ {
+	for j := 0; j < c.ProtocolData.N; j++ {
 		// Probably a better way to do this
 		e[j] = byte(new(big.Int).Exp(big.NewInt(int64(c.ProtocolData.G)), big.NewInt(int64(e_bar[j])), nil).Int64())
 	}
