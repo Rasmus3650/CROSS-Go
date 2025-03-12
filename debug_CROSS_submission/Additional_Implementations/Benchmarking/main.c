@@ -14,7 +14,7 @@ void print_seed_array(uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES]) {
     for (int i = 0; i < 2; i++) {
         printf("Row %d: ", i);
         for (int j = 0; j < KEYPAIR_SEED_LENGTH_BYTES; j++) {
-            printf("%u ", seed_e_seed_pk[i][j]);  // Print in hex format
+            printf("%u, ", seed_e_seed_pk[i][j]);  // Print in hex format
         }
         printf("\n");
     }
@@ -31,9 +31,13 @@ void print_hash(const uint8_t *digest, size_t length) {
 void test_csprng(){
     printf("Testing csprng\n");
     const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
-    //printf("dsc_csprng_seed_pk: %u\n", dsc_csprng_seed_pk);
+    printf("T: %u\n", T);
+    printf("dsc_csprng_seed_pk: %u\n", dsc_csprng_seed_pk);
+    printf("KEYPAIR_SEED_LENGTH_BYTES: %u\n", KEYPAIR_SEED_LENGTH_BYTES);
     CSPRNG_STATE_T csprng_state_mat;
-    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    //32 A's
+    //const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     csprng_initialize(&csprng_state_mat, seed_sk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
     //printf("Hash generated\n");
     //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
@@ -59,7 +63,8 @@ void test_hash(){
 }
 
 int main() {
-    test_hash();
+    //test_hash();
+    test_csprng();
     return 0;
 }
 

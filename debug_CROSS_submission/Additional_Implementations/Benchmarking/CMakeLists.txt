@@ -10,8 +10,14 @@ set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -Wall -pedantic -Wuninitialized -march=nati
 set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${SANITIZE}")
 message("Compilation flags: ${CMAKE_C_FLAGS}")
 
+
+#Define problem, type, and category
+set(PROBLEM_DEFINE "RSDP")
+set(TYPE_DEFINE "BALANCED")
+set(CATEGORY_DEFINE "CATEGORY_1")
+
 # Define required compile-time parameters
-add_compile_definitions(RSDP=1 BALANCED=1 CATEGORY_1=1)
+add_compile_definitions(${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1)
 
 # By default, employ optimized implementation
 set(REFERENCE 1) # Set to 1 for reference implementation
@@ -102,8 +108,8 @@ target_include_directories(cross_static PUBLIC ${COMMON_DIR}/include)
 target_include_directories(cross_shared PUBLIC ${COMMON_DIR}/include)
 
 # Set compile definitions for the libraries
-target_compile_definitions(cross_static PUBLIC RSDP=1 BALANCED=1 CATEGORY_1=1)
-target_compile_definitions(cross_shared PUBLIC RSDP=1 BALANCED=1 CATEGORY_1=1)
+target_compile_definitions(cross_static PUBLIC ${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1)
+target_compile_definitions(cross_shared PUBLIC ${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1)
 
 # Link external libraries if required
 if(KECCAK_EXTERNAL_LIB)
@@ -124,5 +130,5 @@ target_link_libraries(main cross_static)
 target_include_directories(main PUBLIC ${COMMON_DIR}/include)
 
 # Set compile definitions for the main executable
-target_compile_definitions(main PUBLIC RSDP=1 BALANCED=1 CATEGORY_1=1)
+target_compile_definitions(main PUBLIC ${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1)
 
