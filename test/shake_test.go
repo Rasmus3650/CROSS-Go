@@ -13,7 +13,7 @@ func TestShake128CSPRNG(t *testing.T) {
 	domain_sep := 0
 	output_len := 64
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := shake.CsprngInitialize(1, seed, output_len, dsc)
+	randomBytes, err := shake.CSPRNG(1, seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
@@ -40,7 +40,7 @@ func TestShake256CSPRNG(t *testing.T) {
 	domain_sep := 0
 	output_len := 96
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := shake.CsprngInitialize(3, seed, output_len, dsc)
+	randomBytes, err := shake.CSPRNG(3, seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
@@ -65,7 +65,7 @@ func TestShakeHash(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	output_len := 32
 	dsc := uint16(32768)
-	randomBytes, err := shake.CsprngInitialize(1, seed, output_len, dsc)
+	randomBytes, err := shake.CSPRNG(1, seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
