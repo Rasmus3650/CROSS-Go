@@ -70,5 +70,8 @@ func TestShakeHash(t *testing.T) {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
 	}
-	fmt.Println(randomBytes)
+	c_hash := []byte{11, 27, 204, 128, 161, 51, 112, 71, 20, 71, 231, 138, 67, 128, 232, 30, 91, 74, 144, 188, 233, 72, 217, 222, 72, 43, 29, 79, 152, 82, 169, 125}
+	if !bytes.Equal(randomBytes, c_hash) {
+		t.Errorf("Hashes do not match:\nGo: %v\nC:  %v", randomBytes, c_hash)
+	}
 }

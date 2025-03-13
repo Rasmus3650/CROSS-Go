@@ -2,8 +2,6 @@ package vanilla
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/trees/merkle"
-	seedtree "PQC-Master-Thesis/internal/trees/seed"
 	"bytes"
 	"fmt"
 	"math/big"
@@ -11,7 +9,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func (c *CROSS) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
+func (c *CROSSInstance) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
 	//TODO: Check if sig is of correct length
 	salt := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	digest_cmt := make([]byte, (2*c.ProtocolData.Lambda)/8)
@@ -24,7 +22,7 @@ func (c *CROSS) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
 	return salt, digest_cmt, digest_chall_2, nil
 }
 
-func (c *CROSS) unpackPath(path []byte) [][]byte {
+func (c *CROSSInstance) unpackPath(path []byte) [][]byte {
 	//TODO: Verify that this is correct
 	idx := 0
 	result := make([][]byte, c.ProtocolData.T)
@@ -37,7 +35,7 @@ func (c *CROSS) unpackPath(path []byte) [][]byte {
 	return result
 }
 
-func (c *CROSS) Verify(pk Pub, msg, sig []byte) (bool, error) {
+func (c *CROSSInstance) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	//TODO: Unpack signature
 	/*salt, digest_cmt, digest_chall_2, err := unpackSignature(sig, c.ProtocolData)
 	if err != nil {
@@ -92,7 +90,7 @@ func (c *CROSS) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	chall_1 := make([]byte, c.ProtocolData.T)
 	sha3.ShakeSum128(chall_1, append(digest_chall_1, byte(c.ProtocolData.T+C)))
 	chall_2 := c.expand_digest_to_fixed_weight(digest_chall_2)
-	seed, err := seedtree.RebuildLeaves(path, salt, chall_2, c.ProtocolData, c.TreeParams)
+	seed, err := c.RebuildLeaves(path, salt, chall_2)
 	if err != nil {
 		return false, fmt.Errorf("Error rebuilding leaves: %v", err)
 	}
@@ -170,7 +168,7 @@ func (c *CROSS) Verify(pk Pub, msg, sig []byte) (bool, error) {
 		}
 
 	}
-	digest_cmt_0, err := merkle.RecomputeRoot(cmt_0, proof, chall_2, c.ProtocolData, c.TreeParams)
+	digest_cmt_0, err := c.RecomputeRoot(cmt_0, proof, chall_2)
 	if err != nil {
 		return false, fmt.Errorf("Error recomputing root: %v", err)
 	}

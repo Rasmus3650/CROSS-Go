@@ -20,7 +20,7 @@ type KeyPair struct {
 }
 
 // TODO: Implement the switch case for RSDP-G, along with setting the correct CSPRNG
-func (c *CROSS) KeyGen() (KeyPair, error) {
+func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 	seed_sk := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	_, err := rand.Read(seed_sk)
 	if err != nil {
@@ -75,7 +75,7 @@ func (c *CROSS) KeyGen() (KeyPair, error) {
 }
 
 // Dummy KeyGen function for testing purposes ONLY
-func (c *CROSS) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
+func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 	seed_e_pk := make([]byte, (4*c.ProtocolData.Lambda)/8)
 	sha3.ShakeSum128(seed_e_pk, append(seed_sk, byte(3*c.ProtocolData.T+1)))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]

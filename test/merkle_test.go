@@ -2,7 +2,7 @@ package test_suite
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/trees/merkle"
+	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
 	"crypto/rand"
 	math "math/rand"
@@ -13,30 +13,21 @@ func TestMerkle(t *testing.T) {
 	// Run through all configs 10 times, and make sure nothing returns an error
 	configs := common.Configs()
 	for _, config := range configs {
+		instance, err := vanilla.NewCROSS(config)
+		if err != nil {
+			t.Errorf("Error: %s", err)
+		}
 		for xyz := 0; xyz < 100; xyz++ {
-			tree_params, err := common.GetTreeParams(config)
-			//fmt.Println("tree_params: ", tree_params)
-			//fmt.Println("schemeType: ", schemeType)
-			//fmt.Println("variant: ", variant)
-			//fmt.Println("securityLevel: ", securityLevel)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-
-			}
-			proto_params, err := common.GetProtocolConfig(config)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-			}
-			commitments := make([][]byte, proto_params.T)
-			for i := 0; i < proto_params.T; i++ {
-				commitments[i] = make([]byte, (2*proto_params.Lambda)/8)
+			commitments := make([][]byte, instance.ProtocolData.T)
+			for i := 0; i < instance.ProtocolData.T; i++ {
+				commitments[i] = make([]byte, (2*instance.ProtocolData.Lambda)/8)
 				rand.Read(commitments[i])
 			}
-			root, err := merkle.TreeRoot(commitments, proto_params, tree_params)
+			root, err := instance.TreeRoot(commitments)
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
-			chall_2 := make([]bool, proto_params.T)
+			chall_2 := make([]bool, instance.ProtocolData.T)
 			chall_2[0] = true
 			chall_2[1] = true
 			chall_2[2] = true
@@ -45,10 +36,10 @@ func TestMerkle(t *testing.T) {
 			chall_2[5] = true
 			chall_2[6] = false
 			chall_2[7] = false
-			for i := 8; i < proto_params.T; i++ {
+			for i := 8; i < instance.ProtocolData.T; i++ {
 				chall_2[i] = math.Intn(2) == 0
 			}
-			proof, err := merkle.TreeProof(commitments, chall_2, proto_params, tree_params)
+			proof, err := instance.TreeProof(commitments, chall_2)
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
@@ -58,7 +49,7 @@ func TestMerkle(t *testing.T) {
 					cmt_0[i] = commitments[i]
 				}
 			}
-			root_prime, err := merkle.RecomputeRoot(cmt_0, proof, chall_2, proto_params, tree_params)
+			root_prime, err := instance.RecomputeRoot(cmt_0, proof, chall_2)
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
