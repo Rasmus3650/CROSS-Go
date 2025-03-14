@@ -36,6 +36,7 @@
 
 #include "parameters.h"
 #include "sha3.h"
+#include <stdio.h>
 
 /************************* CSPRNG ********************************/
 
@@ -214,7 +215,7 @@ void csprng_fp_mat(FP_ELEM res[K][N-K],
     while(placed < K*(N-K)) {
         if (bits_in_sub_buf <= 32 && pos_remaining > 0) {
             /* get at most 4 bytes from buffer */
-            int refresh_amount = (pos_remaining >= 4) ? 4 : pos_remaining; 
+            int refresh_amount = (pos_remaining >= 4) ? 4 : pos_remaining;
             uint32_t refresh_buf = 0;
             for (int i=0; i<refresh_amount; i++) {
                 refresh_buf |= ((uint32_t)CSPRNG_buffer[pos_in_buf+i]) << 8*i;
