@@ -1,12 +1,12 @@
 package vanilla
 
 import (
+	"PQC-Master-Thesis/internal"
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/trees"
 )
 
 type CROSSInstance struct {
-	*trees.CROSS
+	*internal.CROSS
 }
 
 // NewCROSS creates a new CROSS instance
@@ -21,7 +21,7 @@ func NewCROSS(scheme_identifier common.CONFIG_IDENT) (*CROSSInstance, error) {
 	}
 
 	return &CROSSInstance{
-		CROSS: &trees.CROSS{
+		CROSS: &internal.CROSS{
 			ProtocolData: protocolData,
 			TreeParams:   treeParams,
 		},

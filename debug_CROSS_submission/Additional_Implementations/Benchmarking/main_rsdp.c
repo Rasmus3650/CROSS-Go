@@ -174,28 +174,13 @@ void test_csprng_fz_inf_w(){
 }*/
 
 
-
-void test_expand_digest_to_fixed_weight(){
-    printf("Testing expand_digest_to_fixed_weight\n");
-    uint8_t chall_2[T]={0};
-    const char * restrict digest = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    expand_digest_to_fixed_weight(chall_2, (uint8_t*) digest);
-    printf("chall_2:\n");
-    for (int i = 0; i < T; i++) {
-        printf("%u, ", chall_2[i]);
-    }
-    printf("\n");
-    return;
-}
-
 int main() {
     //test_hash();
     //test_csprng();
     //test_csprng_fp_mat();
-    //test_csprng_fz_vec();
+    test_csprng_fz_vec();
     //test_csprng_fp_vec();
     //test_csprng_fp_vec_chall_1();
-    test_expand_digest_to_fixed_weight();
     return 0;
 }
 

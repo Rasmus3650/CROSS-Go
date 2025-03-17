@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 
-void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
+/*void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
     for (size_t i = 0; i < size; i++) {
         printf("%u ", ((unsigned char*)csprng_state)[i]);
     }
@@ -56,7 +56,7 @@ void test_hash(){
     printf("SALT LENGTH BYTES: %u\n", SALT_LENGTH_BYTES);
     const char *const m = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     const uint64_t mlen = 32;
-    /* place digest_msg at the beginning of the input of the hash generating digest_chall_1 */
+    // place digest_msg at the beginning of the input of the hash generating digest_chall_1
     print_hash(digest_msg_cmt_salt, HASH_DIGEST_LENGTH);
     hash(digest_msg_cmt_salt, (uint8_t*) m, mlen, HASH_DOMAIN_SEP_CONST);
     print_hash(digest_msg_cmt_salt, HASH_DIGEST_LENGTH);
@@ -148,9 +148,9 @@ void test_csprng_fp_vec_chall_1(){
     csprng_fp_vec_chall_1(chall_1,&csprng_state_mat);
     print_chall_1(chall_1);
     return;
-}
+}*/
 
-/*void print_e_G_bar(FZ_ELEM e_G_bar[M]){
+void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("e_G_bar:\n");
     for (int i = 0; i < M; i++) {
         printf("%u, ", e_G_bar[i]);
@@ -171,20 +171,29 @@ void test_csprng_fz_inf_w(){
     csprng_fz_inf_w(e_G_bar,&csprng_state_mat);
     print_e_G_bar(e_G_bar);
     return;
-}*/
+}
 
-
-
-void test_expand_digest_to_fixed_weight(){
-    printf("Testing expand_digest_to_fixed_weight\n");
-    uint8_t chall_2[T]={0};
-    const char * restrict digest = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
-    expand_digest_to_fixed_weight(chall_2, (uint8_t*) digest);
-    printf("chall_2:\n");
-    for (int i = 0; i < T; i++) {
-        printf("%u, ", chall_2[i]);
+void print_W_mat(FZ_ELEM W_mat[M][N-M]){
+    printf("W_mat:\n");
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N-M; j++) {
+            printf("%u, ", W_mat[i][j]);
+        }
+        printf("\n");
     }
-    printf("\n");
+    return;
+}
+
+void test_csprng_fz_mat(){
+    printf("Testing CSPRNG - fz_mat\n");
+    FZ_ELEM W_mat[M][N-M];
+    const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
+    CSPRNG_STATE_T csprng_state_mat;
+    const char * restrict seed_pk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
+    //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+    csprng_fz_mat(W_mat,&csprng_state_mat);
+    print_W_mat(W_mat);
     return;
 }
 
@@ -195,7 +204,8 @@ int main() {
     //test_csprng_fz_vec();
     //test_csprng_fp_vec();
     //test_csprng_fp_vec_chall_1();
-    test_expand_digest_to_fixed_weight();
+    //test_csprng_fz_inf_w();
+    test_csprng_fz_mat();
     return 0;
 }
 

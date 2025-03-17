@@ -11,7 +11,7 @@ set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${SANITIZE}")
 message("Compilation flags: ${CMAKE_C_FLAGS}")
 
 
-#Define problem, type, and category
+#Define problem (RSDP or RSDPG), type, and category
 set(PROBLEM_DEFINE "RSDP")
 set(TYPE_DEFINE "BALANCED")
 set(CATEGORY_DEFINE "CATEGORY_1")

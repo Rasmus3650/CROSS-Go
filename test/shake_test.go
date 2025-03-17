@@ -2,19 +2,20 @@ package test_suite
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/internal/shake"
+	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
 	"fmt"
 	"testing"
 )
 
 func TestShake128CSPRNG(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	T := 256
 	domain_sep := 0
 	output_len := 64
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := shake.CSPRNG(1, seed, output_len, dsc)
+	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
@@ -36,12 +37,13 @@ func TestShake128CSPRNG(t *testing.T) {
 }
 
 func TestShake256CSPRNG(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_3_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	T := 384
 	domain_sep := 0
 	output_len := 96
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := shake.CSPRNG(3, seed, output_len, dsc)
+	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
@@ -63,10 +65,11 @@ func TestShake256CSPRNG(t *testing.T) {
 }
 
 func TestShakeHash(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	output_len := 32
 	dsc := uint16(32768)
-	randomBytes, err := shake.CSPRNG(1, seed, output_len, dsc)
+	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
 	if err != nil {
 		fmt.Println("Error initializing CSPRNG:", err)
 		return
@@ -78,12 +81,12 @@ func TestShakeHash(t *testing.T) {
 }
 
 func TestFpMat(t *testing.T) {
-	config, err := common.GetProtocolConfig(common.RSDP_1_BALANCED)
-	if err != nil {
-		t.Errorf("Error getting protocol config: %v", err)
-	}
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	mat := shake.CSPRNG_fp_mat(config.K, config.N, config.T, seed, config.BITS_V_CT_RNG, config.P)
+	mat, err := instance.CSPRNG_fp_mat(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
 	c_mat := []byte{15, 114, 41, 75, 27, 8, 15, 19, 57, 0, 47, 32, 86, 0, 9, 117, 50, 122, 79, 107, 51, 108, 17, 27, 20, 84, 125, 6, 52, 106, 82, 65, 107, 86, 78, 29, 90, 24, 46, 100, 93, 13, 20, 97, 101, 8, 95, 63, 54, 122, 45,
 		24, 106, 113, 51, 13, 21, 32, 75, 21, 78, 3, 102, 24, 104, 46, 77, 65, 8, 100, 85, 54, 115, 37, 110, 25, 101, 85, 122, 59, 50, 33, 33, 39, 116, 96, 61, 82, 86, 91, 106, 107, 68, 124, 76, 107, 34, 65, 23, 38, 29, 81,
 		29, 81, 98, 51, 81, 1, 11, 74, 26, 5, 19, 26, 46, 74, 69, 24, 29, 107, 76, 41, 84, 54, 8, 72, 87, 107, 10, 12, 124, 17, 0, 83, 107, 83, 31, 94, 63, 43, 101, 23, 103, 122, 49, 101, 62, 48, 40, 119, 42, 95, 2,
@@ -163,5 +166,106 @@ func TestFpMat(t *testing.T) {
 
 	if !bytes.Equal(mat, c_mat) {
 		t.Errorf("matrices are not equal")
+	}
+}
+
+func TestFzVec(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.CSPRNG_fz_vec(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{6, 5, 2, 4, 5, 3, 2, 2, 1, 0, 0, 3, 1, 3, 1, 5, 4, 6, 2, 2, 1, 3, 0, 2, 6, 5, 1, 3, 3, 5, 2, 6, 1, 0, 3, 4, 2, 4, 3, 3, 5, 6, 5, 2, 1, 5, 2, 3, 1, 2, 1, 0, 4, 3, 3, 5, 4, 2, 5, 1, 5, 1, 6, 0, 4, 2, 0, 2, 5, 2, 3, 5, 4, 2, 2, 6, 4, 6, 4, 0, 0, 3, 5, 6, 1, 3, 5, 1, 2, 0, 2, 0, 1, 5, 6, 5, 1, 4, 3, 2, 4, 3, 0, 0, 6, 5, 3, 6, 4, 6, 2, 2, 6, 4, 3, 4, 6, 4, 3, 6, 4, 2, 3, 6, 0, 0, 6}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
+	}
+}
+
+func TestFpVec(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.CSPRNG_fp_vec(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{6, 121, 122, 53, 50, 9, 67, 69, 111, 58, 11, 112, 93, 117, 114, 79, 111, 106, 75, 10, 25, 18, 3, 37, 16, 125, 12, 7, 101, 42, 94, 36, 17, 42, 70, 10, 107, 74, 115, 100, 76, 80, 44, 18, 101, 49, 92, 95, 52, 0, 121, 51, 59, 72, 10, 100, 106, 36, 53, 88, 10, 43, 53, 46, 0, 10, 102, 59, 49, 49, 125, 84, 101, 82, 11, 0, 17, 18, 13, 1, 94, 124, 100, 94, 117, 31, 84, 82, 24, 115, 77, 67, 79, 26, 45, 43, 27, 64, 3, 90, 11, 125, 25, 108, 110, 125, 107, 103, 97, 64, 69, 122, 20, 87, 116, 8, 118, 72, 39, 91, 69, 13, 38, 88, 122, 0, 36}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
+	}
+}
+
+func TestFpVecChall_1(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.CSPRNG_fp_vec_chall_1(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{39, 9, 51, 16, 25, 76, 19, 104, 112, 110, 66, 98, 35, 37, 63, 12, 63, 82, 75, 106, 84, 123, 3, 6, 125, 32, 9, 53, 96, 122, 122, 88, 10, 106, 115, 96, 84, 76, 106, 77, 118, 72, 87, 25, 126, 113, 84, 58, 53, 105, 44, 107, 43, 52, 17, 74, 40, 29, 30, 112, 109, 32, 17, 97, 46, 92, 75, 71, 123, 97, 116, 66, 98, 38, 126, 5, 109, 23, 46, 72, 35, 84, 7, 57, 79, 35, 126, 84, 74, 34, 91, 13, 96, 18, 110, 88, 24, 1, 12, 32, 2, 74, 72, 94, 108, 2, 93, 79, 72, 109, 3, 104, 23, 40, 94, 45, 102, 47, 15, 119, 94, 6, 124, 16, 75, 81, 111, 1, 47, 63, 73, 26, 70, 104, 56, 49, 27, 126, 87, 47, 119, 40, 89, 16, 74, 120, 109, 22, 107, 5, 59, 93, 116, 77, 55, 17, 35, 38, 77, 53, 92, 25, 27, 95, 111, 58, 88, 104, 25, 6, 37, 105, 65, 107, 14, 44, 94, 57, 75, 62, 47, 69, 68, 81, 69, 28, 77, 103, 64, 97, 89, 77, 52, 2, 74, 100, 67, 74, 122, 88, 107, 107, 26, 18, 109, 117, 101, 68, 81, 47, 121, 51, 3, 52, 43, 94, 31, 43, 85, 81, 25, 81, 69, 14, 3, 77, 104, 99, 78, 104, 12, 60, 89, 23, 87, 88, 35, 114, 81, 49, 124, 48, 44, 15, 60, 103, 19, 51, 97, 4, 59, 47, 70, 98, 18, 32}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
+	}
+}
+
+func TestFzInfW(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.CSPRNG_fz_inf_w(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{126, 87, 88, 19, 61, 0, 75, 61, 74, 86, 43, 6, 23, 55, 54, 21, 7, 70, 98, 45, 93, 74, 87, 118, 81}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
+	}
+}
+func TestFzMat(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.CSPRNG_fz_mat(seed)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{15, 114, 41, 75, 27, 8, 15, 19, 57, 0, 47, 32, 86, 0, 9, 117, 50, 122, 79, 107, 51, 108, 17, 27, 20, 84, 125, 6, 52, 106,
+		82, 65, 107, 86, 78, 29, 90, 24, 46, 100, 93, 13, 20, 97, 101, 8, 95, 63, 54, 122, 45, 24, 106, 113, 51, 13, 21, 32, 75, 21,
+		78, 3, 102, 24, 104, 46, 77, 65, 8, 100, 85, 54, 115, 37, 110, 25, 101, 85, 122, 59, 50, 33, 33, 39, 116, 96, 61, 82, 86, 91,
+		106, 107, 68, 124, 76, 107, 34, 65, 23, 38, 29, 81, 29, 81, 98, 51, 81, 1, 11, 74, 26, 5, 19, 26, 46, 74, 69, 24, 29, 107,
+		76, 41, 84, 54, 8, 72, 87, 107, 10, 12, 124, 17, 0, 83, 107, 83, 31, 94, 63, 43, 101, 23, 103, 122, 49, 101, 62, 48, 40, 119,
+		42, 95, 2, 108, 55, 78, 19, 0, 47, 38, 14, 43, 103, 14, 27, 69, 119, 50, 96, 48, 106, 89, 19, 56, 124, 11, 60, 106, 14, 94,
+		118, 19, 68, 17, 1, 36, 53, 29, 113, 57, 122, 81, 47, 59, 78, 5, 94, 106, 78, 99, 34, 1, 25, 83, 73, 60, 29, 125, 65, 124,
+		10, 13, 61, 44, 9, 9, 99, 17, 2, 57, 13, 8, 71, 74, 63, 59, 83, 28, 0, 72, 118, 54, 105, 86, 50, 26, 47, 107, 123, 106,
+		71, 80, 26, 97, 72, 2, 62, 63, 118, 116, 36, 28, 40, 108, 11, 50, 31, 24, 77, 23, 44, 56, 2, 37, 80, 32, 120, 17, 69, 107,
+		65, 14, 41, 58, 0, 125, 121, 2, 52, 98, 52, 60, 56, 35, 104, 47, 99, 92, 60, 24, 102, 115, 26, 17, 89, 73, 14, 30, 72, 104,
+		56, 55, 61, 3, 123, 124, 123, 89, 53, 97, 4, 41, 27, 90, 115, 55, 83, 31, 27, 38, 10, 119, 82, 107, 82, 27, 27, 57, 119, 79,
+		126, 85, 125, 84, 1, 123, 63, 77, 6, 114, 78, 74, 74, 89, 82, 39, 74, 78, 97, 13, 120, 5, 29, 41, 71, 33, 122, 17, 101, 118,
+		111, 113, 94, 8, 8, 117, 79, 20, 102, 76, 121, 17, 71, 2, 57, 88, 59, 9, 70, 56, 78, 53, 39, 41, 34, 125, 96, 58, 112, 107,
+		20, 50, 59, 119, 6, 29, 44, 122, 81, 26, 0, 24, 22, 115, 87, 1, 11, 84, 54, 56, 61, 14, 26, 126, 52, 119, 8, 23, 79, 3,
+		31, 78, 85, 33, 126, 64, 4, 96, 101, 28, 46, 76, 99, 97, 38, 88, 3, 102, 57, 118, 94, 114, 59, 25, 54, 47, 96, 0, 36, 47,
+		79, 104, 42, 77, 23, 0, 54, 97, 80, 77, 66, 44, 79, 117, 38, 31, 37, 77, 78, 46, 15, 108, 67, 98, 83, 79, 31, 109, 105, 7,
+		4, 86, 26, 86, 112, 27, 78, 91, 66, 43, 75, 104, 55, 61, 77, 65, 109, 11, 113, 36, 26, 101, 123, 103, 101, 9, 9, 123, 97, 20,
+		120, 99, 65, 35, 28, 95, 19, 122, 20, 64, 87, 50, 120, 111, 101, 98, 88, 21, 113, 37, 89, 114, 106, 52, 68, 62, 114, 69, 106, 16,
+		61, 115, 27, 118, 11, 64, 31, 37, 8, 32, 115, 74, 113, 24, 101, 106, 113, 90, 41, 94, 94, 82, 4, 5, 83, 113, 16, 87, 48, 85,
+		88, 23, 4, 107, 91, 28, 107, 37, 21, 16, 37, 26, 126, 125, 63, 120, 1, 29, 61, 30, 48, 0, 96, 41, 123, 4, 108, 50, 39, 106,
+		7, 106, 111, 101, 17, 11, 65, 52, 3, 112, 38, 78, 1, 5, 25, 6, 96, 60, 33, 79, 47, 35, 11, 120, 55, 122, 114, 87, 76, 56,
+		74, 88, 14, 2, 41, 11, 8, 10, 11, 84, 94, 42, 124, 11, 25, 12, 73, 116, 100, 43, 55, 118, 29, 18, 29, 37, 53, 92, 116, 85,
+		35, 33, 115, 73, 10, 119, 83, 60, 31, 0, 79, 83, 45, 7, 29, 78, 57, 4, 104, 111, 117, 76, 10, 86, 67, 109, 36, 36, 19, 36,
+		68, 60, 112, 90, 51, 71, 14, 22, 8, 102, 14, 72, 63, 94, 41, 22, 107, 51, 109, 90, 98, 73, 95, 123, 80, 88, 49, 91, 104, 125,
+		56, 7, 38, 3, 32, 100, 46, 71, 9, 34, 126, 6, 104, 116, 100, 47, 35, 50, 79, 54, 62, 64, 74, 108, 116, 81, 77, 5, 95, 11}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
+	}
+}
+
+func TestExpandDigestFixedWeight(t *testing.T) {
+	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	digest := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec, err := instance.Expand_digest_to_fixed_weight(digest)
+	if err != nil {
+		t.Errorf("Error generating vector: %v", err)
+	}
+	c_vec := []byte{1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+	if !bytes.Equal(vec, c_vec) {
+		t.Errorf("vectors are not equal")
 	}
 }

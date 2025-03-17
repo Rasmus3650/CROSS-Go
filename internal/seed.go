@@ -1,4 +1,4 @@
-package trees
+package internal
 
 import (
 	"PQC-Master-Thesis/internal/common"
