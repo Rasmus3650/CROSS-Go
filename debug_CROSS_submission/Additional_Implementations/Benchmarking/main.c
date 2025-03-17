@@ -1,6 +1,7 @@
 #include "csprng_hash.h"
 #include <stdio.h>
 #include <stdint.h>
+#include "fp_arith.h"
 
 void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
     for (size_t i = 0; i < size; i++) {
@@ -20,6 +21,26 @@ void print_seed_array(uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES]) {
     }
 }
 
+void print_V_tr(FP_ELEM V_tr[K][N-K]){
+    printf("V_tr:\n");
+    for (int i = 0; i < K; i++) {
+        for (int j = 0; j < N-K; j++) {
+            printf("%u, ", V_tr[i][j]);
+        }
+        printf("\n");
+    }
+    return;
+}
+
+void print_z_vec(FP_ELEM z[N]){
+    printf("z:\n");
+    for (int i = 0; i < N; i++) {
+        printf("%u, ", z[i]);
+    }
+    printf("\n");
+    return;
+}
+
 void print_hash(const uint8_t *digest, size_t length) {
     printf("Digest message: ");
     for (size_t i = 0; i < length; i++) {
@@ -28,7 +49,7 @@ void print_hash(const uint8_t *digest, size_t length) {
     printf("\n");
 }
 
-void test_csprng(){
+/*void test_csprng(){
     printf("Testing csprng\n");
     const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
     printf("T: %u\n", T);
@@ -56,7 +77,7 @@ void test_hash(){
     printf("SALT LENGTH BYTES: %u\n", SALT_LENGTH_BYTES);
     const char *const m = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     const uint64_t mlen = 32;
-    /* place digest_msg at the beginning of the input of the hash generating digest_chall_1 */
+    // place digest_msg at the beginning of the input of the hash generating digest_chall_1
     print_hash(digest_msg_cmt_salt, HASH_DIGEST_LENGTH);
     hash(digest_msg_cmt_salt, (uint8_t*) m, mlen, HASH_DOMAIN_SEP_CONST);
     print_hash(digest_msg_cmt_salt, HASH_DIGEST_LENGTH);
@@ -150,7 +171,7 @@ void test_csprng_fp_vec_chall_1(){
     return;
 }
 
-/*void print_e_G_bar(FZ_ELEM e_G_bar[M]){
+void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("e_G_bar:\n");
     for (int i = 0; i < M; i++) {
         printf("%u, ", e_G_bar[i]);
@@ -171,7 +192,7 @@ void test_csprng_fz_inf_w(){
     csprng_fz_inf_w(e_G_bar,&csprng_state_mat);
     print_e_G_bar(e_G_bar);
     return;
-}*/
+}
 
 
 
@@ -186,7 +207,171 @@ void test_expand_digest_to_fixed_weight(){
     }
     printf("\n");
     return;
+}*/
+
+
+void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
+               FZ_ELEM W_mat[M][N-M],
+               const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
+
+  // Expansion of pk->seed, explicit domain separation for CSPRNG as in keygen
+  const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
+
+  CSPRNG_STATE_T csprng_state_mat;
+  csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+  csprng_fz_mat(W_mat,&csprng_state_mat);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+  csprng_fp_mat(V_tr,&csprng_state_mat);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
 }
+
+void print_W_mat(FZ_ELEM W_mat[M][N-M]){
+    printf("W_mat:\n");
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N-M; j++) {
+            printf("%u, ", W_mat[i][j]);
+        }
+        printf("\n");
+    }
+    return;
+}
+
+void expand_sk_RSDPG(FZ_ELEM e_bar[N],
+    FZ_ELEM e_G_bar[M],
+    FP_ELEM V_tr[K][N-K],
+    FZ_ELEM W_mat[M][N-M],
+    const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]){
+
+uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
+CSPRNG_STATE_T csprng_state;
+
+// Expansion of sk->seed, explicit domain separation for CSPRNG, as in keygen
+const uint16_t dsc_csprng_seed_sk = CSPRNG_DOMAIN_SEP_CONST + (3*T+1);
+
+csprng_initialize(&csprng_state, seed_sk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_sk);
+csprng_randombytes((uint8_t *)seed_e_seed_pk,
+          2*KEYPAIR_SEED_LENGTH_BYTES,
+          &csprng_state);
+
+expand_pk_RSDPG(V_tr,W_mat,seed_e_seed_pk[1]);
+
+// Expansion of seede, explicit domain separation for CSPRNG as in keygen
+const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
+
+CSPRNG_STATE_T csprng_state_e_bar;
+csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
+csprng_fz_inf_w(e_G_bar,&csprng_state_e_bar);
+fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
+fz_dz_norm_n(e_bar);
+}
+
+void test_expand_pk_RSDPG(){
+    printf("Testing expand_pk\n");
+    FP_ELEM V_tr[K][N-K];
+    FZ_ELEM W_mat[M][N-M];
+    const char * restrict seed_pk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    expand_pk_RSDPG(V_tr, W_mat, (uint8_t*) seed_pk);
+    print_V_tr(V_tr);
+    print_W_mat(W_mat);
+    return;
+}
+
+void print_e_G_bar(FZ_ELEM e_G_bar[M]){
+    printf("e_G_bar:\n");
+    for (int i = 0; i < M; i++) {
+        printf("%u, ", e_G_bar[i]);
+    }
+    printf("\n");
+    return;
+}
+
+void print_e_bar(FZ_ELEM e_bar[N]){
+    printf("e_bar:\n");
+    for (int i = 0; i < N; i++) {
+        printf("%u, ", e_bar[i]);
+    }
+    printf("\n");
+    return;
+}
+
+void test_expand_sk_RSDPG(){
+    printf("Testing expand_sk\n");
+    FZ_ELEM e_bar[N];
+    FZ_ELEM e_G_bar[M];
+    FP_ELEM V_tr[K][N-K];
+    FZ_ELEM W_mat[M][N-M];
+    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    expand_sk_RSDPG(e_bar, e_G_bar, V_tr, W_mat, (uint8_t*) seed_sk);
+    print_V_tr(V_tr);
+    print_W_mat(W_mat);
+    print_e_bar(e_bar);
+    print_e_G_bar(e_G_bar);
+    return;
+}
+/*void expand_pk_RSDP(FP_ELEM V_tr[K][N-K],
+    const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
+
+// Expansion of pk->seed, explicit domain separation for CSPRNG as in keygen
+const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
+
+CSPRNG_STATE_T csprng_state_mat;
+csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
+csprng_fp_mat(V_tr,&csprng_state_mat);
+}
+
+void test_expand_pk_RSDP(){
+    printf("Testing expand_pk\n");
+    FP_ELEM V_tr[K][N-K];
+    const char * restrict seed_pk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    expand_pk_RSDP(V_tr, (uint8_t*) seed_pk);
+    print_V_tr(V_tr);
+    return;
+}
+
+void expand_sk_RSDP(FZ_ELEM e_bar[N],
+    FP_ELEM V_tr[K][N-K],
+    const uint8_t seed_sk[KEYPAIR_SEED_LENGTH_BYTES]){
+
+uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
+
+// Expansion of sk->seed, explicit domain separation for CSPRNG, as in keygen
+const uint16_t dsc_csprng_seed_sk = CSPRNG_DOMAIN_SEP_CONST + (3*T+1);
+
+CSPRNG_STATE_T csprng_state;
+csprng_initialize(&csprng_state, seed_sk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_sk);
+csprng_randombytes((uint8_t *)seed_e_seed_pk,
+          2*KEYPAIR_SEED_LENGTH_BYTES,
+          &csprng_state);
+
+expand_pk_RSDP(V_tr,seed_e_seed_pk[1]);
+//Expansion of seede, explicit domain separation for CSPRNG as in keygen
+const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
+
+CSPRNG_STATE_T csprng_state_e_bar;
+csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
+csprng_fz_vec(e_bar,&csprng_state_e_bar);
+}
+
+
+
+
+void test_expand_sk_RSDP(){
+    printf("Testing expand_sk\n");
+    FZ_ELEM e_bar[N];
+    FP_ELEM V_tr[K][N-K];
+    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    expand_sk_RSDP(e_bar, V_tr, (uint8_t*) seed_sk);
+    //print_V_tr(V_tr);
+    //print_z_vec(e_bar);
+    return;
+}*/
+
+
+
+
+
+
 
 int main() {
     //test_hash();
@@ -195,7 +380,10 @@ int main() {
     //test_csprng_fz_vec();
     //test_csprng_fp_vec();
     //test_csprng_fp_vec_chall_1();
-    test_expand_digest_to_fixed_weight();
+    //test_expand_digest_to_fixed_weight();
+    //test_expand_pk_RSDP();
+    //test_expand_sk_RSDP();
+    test_expand_sk_RSDPG();
     return 0;
 }
 

@@ -12,7 +12,7 @@ message("Compilation flags: ${CMAKE_C_FLAGS}")
 
 
 #Define problem (RSDP or RSDPG), type, and category
-set(PROBLEM_DEFINE "RSDP")
+set(PROBLEM_DEFINE "RSDPG")
 set(TYPE_DEFINE "BALANCED")
 set(CATEGORY_DEFINE "CATEGORY_1")
 
