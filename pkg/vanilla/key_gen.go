@@ -5,9 +5,6 @@ import (
 	"PQC-Master-Thesis/internal/common"
 	"crypto/rand"
 	"fmt"
-	"math/big"
-
-	"golang.org/x/crypto/sha3"
 )
 
 type Pub struct {
@@ -20,7 +17,7 @@ type KeyPair struct {
 	Pub
 }
 
-func FZRED_SINGLE_RSDPG(x int) int {
+func FZRED_SINGLE_RSDPG(x uint16) uint16 {
 	return (x & 0x7F) + (x >> 7)
 }
 
@@ -28,7 +25,7 @@ func FZRED_OPPOSITE_RSDPG(x int) int {
 	return x ^ 0x7F
 }
 
-func FZRED_DOUBLE_RSDPG(x int) int {
+func FZRED_DOUBLE_RSDPG(x uint16) uint16 {
 	return FZRED_SINGLE_RSDPG(FZRED_SINGLE_RSDPG(x))
 }
 func FZ_DOUBLE_ZERO_NORM_RSDPG(x int) int {
@@ -211,18 +208,17 @@ func (c *CROSSInstance) fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	for i := 0; i < c.ProtocolData.M; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.M; j++ {
 			index := i*(c.ProtocolData.N-c.ProtocolData.M) + j
-			fz_vec_res[j] = byte(float64(fz_vec_res[j]) +
-				float64(fz_vec_e[i])*float64(W_mat[index])) // FZRED_DOUBLE equivalent
+			fz_vec_res[j] = uint8(FZRED_DOUBLE_RSDPG(uint16(fz_vec_res[j]) + uint16(fz_vec_e[i])*uint16(W_mat[index])))
 		}
 	}
 
 	return fz_vec_res
 }
 
-func (c *CROSSInstance) fz_dz_norm_n(v []byte) []int {
-	res := make([]int, c.ProtocolData.N)
+func (c *CROSSInstance) fz_dz_norm_n(v []byte) []byte {
+	res := make([]byte, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		res[i] = FZ_DOUBLE_ZERO_NORM_RSDPG(int(v[i]))
+		res[i] = byte(FZ_DOUBLE_ZERO_NORM_RSDPG(int(v[i])))
 	}
 	return res
 }
@@ -286,7 +282,7 @@ func (c *CROSSInstance) Expand_pk(seed_pk []byte) ([]int, []byte, error) {
 	return nil, nil, fmt.Errorf("Invalid variant")
 }
 
-func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []int, error) {
+func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error) {
 	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
@@ -336,7 +332,7 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 	}
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
-	V_tr, _, err := c.Expand_pk(seed_pk)
+	V_tr, W_mat, err := c.Expand_pk(seed_pk)
 	if err != nil {
 		return KeyPair{}, err
 	}
@@ -348,63 +344,52 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		}
 	} else {
 		//TODO: Implement e_G_bar for RSDP-G, requires correct fz_inf_w, and fx_dz_norm_n
-		_, err := c.CSPRNG_fz_inf_w(seed_e)
+		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
+		e_bar = c.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar = c.fz_dz_norm_n(e_bar)
+
 	}
+	//TODO: FIX THESE
 	temp_s := c.restr_vec_by_fp_matrix(e_bar, V_tr)
 	s := c.fp_dz_norm_synd(temp_s)
 	S := c.pack_fp_syn(s)
 	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 }
 
-// Dummy KeyGen function for testing purposes ONLY
+// Dummy KeyGen function for testing purposes ONLY, old implementation
 func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
-	seed_e_pk := make([]byte, (4*c.ProtocolData.Lambda)/8)
-	sha3.ShakeSum128(seed_e_pk, append(seed_sk, byte(3*c.ProtocolData.T+1)))
+	seed_e_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
+	if err != nil {
+		return KeyPair{}, err
+	}
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
-	n_minus_k := c.ProtocolData.N - c.ProtocolData.K
-	V := make([][]byte, n_minus_k)
-	for i := range V {
-		V[i] = make([]byte, c.ProtocolData.K)
+	V_tr, W_mat, err := c.Expand_pk(seed_pk)
+	if err != nil {
+		return KeyPair{}, err
 	}
-	buffer := make([]byte, n_minus_k*c.ProtocolData.K)
-
-	// Security probably dies here since p=509 in RSDP-G, might be fine for RSDP
-	sha3.ShakeSum128(buffer, append(seed_pk, byte(3*c.ProtocolData.T+2)))
-	idx := 0
-	for i := 0; i < n_minus_k; i++ {
-		for j := 0; j < c.ProtocolData.K; j++ {
-			// Ensure values are in Fp
-			V[i][j] = buffer[idx]%byte(c.ProtocolData.P-1) + 1
-			if V[i][j] > byte(c.ProtocolData.P) {
-				return KeyPair{}, fmt.Errorf("V[i][j] > P")
-			}
-			idx++
+	var e_bar []byte
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		e_bar, err = c.CSPRNG_fz_vec(seed_e)
+		if err != nil {
+			return KeyPair{}, err
 		}
-	}
-	// This will generate trailing zeros in each row, might be wrong?
-	H := make([][]byte, n_minus_k)
-	for i := range H {
-		H[i] = make([]byte, c.ProtocolData.N)
-		// Copy V part
-		copy(H[i][:c.ProtocolData.K], V[i])
-		// Add identity matrix part
-		H[i][c.ProtocolData.K+i] = 1
-	}
-	e_bar := make([]byte, c.ProtocolData.N)
-	sha3.ShakeSum128(e_bar, append(seed_e, byte(3*c.ProtocolData.T+3)))
-	for i, v := range e_bar {
-		e_bar[i] = v%byte(c.ProtocolData.Z-1) + 1
-	}
-	e := make([]byte, c.ProtocolData.N)
-	for j := 0; j < c.ProtocolData.N; j++ {
-		// Probably a better way to do this
-		e[j] = byte(new(big.Int).Exp(big.NewInt(int64(c.ProtocolData.G)), big.NewInt(int64(e_bar[j])), nil).Int64())
-	}
+	} else {
+		//TODO: Implement e_G_bar for RSDP-G, requires correct fz_inf_w, and fx_dz_norm_n
+		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e)
+		if err != nil {
+			return KeyPair{}, err
+		}
+		e_bar = c.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar = c.fz_dz_norm_n(e_bar)
 
-	s := common.MultiplyVectorMatrix(e, common.TransposeByteMatrix(H))
-	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: s}}, nil
+	}
+	//TODO: FIX THESE
+	temp_s := c.restr_vec_by_fp_matrix(e_bar, V_tr)
+	s := c.fp_dz_norm_synd(temp_s)
+	S := c.pack_fp_syn(s)
+	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 }

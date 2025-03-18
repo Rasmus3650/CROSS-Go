@@ -130,7 +130,7 @@ func TestExpandSkRSDPG(t *testing.T) {
 	}
 
 	c_e_G_bar := []byte{73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}
-	c_e_bar := []int{31, 35, 122, 23, 80, 54, 85, 10, 39, 70, 62, 120, 18, 53, 62, 13, 100, 45, 45, 91, 118, 13, 46, 109, 19, 98, 9, 87, 45, 71, 73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}
+	c_e_bar := []byte{31, 35, 122, 23, 80, 54, 85, 10, 39, 70, 62, 120, 18, 53, 62, 13, 100, 45, 45, 91, 118, 13, 46, 109, 19, 98, 9, 87, 45, 71, 73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}
 	c_W_mat := []byte{49, 19, 79, 100, 82, 66, 115, 25, 16, 61, 76, 33, 3, 90, 44, 27, 90, 120, 4, 121, 67, 66, 87, 20, 46, 114, 2, 77, 95, 85,
 		95, 41, 55, 52, 67, 17, 44, 80, 75, 24, 63, 113, 101, 81, 82, 87, 61, 101, 50, 47, 71, 27, 70, 83, 7, 24, 101, 124, 109, 118,
 		25, 50, 120, 106, 53, 100, 88, 117, 105, 75, 35, 14, 59, 22, 93, 64, 15, 21, 42, 61, 52, 67, 25, 122, 85, 7, 104, 49, 125, 4,
@@ -202,8 +202,6 @@ func TestExpandSkRSDPG(t *testing.T) {
 			t.Fatalf("e_G_bar[%d] = %d, expected %d", i, e, c_e_G_bar[i])
 		}
 	}
-	fmt.Println(e_bar)
-	//TODO: FIX THIS, the normalization is wrong
 	for i, e := range e_bar {
 		if e != c_e_bar[i] {
 			t.Fatalf("e_bar[%d] = %d, expected %d", i, e, c_e_bar[i])
@@ -383,4 +381,17 @@ func TestExpandPkRSDPG(t *testing.T) {
 			t.Fatalf("W_mat[%d] = %d, expected %d", i, v, c_W_mat[i])
 		}
 	}
+}
+
+func TestKeyGenRSDP(t *testing.T) {
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Error creating CROSS instance: %v", err)
+	}
+	pk, err := cross.DummyKeyGen(seed)
+	if err != nil {
+		t.Fatalf("Error generating dummy key: %v", err)
+	}
+	fmt.Println(pk)
 }
