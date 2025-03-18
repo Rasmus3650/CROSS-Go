@@ -47,11 +47,20 @@
 
 
 static inline
-void fz_dz_norm_n(FZ_ELEM v[N]){
-    for (int i = 0; i < N; i++){
-       v[i] = FZ_DOUBLE_ZERO_NORM(v[i]);
+void fz_dz_norm_n(FZ_ELEM v[N]) {
+    // Print the input array
+    printf("Input array:\n");
+    for (int i = 0; i < N; i++) {
+        printf("v[%d] = %f\n", i, v[i]);
+    }
+
+    printf("\nProcessing:\n");
+    for (int i = 0; i < N; i++) {
+        v[i] = FZ_DOUBLE_ZERO_NORM(v[i]);
+        printf("Iteration %d: v[%d] = %f\n", i, i, v[i]);
     }
 }
+
 
 /* Elements of the restricted subgroups are represented as the exponents of
  * the generator */
@@ -78,20 +87,25 @@ int is_fz_vec_in_restr_group_n(const FZ_ELEM in[N]){
  * only non systematic portion of M_G = [W I] is used, transposed to improve
  * cache friendliness */
 static
-void fz_inf_w_by_fz_matrix(FZ_ELEM res[N],
-                           const FZ_ELEM e[M],
-                           FZ_ELEM W_mat[M][N-M]){
+void fz_inf_w_by_fz_matrix(FZ_ELEM res[N], const FZ_ELEM e[M], FZ_ELEM W_mat[M][N - M]) {
+    // Initialize res
+    memset(res, 0, (N - M) * sizeof(FZ_ELEM));
+    memcpy(res + (N - M), e, M * sizeof(FZ_ELEM));
 
-    memset(res,0,(N-M)*sizeof(FZ_ELEM));
-    memcpy(res+(N-M),e,M*sizeof(FZ_ELEM));
-    for(int i = 0; i < M; i++){
-        for(int j = 0; j < N-M; j++){
-               res[j] = FZRED_DOUBLE( (FZ_DOUBLEPREC) res[j] +
-                                      (FZ_DOUBLEPREC) e[i] *
-                                      (FZ_DOUBLEPREC) W_mat[i][j]);
+
+    // Perform the computation
+    //printf("\nProcessing:\n");
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < N - M; j++) {
+            //printf("Before: res[%d] = %f\n", j, res[j]);
+            res[j] = FZRED_DOUBLE((FZ_DOUBLEPREC) res[j] +
+                                  (FZ_DOUBLEPREC) e[i] * (FZ_DOUBLEPREC) W_mat[i][j]);
+            //printf("After: res[%d] = %f (Updated using e[%d] = %f and W_mat[%d][%d] = %f)\n",
+             ///      j, res[j], i, e[i], i, j, W_mat[i][j]);
         }
     }
 }
+
 
 static inline
 void fz_vec_sub_m(FZ_ELEM res[M],

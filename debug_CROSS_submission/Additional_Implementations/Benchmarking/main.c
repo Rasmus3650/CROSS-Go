@@ -263,6 +263,7 @@ CSPRNG_STATE_T csprng_state_e_bar;
 csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
 csprng_fz_inf_w(e_G_bar,&csprng_state_e_bar);
 fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
+
 fz_dz_norm_n(e_bar);
 }
 
