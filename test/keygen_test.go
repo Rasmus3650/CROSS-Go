@@ -516,16 +516,27 @@ func TestKeygenRSDPG(t *testing.T) {
 	}
 
 	s_prime := cross.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
-	c_s_prime := []uint32{186, 81, 375, 440, 336, 293, 237, 62, 247, 429, 427, 252, 92, 417, 414, 204, 18, 475, 464}
+	c_s_prime := []uint16{186, 81, 375, 440, 336, 293, 237, 62, 247, 429, 427, 252, 92, 417, 414, 204, 18, 475, 464}
 	for i, v := range s_prime {
 		if v != c_s_prime[i] {
 			t.Fatalf("s_prime[%d] = %d, expected %d", i, v, c_s_prime[i])
 		}
 	}
-	/*s := cross.Fp_dz_norm_synd_RSDPG(s_prime)
-	fmt.Println("lower s: ", s)
+	s := cross.Fp_dz_norm_synd_RSDPG(s_prime)
+	c_s := []uint16{186, 81, 375, 440, 336, 293, 237, 62, 247, 429, 427, 252, 92, 417, 414, 204, 18, 475, 464}
+	for i, v := range s {
+		if v != c_s[i] {
+			t.Fatalf("s[%d] = %d, expected %d", i, v, c_s[i])
+		}
+	}
+
 	S := cross.Pack_fp_syn_RSDPG(s)
-	fmt.Println("capital S: ", S)*/
+	c_S := []byte{186, 162, 220, 197, 13, 181, 100, 59, 31, 247, 90, 175, 230, 199, 37, 180, 103, 102, 18, 182, 67, 7}
+	for i, v := range S {
+		if v != c_S[i] {
+			t.Fatalf("S[%d] = %d, expected %d", i, v, c_S[i])
+		}
+	}
 
 }
 

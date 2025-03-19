@@ -50,8 +50,12 @@ func (c *CROSSInstance) FPRED_DOUBLE_RSDPG(x uint32) uint32 {
 	//fmt.Println("x: ", x)
 	return c.FPRED_SINGLE_RSDPG(uint32(x))
 }
-func FP_DOUBLE_ZERO_NORM[t uint16 | uint32](x t) t {
+func FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
 	return (x + ((x + 1) >> 7)) & 0x7F
+}
+
+func FP_DOUBLE_ZERO_NORM_RSDPG(x uint16) uint16 {
+	return x
 }
 
 const (
@@ -152,83 +156,74 @@ func (c *CROSSInstance) generic_pack_7_bit(in []uint8, outlen, inlen int) []uint
 
 func (c *CROSSInstance) generic_pack_9_bit(in []uint16, outlen, inlen int) []uint8 {
 	out := make([]uint8, outlen)
-	for i := range out {
+	var i int
+	for i = range out {
 		out[i] = 0
 	}
 	// Process the input in chunks of 8 elements
-	for i := 0; i < inlen/8; i++ {
+	for i = 0; i < inlen/8; i++ {
 		out[i*9] = uint8(in[i*8])
-		out[i*9+1] |= uint8(in[i*8]) >> 8
-		out[i*9+1] |= uint8(in[i*8+1]) << 1
-		out[i*9+2] |= uint8(in[i*8+1]) >> 7
-		out[i*9+2] |= uint8(in[i*8+2]) << 2
-		out[i*9+3] |= uint8(in[i*8+2]) >> 6
-		out[i*9+3] |= uint8(in[i*8+3]) << 3
-		out[i*9+4] |= uint8(in[i*8+3]) >> 5
-		out[i*9+4] |= uint8(in[i*8+4]) << 4
-		out[i*9+5] |= uint8(in[i*8+4]) >> 4
-		out[i*9+5] |= uint8(in[i*8+5]) << 5
-		out[i*9+6] |= uint8(in[i*8+5]) >> 3
-		out[i*9+6] |= uint8(in[i*8+6]) << 6
-		out[i*9+7] |= uint8(in[i*8+6]) >> 2
-		out[i*9+8] |= uint8(in[i*8+7]) >> 1
+		out[i*9+1] |= uint8(in[i*8] >> 8)
+		out[i*9+1] |= uint8(in[i*8+1] << 1)
+		out[i*9+2] |= uint8(in[i*8+1] >> 7)
+		out[i*9+2] |= uint8(in[i*8+2] << 2)
+		out[i*9+3] |= uint8(in[i*8+2] >> 6)
+		out[i*9+3] |= uint8(in[i*8+3] << 3)
+		out[i*9+4] |= uint8(in[i*8+3] >> 5)
+		out[i*9+4] |= uint8(in[i*8+4] << 4)
+		out[i*9+5] |= uint8(in[i*8+4] >> 4)
+		out[i*9+5] |= uint8(in[i*8+5] << 5)
+		out[i*9+6] |= uint8(in[i*8+5] >> 3)
+		out[i*9+6] |= uint8(in[i*8+6] << 6)
+		out[i*9+7] |= uint8(in[i*8+6] >> 2)
+		out[i*9+8] |= uint8(in[i*8+7] >> 1)
 	}
 
 	// Handle the remaining elements if any
-	nRemainder := inlen % 8
+	nRemainder := inlen & 0x7
 	if nRemainder == 1 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8] >> 8)
 	} else if nRemainder == 2 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8] >> 8)
+		out[i*9+1] |= uint8(in[i*8+1] << 1)
+		out[i*9+2] |= uint8(in[i*8+1] >> 7)
 	} else if nRemainder == 3 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+2]) << 2
-		out[(inlen/8)*9+3] |= uint8(in[(inlen/8)*8+2]) >> 6
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] |= uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] |= uint8(in[i*8+2] >> 6)
 	} else if nRemainder == 4 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+2]) << 2
-		out[(inlen/8)*9+3] |= uint8(in[(inlen/8)*8+2]) >> 6
-		out[(inlen/8)*9+4] |= uint8(in[(inlen/8)*8+3]) << 3
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] |= uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] |= uint8(in[i*8+2]>>6) | uint8(in[i*8+3]<<3)
+		out[i*9+4] |= uint8(in[i*8+3] >> 5)
 	} else if nRemainder == 5 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+2]) << 2
-		out[(inlen/8)*9+3] |= uint8(in[(inlen/8)*8+2]) >> 6
-		out[(inlen/8)*9+4] |= uint8(in[(inlen/8)*8+3]) << 3
-		out[(inlen/8)*9+5] |= uint8(in[(inlen/8)*8+4]) << 4
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] |= uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] |= uint8(in[i*8+2]>>6) | uint8(in[i*8+3]<<3)
+		out[i*9+4] |= uint8(in[i*8+3]>>5) | uint8(in[i*8+4]<<4)
+		out[i*9+5] |= uint8(in[i*8+4] >> 4)
 	} else if nRemainder == 6 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+2]) << 2
-		out[(inlen/8)*9+3] |= uint8(in[(inlen/8)*8+2]) >> 6
-		out[(inlen/8)*9+4] |= uint8(in[(inlen/8)*8+3]) << 3
-		out[(inlen/8)*9+5] |= uint8(in[(inlen/8)*8+4]) << 4
-		out[(inlen/8)*9+6] |= uint8(in[(inlen/8)*8+5]) << 5
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] |= uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] |= uint8(in[i*8+2]>>6) | uint8(in[i*8+3]<<3)
+		out[i*9+4] |= uint8(in[i*8+3]>>5) | uint8(in[i*8+4]<<4)
+		out[i*9+5] |= uint8(in[i*8+4]>>4) | uint8(in[i*8+5]<<5)
+		out[i*9+6] |= uint8(in[i*8+5] >> 3)
 	} else if nRemainder == 7 {
-		out[(inlen/8)*9] = uint8(in[(inlen/8)*8])
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8]) >> 8
-		out[(inlen/8)*9+1] |= uint8(in[(inlen/8)*8+1]) << 1
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+1]) >> 7
-		out[(inlen/8)*9+2] |= uint8(in[(inlen/8)*8+2]) << 2
-		out[(inlen/8)*9+3] |= uint8(in[(inlen/8)*8+2]) >> 6
-		out[(inlen/8)*9+4] |= uint8(in[(inlen/8)*8+3]) << 3
-		out[(inlen/8)*9+5] |= uint8(in[(inlen/8)*8+4]) << 4
-		out[(inlen/8)*9+6] |= uint8(in[(inlen/8)*8+5]) << 5
-		out[(inlen/8)*9+7] |= uint8(in[(inlen/8)*8+6]) << 6
+		out[i*9] = uint8(in[i*8])
+		out[i*9+1] |= uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] |= uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] |= uint8(in[i*8+2]>>6) | uint8(in[i*8+3]<<3)
+		out[i*9+4] |= uint8(in[i*8+3]>>5) | uint8(in[i*8+4]<<4)
+		out[i*9+5] |= uint8(in[i*8+4]>>4) | uint8(in[i*8+5]<<5)
+		out[i*9+6] |= uint8(in[i*8+5]>>3) | uint8(in[i*8+6]<<6)
+		out[i*9+7] |= uint8(in[i*8+6] >> 2)
 	}
 
 	return out
@@ -276,17 +271,17 @@ func (c *CROSSInstance) Fz_dz_norm_n(v []byte) []byte {
 	return res
 }
 
-func (c *CROSSInstance) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) []uint32 {
-	res := make([]uint32, c.ProtocolData.N-c.ProtocolData.K)
+func (c *CROSSInstance) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) []uint16 {
+	res := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
 	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
-		res[i-c.ProtocolData.K] = c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))
+		res[i-c.ProtocolData.K] = uint16(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
 			//TODO: Fix this tomorrow
 			//fmt.Println("x: ", uint32(res[j])+uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
 			//fmt.Println("res[j]: ", uint32(res[j]))
-			res[j] = c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
+			res[j] = uint16(c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
 			/*fmt.Println("res[j]: ", uint32(res[j]))
 			fmt.Println("RESTR_TO_VAL(e[i]): ", uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))))
 			fmt.Println("V_tr[i][j]: ", uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
@@ -322,7 +317,7 @@ func (c *CROSSInstance) Fp_dz_norm_synd(s []uint8) []uint8 {
 func (c *CROSSInstance) Fp_dz_norm_synd_RSDPG(s []uint16) []uint16 {
 	result := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		result[i] = uint16(FP_DOUBLE_ZERO_NORM(uint32(s[i])))
+		result[i] = uint16(FP_DOUBLE_ZERO_NORM_RSDPG(s[i]))
 	}
 	return result
 }
