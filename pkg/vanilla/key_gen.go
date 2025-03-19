@@ -39,9 +39,6 @@ func FPRED_SINGLE[t uint16 | uint32](x t) t {
 	return (x & 0x7F) + (x >> 7)
 }
 func (c *CROSSInstance) FPRED_SINGLE_RSDPG(x uint32) uint32 {
-	/*fmt.Println("x*2160140723: ", (uint64(x) * 2160140723))
-	fmt.Println("After bitshift: ", ((uint64(x) * 2160140723) >> 40))
-	fmt.Println("Final: ", uint64(x)-(((uint64(x)*2160140723)>>40)*uint64(c.ProtocolData.P)))*/
 	return uint32(uint64(x) - (((uint64(x) * 2160140723) >> 40) * uint64(c.ProtocolData.P)))
 }
 
@@ -50,6 +47,7 @@ func FPRED_DOUBLE(x uint16) uint16 {
 	return FPRED_SINGLE(FPRED_SINGLE(x))
 }
 func (c *CROSSInstance) FPRED_DOUBLE_RSDPG(x uint32) uint32 {
+	//fmt.Println("x: ", x)
 	return c.FPRED_SINGLE_RSDPG(uint32(x))
 }
 func FP_DOUBLE_ZERO_NORM[t uint16 | uint32](x t) t {
@@ -286,7 +284,13 @@ func (c *CROSSInstance) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) [
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
 			//TODO: Fix this tomorrow
+			//fmt.Println("x: ", uint32(res[j])+uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
+			//fmt.Println("res[j]: ", uint32(res[j]))
 			res[j] = c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
+			/*fmt.Println("res[j]: ", uint32(res[j]))
+			fmt.Println("RESTR_TO_VAL(e[i]): ", uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))))
+			fmt.Println("V_tr[i][j]: ", uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
+			fmt.Println("e[i]*V_tr: ", uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))*/
 		}
 	}
 	return res

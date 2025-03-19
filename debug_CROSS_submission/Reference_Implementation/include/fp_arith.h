@@ -127,13 +127,13 @@ void restr_vec_by_fp_matrix(FP_ELEM res[N-K],
     }
     for(int i = 0; i < K; i++){
        for(int j = 0; j < N-K; j++){
-           res[j] = FPRED_DOUBLE( (FP_DOUBLEPREC) res[j] +
+            res[j] = FPRED_DOUBLE( (FP_DOUBLEPREC) res[j] +
                                   (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) *
                                   (FP_DOUBLEPREC) V_tr[i][j]);
-            printf("res[j]: %u \n", (FP_DOUBLEPREC) res[j]);
+            /*printf("res[j]: %u \n", (FP_DOUBLEPREC) res[j]);
             printf("RESTR_TO_VAL(e[i]): %u \n", (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]));
             printf("V_tr[i][j]: %u \n", (FP_DOUBLEPREC) V_tr[i][j]);
-            printf("e[i]*V_tr: ",(FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) * (FP_DOUBLEPREC) V_tr[i][j]);
+            printf("e[i]*V_tr: %u \n",(FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) * (FP_DOUBLEPREC) V_tr[i][j]);*/
        }
     }
 }

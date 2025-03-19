@@ -516,43 +516,6 @@ void RESTR_TO_VAL_test(){
 }
 
 
-void restr_vec_by_fp_matrix_test(FP_ELEM res[2],
-                            FZ_ELEM e[5],
-                            FP_ELEM V_tr[3][2]){
-    for (int i = 3 ;i < 5; i++){
-       res[i-3] = RESTR_TO_VAL(e[i]);
-       //printf("res[%d] = %u\n",i-K,res[i-K]);
-       //printf("e[%d] = %u\n",i,e[i]);
-    }
-    for(int i = 0; i < 3; i++){
-       for(int j = 0; j < 2; j++){
-           res[j] = FPRED_DOUBLE( (FP_DOUBLEPREC) res[j] +
-                                  (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) *
-                                  (FP_DOUBLEPREC) V_tr[i][j]);
-            printf("res[j]: %u \n", (FP_DOUBLEPREC) res[j]);
-            printf("RESTR_TO_VAL(e[i]): %u \n", (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]));
-            printf("V_tr[i][j]: %u \n", (FP_DOUBLEPREC) V_tr[i][j]);
-            printf("e[i]*V_tr: %u \n",(FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) * (FP_DOUBLEPREC) V_tr[i][j]);
-       }
-    }
-}
-
-
-void test_restr_vec_by_fp_matrix_RSDPG(){
-
-    FZ_ELEM e[5] = {1, 2, 3, 4, 5};  // e_bar
-    FP_ELEM V_tr[3][2] = {  // Example transformation matrix
-        {1, 2},
-        {3, 4},
-        {5, 6}
-    };
-    FP_ELEM res[2];
-    restr_vec_by_fp_matrix_test(res, e,V_tr);
-    for (int i = 0; i < 2; i++) {
-        printf("res: %u \n", res[i]);
-    }
-}
-
 int main() {
     //test_hash();
     //test_csprng();
@@ -564,10 +527,9 @@ int main() {
     //test_expand_pk_RSDP();
     //test_expand_sk_RSDP();
     //test_expand_sk_RSDPG();
-    //test_keygen_RSDPG();
+    test_keygen_RSDPG();
     //FPRED_SINGLE_test();
     //FP_ELEM_CMOV_test();
     //RESTR_TO_VAL_test();
-    test_restr_vec_by_fp_matrix_RSDPG();
     return 0;
 }
