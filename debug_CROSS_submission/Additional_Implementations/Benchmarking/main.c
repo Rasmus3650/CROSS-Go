@@ -419,6 +419,37 @@ void test_keygen_RSDP(){
 }
 
 
+//TODO: Implement this!!!
+void test_keygen_RSDPG(){
+    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    sk_t *SK = malloc(sizeof(sk_t));    
+    pk_t *PK = malloc(sizeof(pk_t));    
+    memcpy(SK->seed_sk, seed_sk, 32);
+
+    uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
+    const uint16_t dsc_csprng_seed_sk = CSPRNG_DOMAIN_SEP_CONST + (3*T+1);
+      
+    CSPRNG_STATE_T csprng_state;
+    csprng_initialize(&csprng_state, SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_sk);
+    csprng_randombytes((uint8_t *)seed_e_seed_pk,
+                        2*KEYPAIR_SEED_LENGTH_BYTES,
+                        &csprng_state);
+    memcpy(PK->seed_pk,seed_e_seed_pk[1],KEYPAIR_SEED_LENGTH_BYTES);
+    FP_ELEM V_tr[K][N-K];
+    expand_pk_RSDP(V_tr,PK->seed_pk);
+    const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
+    CSPRNG_STATE_T csprng_state_e_bar;
+    csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
+
+    FZ_ELEM e_bar[N];
+    csprng_fz_vec(e_bar,&csprng_state_e_bar);
+    FP_ELEM s[N-K];
+    restr_vec_by_fp_matrix(s,e_bar,V_tr);
+    fp_dz_norm_synd(s);
+    pack_fp_syn(PK->s,s);
+    print_pk(PK->s);
+}
+
 
 int main() {
     //test_hash();

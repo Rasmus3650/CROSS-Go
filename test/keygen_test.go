@@ -468,11 +468,11 @@ func TestKeygenRSDPG(t *testing.T) {
 	//fmt.Println("e_bar: ", e_bar)
 	e_bar = cross.Fz_dz_norm_n(e_bar)
 	//fmt.Println("second e_bar: ", e_bar)
-	s_prime := cross.Restr_vec_by_fp_matrix(e_bar, V_tr)
+	s_prime := cross.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
 	fmt.Println("s_prime: ", s_prime)
-	s := cross.Fp_dz_norm_synd(s_prime)
+	s := cross.Fp_dz_norm_synd_RSDPG(s_prime)
 	fmt.Println("lower s: ", s)
-	S := cross.Pack_fp_syn(s)
+	S := cross.Pack_fp_syn_RSDPG(s)
 	fmt.Println("capital S: ", S)
 
 }
