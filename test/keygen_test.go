@@ -517,24 +517,24 @@ func TestKeygenRSDPG(t *testing.T) {
 
 	s_prime := cross.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
 	fmt.Println("s_prime: ", s_prime)
-	s := cross.Fp_dz_norm_synd_RSDPG(s_prime)
+	/*s := cross.Fp_dz_norm_synd_RSDPG(s_prime)
 	fmt.Println("lower s: ", s)
 	S := cross.Pack_fp_syn_RSDPG(s)
-	fmt.Println("capital S: ", S)
+	fmt.Println("capital S: ", S)*/
 
 }
 
 func TestFP_ELEM_CMOV(t *testing.T) {
-	if uint16(256) != vanilla.FP_ELEM_CMOV(1, 256, 1) {
+	if 256 != vanilla.FP_ELEM_CMOV(1, 256, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if uint16(1) != vanilla.FP_ELEM_CMOV(0, 256, 1) {
+	if 1 != vanilla.FP_ELEM_CMOV(0, 256, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if uint16(1) != vanilla.FP_ELEM_CMOV(0, 384, 1) {
+	if 1 != vanilla.FP_ELEM_CMOV(0, 384, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if uint16(384) != vanilla.FP_ELEM_CMOV(1, 384, 1) {
+	if 384 != vanilla.FP_ELEM_CMOV(1, 384, 1) {
 		t.Fatalf("Error in CMOV")
 	}
 }
@@ -552,5 +552,24 @@ func TestFPRED_SINGLE(t *testing.T) {
 	}
 	if cross.FPRED_SINGLE_RSDPG(3000) != 455 {
 		t.Fatalf("Error in FPRED_SINGLE")
+	}
+}
+
+func TestRESTR_TO_VALRSDPG(t *testing.T) {
+	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	if cross.RESTR_TO_VAL_RSDPG(1) != 16 {
+		t.Fatalf("Error in RESTR_TO_VAL")
+	}
+	if cross.RESTR_TO_VAL_RSDPG(16) != 302 {
+		t.Fatalf("Error in RESTR_TO_VAL")
+	}
+	if cross.RESTR_TO_VAL_RSDPG(3000) != 238 {
+		t.Fatalf("Error in RESTR_TO_VAL")
+	}
+	if cross.RESTR_TO_VAL_RSDPG(106) != 420 {
+		t.Fatalf("Error in RESTR_TO_VAL")
+	}
+	if cross.RESTR_TO_VAL_RSDPG(44) != 97 {
+		t.Fatalf("Error in RESTR_TO_VAL")
 	}
 }

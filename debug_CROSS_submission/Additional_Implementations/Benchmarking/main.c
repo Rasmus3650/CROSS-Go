@@ -490,6 +490,68 @@ void FPRED_SINGLE_test(){
     printf("Final: %u\n", (((x) - (((uint64_t)(x) * 2160140723) >> 40) * P)));
     }
 
+void RESTR_TO_VAL_test(){
+    uint16_t x = 44;
+    uint32_t res1, res2, res3, res4;
+    res1 = ( FP_ELEM_CMOV(((x >> 0) &1),RESTR_G_GEN_1 ,1)) *
+           ( FP_ELEM_CMOV(((x >> 1) &1),RESTR_G_GEN_2 ,1)) ;
+    res2 = ( FP_ELEM_CMOV(((x >> 2) &1),RESTR_G_GEN_4 ,1)) *
+           ( FP_ELEM_CMOV(((x >> 3) &1),RESTR_G_GEN_8 ,1)) ;
+    res3 = ( FP_ELEM_CMOV(((x >> 4) &1),RESTR_G_GEN_16,1)) *
+           ( FP_ELEM_CMOV(((x >> 5) &1),RESTR_G_GEN_32,1)) ;
+    res4 =   FP_ELEM_CMOV(((x >> 6) &1),RESTR_G_GEN_64,1);
+    printf("res1 = %u\n",res1);
+    printf("res2 = %u\n",res2);
+    printf("res3 = %u\n",res3);
+    printf("res4 = %u\n",res4);
+    /* Two intermediate reductions necessary:
+     *     RESTR_G_GEN_1*RESTR_G_GEN_2*RESTR_G_GEN_4*RESTR_G_GEN_8    < 2^32
+     *     RESTR_G_GEN_16*RESTR_G_GEN_32*RESTR_G_GEN_64               < 2^32 */
+    printf("res1 * res2 = %u\n", res1 * res2);
+    printf("lhs: %u\n", FPRED_SINGLE(res1 * res2));
+    printf("res3 * res4 = %u\n", res3 * res4);
+    printf("rhs: %u\n", FPRED_SINGLE(res3 * res4));
+    printf("combined: %u\n", FPRED_SINGLE(res1 * res2) * FPRED_SINGLE(res3 * res4));
+    printf("result %u \n", FPRED_SINGLE( FPRED_SINGLE(res1 * res2) * FPRED_SINGLE(res3 * res4) ));
+}
+
+
+void restr_vec_by_fp_matrix_test(FP_ELEM res[2],
+                            FZ_ELEM e[5],
+                            FP_ELEM V_tr[3][2]){
+    for (int i = 3 ;i < 5; i++){
+       res[i-3] = RESTR_TO_VAL(e[i]);
+       //printf("res[%d] = %u\n",i-K,res[i-K]);
+       //printf("e[%d] = %u\n",i,e[i]);
+    }
+    for(int i = 0; i < 3; i++){
+       for(int j = 0; j < 2; j++){
+           res[j] = FPRED_DOUBLE( (FP_DOUBLEPREC) res[j] +
+                                  (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) *
+                                  (FP_DOUBLEPREC) V_tr[i][j]);
+            printf("res[j]: %u \n", (FP_DOUBLEPREC) res[j]);
+            printf("RESTR_TO_VAL(e[i]): %u \n", (FP_DOUBLEPREC) RESTR_TO_VAL(e[i]));
+            printf("V_tr[i][j]: %u \n", (FP_DOUBLEPREC) V_tr[i][j]);
+            printf("e[i]*V_tr: %u \n",(FP_DOUBLEPREC) RESTR_TO_VAL(e[i]) * (FP_DOUBLEPREC) V_tr[i][j]);
+       }
+    }
+}
+
+
+void test_restr_vec_by_fp_matrix_RSDPG(){
+
+    FZ_ELEM e[5] = {1, 2, 3, 4, 5};  // e_bar
+    FP_ELEM V_tr[3][2] = {  // Example transformation matrix
+        {1, 2},
+        {3, 4},
+        {5, 6}
+    };
+    FP_ELEM res[2];
+    restr_vec_by_fp_matrix_test(res, e,V_tr);
+    for (int i = 0; i < 2; i++) {
+        printf("res: %u \n", res[i]);
+    }
+}
 
 int main() {
     //test_hash();
@@ -503,12 +565,9 @@ int main() {
     //test_expand_sk_RSDP();
     //test_expand_sk_RSDPG();
     //test_keygen_RSDPG();
-    FPRED_SINGLE_test();
+    //FPRED_SINGLE_test();
     //FP_ELEM_CMOV_test();
+    //RESTR_TO_VAL_test();
+    test_restr_vec_by_fp_matrix_RSDPG();
     return 0;
 }
-
-//Row 0: 15 121 106 185 65 60 38 57 192 11 100 5 36 234 50 253 115 61 99 71 54 20 106 223 64 83 75 131 107 171 179 163 
-//Row 1: 197 184 200 221 6 37 92 70 124 127 54 125 11 163 142 207 26 21 208 178 226 28 152 49 104 87 51 136 32 87 109 243 
-
-
