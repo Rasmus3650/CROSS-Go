@@ -16,39 +16,41 @@ type KeyPair struct {
 	Pri []byte
 	Pub
 }
+type FP_ELEM interface {
+	~uint8 | ~uint16
+}
 
-func FZRED_SINGLE_RSDPG(x uint16) uint16 {
+func FZRED_SINGLE_RSDPG[t FP_ELEM](x t) t {
 	return (x & 0x7F) + (x >> 7)
 }
 
-func FZRED_OPPOSITE_RSDPG(x int) int {
+func FZRED_OPPOSITE_RSDPG[t FP_ELEM](x t) t {
 	return x ^ 0x7F
 }
 
-func FZRED_DOUBLE_RSDPG(x uint16) uint16 {
+func FZRED_DOUBLE_RSDPG[t FP_ELEM](x t) t {
 	return FZRED_SINGLE_RSDPG(FZRED_SINGLE_RSDPG(x))
 }
 func FZ_DOUBLE_ZERO_NORM_RSDPG(x int) int {
 	return (x + ((x + 1) >> 7)) & 0x7F
 }
 
-func FPRED_SINGLE(x uint16) uint16 {
+func FPRED_SINGLE[t uint16 | uint32](x t) t {
 	return (x & 0x7F) + (x >> 7)
 }
 
 // Implement FPRED_DOUBLE
-func FPRED_DOUBLE(x uint16) uint16 {
+func FPRED_DOUBLE[t uint16 | uint32](x t) t {
 	return FPRED_SINGLE(FPRED_SINGLE(x))
 }
-func FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
+func FP_DOUBLE_ZERO_NORM[t FP_ELEM](x t) t {
 	return (x + ((x + 1) >> 7)) & 0x7F
 }
 
 const RESTR_G_TABLE uint64 = 0x0140201008040201
 
-// Function to implement RESTR_TO_VAL
-func RESTR_TO_VAL(x uint8) uint8 {
-	return uint8((RESTR_G_TABLE >> (8 * x)) & 0xFF)
+func RESTR_TO_VAL[t FP_ELEM](x t) t {
+	return t((RESTR_G_TABLE >> (8 * uint64(x))))
 }
 
 func (c *CROSSInstance) generic_pack_7_bit(in []uint8, outlen, inlen int) []uint8 {
@@ -192,7 +194,7 @@ func (c *CROSSInstance) generic_pack_fp(input_arr []uint8, out_len, in_len int) 
 	}
 	return res
 }
-func (c *CROSSInstance) fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
+func (c *CROSSInstance) Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	if len(fz_vec_e) != c.ProtocolData.M || len(W_mat) != c.ProtocolData.M*(c.ProtocolData.N-c.ProtocolData.M) {
 		panic("Invalid input dimensions")
 	}
@@ -215,7 +217,7 @@ func (c *CROSSInstance) fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	return fz_vec_res
 }
 
-func (c *CROSSInstance) fz_dz_norm_n(v []byte) []byte {
+func (c *CROSSInstance) Fz_dz_norm_n(v []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
 		res[i] = byte(FZ_DOUBLE_ZERO_NORM_RSDPG(int(v[i])))
@@ -223,20 +225,20 @@ func (c *CROSSInstance) fz_dz_norm_n(v []byte) []byte {
 	return res
 }
 
-func (c *CROSSInstance) restr_vec_by_fp_matrix(e_bar []byte, V_tr []int) []uint8 {
+func (c *CROSSInstance) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []int) []uint8 {
 	res := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
 	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
 		res[i-c.ProtocolData.K] = RESTR_TO_VAL(uint8(e_bar[i]))
 	}
+	fmt.Println("res: ", res)
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			res[j] = uint8(FPRED_DOUBLE(uint16(res[j]) + uint16(RESTR_TO_VAL(uint8(e_bar[i]))) + uint16(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
+			res[j] = uint8(FPRED_DOUBLE(uint16(res[j]) + uint16(RESTR_TO_VAL(uint8(e_bar[i])))*uint16(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
 		}
 	}
 	return res
 }
-
-func (c *CROSSInstance) fp_dz_norm_synd(s []uint8) []uint8 {
+func (c *CROSSInstance) Fp_dz_norm_synd(s []uint8) []uint8 {
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
 		s[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
 	}
@@ -257,7 +259,7 @@ func (c *CROSSInstance) denselyPackedFpSynSize() uint {
 	return part1 + part2
 }
 
-func (c *CROSSInstance) pack_fp_syn(s []uint8) []byte {
+func (c *CROSSInstance) Pack_fp_syn(s []uint8) []byte {
 	return c.generic_pack_fp(s, int(c.denselyPackedFpSynSize()), c.ProtocolData.N-c.ProtocolData.K)
 }
 
@@ -312,8 +314,8 @@ func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte
 		if err != nil {
 			return nil, nil, nil, nil, err
 		}
-		e_bar := c.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
-		norm_e_bar := c.fz_dz_norm_n(e_bar)
+		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		norm_e_bar := c.Fz_dz_norm_n(e_bar)
 		return V_tr, W_mat, e_G_bar, norm_e_bar, nil
 	}
 	return nil, nil, nil, nil, fmt.Errorf("Invalid variant")
@@ -338,24 +340,24 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 	}
 	var e_bar []byte
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		//TODO: Fix, maybe? This might be allow for a race-condition (Similar to 38C3 HXP chal: Fajny Jagazyn Wartości Kluczy)
 		e_bar, err = c.CSPRNG_fz_vec(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
 	} else {
-		//TODO: Implement e_G_bar for RSDP-G, requires correct fz_inf_w, and fx_dz_norm_n
 		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
-		e_bar = c.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
-		e_bar = c.fz_dz_norm_n(e_bar)
+		e_bar = c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar = c.Fz_dz_norm_n(e_bar)
 
 	}
 	//TODO: FIX THESE
-	temp_s := c.restr_vec_by_fp_matrix(e_bar, V_tr)
-	s := c.fp_dz_norm_synd(temp_s)
-	S := c.pack_fp_syn(s)
+	temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
+	s := c.Fp_dz_norm_synd(temp_s)
+	S := c.Pack_fp_syn(s)
 	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 }
 
@@ -378,18 +380,17 @@ func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 			return KeyPair{}, err
 		}
 	} else {
-		//TODO: Implement e_G_bar for RSDP-G, requires correct fz_inf_w, and fx_dz_norm_n
 		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
-		e_bar = c.fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
-		e_bar = c.fz_dz_norm_n(e_bar)
+		e_bar = c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar = c.Fz_dz_norm_n(e_bar)
 
 	}
-	//TODO: FIX THESE
-	temp_s := c.restr_vec_by_fp_matrix(e_bar, V_tr)
-	s := c.fp_dz_norm_synd(temp_s)
-	S := c.pack_fp_syn(s)
+	//TODO: Validate these
+	temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
+	s := c.Fp_dz_norm_synd(temp_s)
+	S := c.Pack_fp_syn(s)
 	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 }

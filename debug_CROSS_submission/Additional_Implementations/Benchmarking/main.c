@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "fp_arith.h"
+#include "CROSS.h"
 
 void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
     for (size_t i = 0; i < size; i++) {
@@ -209,7 +210,7 @@ void test_expand_digest_to_fixed_weight(){
     return;
 }*/
 
-
+/*
 void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
                FZ_ELEM W_mat[M][N-M],
                const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
@@ -266,7 +267,8 @@ fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
 
 fz_dz_norm_n(e_bar);
 }
-
+*/
+/*
 void test_expand_pk_RSDPG(){
     printf("Testing expand_pk\n");
     FP_ELEM V_tr[K][N-K];
@@ -276,8 +278,8 @@ void test_expand_pk_RSDPG(){
     print_V_tr(V_tr);
     print_W_mat(W_mat);
     return;
-}
-
+}*/
+/*
 void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("e_G_bar:\n");
     for (int i = 0; i < M; i++) {
@@ -286,7 +288,7 @@ void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("\n");
     return;
 }
-
+*/
 void print_e_bar(FZ_ELEM e_bar[N]){
     printf("e_bar:\n");
     for (int i = 0; i < N; i++) {
@@ -296,6 +298,15 @@ void print_e_bar(FZ_ELEM e_bar[N]){
     return;
 }
 
+void print_s(FZ_ELEM s[N-K]){
+    printf("s:\n");
+    for (int i = 0; i < N-K; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
+/*
 void test_expand_sk_RSDPG(){
     printf("Testing expand_sk\n");
     FZ_ELEM e_bar[N];
@@ -309,8 +320,8 @@ void test_expand_sk_RSDPG(){
     print_e_bar(e_bar);
     print_e_G_bar(e_G_bar);
     return;
-}
-/*void expand_pk_RSDP(FP_ELEM V_tr[K][N-K],
+}*/
+void expand_pk_RSDP(FP_ELEM V_tr[K][N-K],
     const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
 
 // Expansion of pk->seed, explicit domain separation for CSPRNG as in keygen
@@ -320,7 +331,7 @@ CSPRNG_STATE_T csprng_state_mat;
 csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
 csprng_fp_mat(V_tr,&csprng_state_mat);
 }
-
+/*
 void test_expand_pk_RSDP(){
     printf("Testing expand_pk\n");
     FP_ELEM V_tr[K][N-K];
@@ -328,7 +339,7 @@ void test_expand_pk_RSDP(){
     expand_pk_RSDP(V_tr, (uint8_t*) seed_pk);
     print_V_tr(V_tr);
     return;
-}
+}*/
 
 void expand_sk_RSDP(FZ_ELEM e_bar[N],
     FP_ELEM V_tr[K][N-K],
@@ -356,7 +367,7 @@ csprng_fz_vec(e_bar,&csprng_state_e_bar);
 
 
 
-
+/*
 void test_expand_sk_RSDP(){
     printf("Testing expand_sk\n");
     FZ_ELEM e_bar[N];
@@ -368,9 +379,44 @@ void test_expand_sk_RSDP(){
     return;
 }*/
 
+void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
+    printf("s:\n");
+    for (int i = 0; i < DENSELY_PACKED_FP_SYN_SIZE; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
 
+void test_keygen_RSDP(){
+    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    sk_t *SK = malloc(sizeof(sk_t));    
+    pk_t *PK = malloc(sizeof(pk_t));    
+    memcpy(SK->seed_sk, seed_sk, 32);
 
+    uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
+    const uint16_t dsc_csprng_seed_sk = CSPRNG_DOMAIN_SEP_CONST + (3*T+1);
+      
+    CSPRNG_STATE_T csprng_state;
+    csprng_initialize(&csprng_state, SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_sk);
+    csprng_randombytes((uint8_t *)seed_e_seed_pk,
+                        2*KEYPAIR_SEED_LENGTH_BYTES,
+                        &csprng_state);
+    memcpy(PK->seed_pk,seed_e_seed_pk[1],KEYPAIR_SEED_LENGTH_BYTES);
+    FP_ELEM V_tr[K][N-K];
+    expand_pk_RSDP(V_tr,PK->seed_pk);
+    const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
+    CSPRNG_STATE_T csprng_state_e_bar;
+    csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
 
+    FZ_ELEM e_bar[N];
+    csprng_fz_vec(e_bar,&csprng_state_e_bar);
+    FP_ELEM s[N-K];
+    restr_vec_by_fp_matrix(s,e_bar,V_tr);
+    fp_dz_norm_synd(s);
+    pack_fp_syn(PK->s,s);
+    print_pk(PK->s);
+}
 
 
 
@@ -384,7 +430,8 @@ int main() {
     //test_expand_digest_to_fixed_weight();
     //test_expand_pk_RSDP();
     //test_expand_sk_RSDP();
-    test_expand_sk_RSDPG();
+    //test_expand_sk_RSDPG();
+    test_keygen_RSDP();
     return 0;
 }
 

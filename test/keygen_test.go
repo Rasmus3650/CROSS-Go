@@ -3,19 +3,10 @@ package test_suite
 import (
 	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
+	"bytes"
 	"fmt"
 	"testing"
 )
-
-func TestKeygen(t *testing.T) {
-	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	if err != nil {
-		t.Fatalf("Error creating CROSS instance: %v", err)
-	}
-	keypair, err := cross.DummyKeyGen(seed)
-	fmt.Println(keypair)
-}
 
 func TestExpandSkRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -385,6 +376,19 @@ func TestExpandPkRSDPG(t *testing.T) {
 
 func TestKeyGenRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Error creating CROSS instance: %v", err)
+	}
+	pk, err := cross.DummyKeyGen(seed)
+	if err != nil {
+		t.Fatalf("Error generating dummy key: %v", err)
+	}
+	fmt.Println(pk)
+}
+
+func TestKeyGenRSDPG(t *testing.T) {
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
@@ -394,4 +398,81 @@ func TestKeyGenRSDP(t *testing.T) {
 		t.Fatalf("Error generating dummy key: %v", err)
 	}
 	fmt.Println(pk)
+}
+
+//TODO: add tests for: restr_vec_by_fp_matrix, fp_dz_norm_synd, pack_fp_syn
+
+func TestKeygenRSDP(t *testing.T) {
+	seed_sk := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Error creating CROSS instance: %v", err)
+	}
+	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.ProtocolData.Lambda)/8, uint16(0+3*cross.ProtocolData.T+1))
+	seed_e := seed_e_pk[:2*cross.ProtocolData.Lambda/8]
+	seed_pk := seed_e_pk[2*cross.ProtocolData.Lambda/8:]
+	V_tr, _, err := cross.Expand_pk(seed_pk)
+	if err != nil {
+		t.Fatalf("Error expanding pk: %v", err)
+	}
+	e_bar, err := cross.CSPRNG_fz_vec(seed_e)
+	if err != nil {
+		t.Fatalf("Error generating CSPRNG fz vec: %v", err)
+	}
+	s_prime := cross.Restr_vec_by_fp_matrix(e_bar, V_tr)
+	//TODO: Figure out why s_prime is not equal to c_temp_s, when i define the next s here, and only print it
+	//	s := cross.Fp_dz_norm_synd(s_prime)
+	// 	fmt.Println(s)
+	c_e_bar := []byte{1, 1, 1, 1, 5, 1, 3, 2, 5, 1, 6, 3, 2, 3, 2, 5, 1, 2, 2, 4, 5, 4, 1, 2, 2, 3, 5, 4, 5, 2, 4, 4, 3, 3, 1, 0, 1, 5, 4, 4, 6, 2, 4, 5, 6, 1, 4, 0, 1, 6, 4, 6, 0, 5, 0, 0, 2, 5, 0, 5, 2, 6, 5, 0, 4, 5, 5, 6, 0, 6, 3, 4, 5, 3, 3, 2, 4, 4, 0, 6, 3, 6, 3, 4, 1, 1, 1, 2, 3, 4, 5, 2, 5, 1, 2, 6, 1, 4, 3, 3, 5, 2, 6, 6, 4, 6, 6, 0, 4, 3, 4, 3, 4, 3, 2, 0, 3, 3, 6, 2, 1, 0, 0, 1, 1, 1, 6}
+	if !bytes.Equal(e_bar, c_e_bar) {
+		t.Fatalf("E_bar: %v, expected %v", e_bar, c_e_bar)
+	}
+	c_temp_s := []uint8{54, 17, 6, 76, 59, 114, 12, 108, 75, 92, 118, 78, 55, 44, 126, 6, 52, 39, 68, 86, 51, 54, 24, 30, 126, 118, 93, 126, 80, 72, 27, 22, 58, 34, 76, 37, 126, 4, 9, 116, 38, 4, 27, 15, 75, 125, 8, 71, 120, 56, 127}
+	if !bytes.Equal(s_prime, c_temp_s) {
+		t.Fatalf("Temp_s: %v, expected %v", s_prime, c_temp_s)
+	}
+	s := cross.Fp_dz_norm_synd(s_prime)
+	c_s := []uint8{54, 17, 6, 76, 59, 114, 12, 108, 75, 92, 118, 78, 55, 44, 126, 6, 52, 39, 68, 86, 51, 54, 24, 30, 126, 118, 93, 126, 80, 72, 27, 22, 58, 34, 76, 37, 126, 4, 9, 116, 38, 4, 27, 15, 75, 125, 8, 71, 120, 56, 0}
+	if !bytes.Equal(s, c_s) {
+		t.Fatalf("S: %v, expected %v", s, c_s)
+	}
+	S := cross.Pack_fp_syn(s)
+	c_S := []byte{182, 136, 129, 185, 147, 51, 216, 75, 174, 221, 121, 99, 249, 13, 180, 19, 209, 58, 179, 97, 60, 126, 123, 215, 15, 69, 110, 44, 58, 17, 179, 228, 39, 36, 232, 38, 194, 230, 177, 236, 35, 142, 120, 28, 0}
+	if !bytes.Equal(S, c_S) {
+		t.Fatalf("S: %v, expected %v", S, c_S)
+	}
+
+}
+
+func TestKeygenRSDPG(t *testing.T) {
+	seed_sk := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Error creating CROSS instance: %v", err)
+	}
+	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.ProtocolData.Lambda)/8, uint16(0+3*cross.ProtocolData.T+1))
+	seed_e := seed_e_pk[:2*cross.ProtocolData.Lambda/8]
+	seed_pk := seed_e_pk[2*cross.ProtocolData.Lambda/8:]
+	V_tr, W_mat, err := cross.Expand_pk(seed_pk)
+	if err != nil {
+		t.Fatalf("Error expanding pk: %v", err)
+	}
+	var e_bar []byte
+	e_G_bar, err := cross.CSPRNG_fz_inf_w(seed_e)
+	//fmt.Println("e_G_bar: ", e_G_bar)
+	if err != nil {
+		t.Fatalf("Error generating CSPRNG fz vec: %v", err)
+	}
+	//fmt.Println("W_mat: ", W_mat)
+	e_bar = cross.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+	//fmt.Println("e_bar: ", e_bar)
+	e_bar = cross.Fz_dz_norm_n(e_bar)
+	//fmt.Println("second e_bar: ", e_bar)
+	s_prime := cross.Restr_vec_by_fp_matrix(e_bar, V_tr)
+	fmt.Println("s_prime: ", s_prime)
+	s := cross.Fp_dz_norm_synd(s_prime)
+	fmt.Println("lower s: ", s)
+	S := cross.Pack_fp_syn(s)
+	fmt.Println("capital S: ", S)
+
 }
