@@ -210,7 +210,7 @@ void test_expand_digest_to_fixed_weight(){
     return;
 }*/
 
-/*
+
 void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
                FZ_ELEM W_mat[M][N-M],
                const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
@@ -267,7 +267,7 @@ fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
 
 fz_dz_norm_n(e_bar);
 }
-*/
+
 /*
 void test_expand_pk_RSDPG(){
     printf("Testing expand_pk\n");
@@ -320,7 +320,7 @@ void test_expand_sk_RSDPG(){
     print_e_bar(e_bar);
     print_e_G_bar(e_G_bar);
     return;
-}*/
+}
 void expand_pk_RSDP(FP_ELEM V_tr[K][N-K],
     const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
 
@@ -331,7 +331,7 @@ CSPRNG_STATE_T csprng_state_mat;
 csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
 csprng_fp_mat(V_tr,&csprng_state_mat);
 }
-/*
+
 void test_expand_pk_RSDP(){
     printf("Testing expand_pk\n");
     FP_ELEM V_tr[K][N-K];
@@ -339,7 +339,7 @@ void test_expand_pk_RSDP(){
     expand_pk_RSDP(V_tr, (uint8_t*) seed_pk);
     print_V_tr(V_tr);
     return;
-}*/
+}
 
 void expand_sk_RSDP(FZ_ELEM e_bar[N],
     FP_ELEM V_tr[K][N-K],
@@ -365,7 +365,7 @@ csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BY
 csprng_fz_vec(e_bar,&csprng_state_e_bar);
 }
 
-
+*/
 
 /*
 void test_expand_sk_RSDP(){
@@ -387,7 +387,7 @@ void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
     printf("\n");
     return;
 }
-
+/*
 void test_keygen_RSDP(){
     const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     sk_t *SK = malloc(sizeof(sk_t));    
@@ -417,7 +417,7 @@ void test_keygen_RSDP(){
     pack_fp_syn(PK->s,s);
     print_pk(PK->s);
 }
-
+*/
 
 //TODO: Implement this!!!
 void test_keygen_RSDPG(){
@@ -436,13 +436,18 @@ void test_keygen_RSDPG(){
                         &csprng_state);
     memcpy(PK->seed_pk,seed_e_seed_pk[1],KEYPAIR_SEED_LENGTH_BYTES);
     FP_ELEM V_tr[K][N-K];
-    expand_pk_RSDP(V_tr,PK->seed_pk);
+    FZ_ELEM W_mat[M][N-M];
+    expand_pk_RSDPG(V_tr, W_mat,PK->seed_pk);
+
     const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
     CSPRNG_STATE_T csprng_state_e_bar;
     csprng_initialize(&csprng_state_e_bar, seed_e_seed_pk[0], KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_e);
 
+    FZ_ELEM e_G_bar[M];
     FZ_ELEM e_bar[N];
-    csprng_fz_vec(e_bar,&csprng_state_e_bar);
+    csprng_fz_inf_w(e_G_bar,&csprng_state_e_bar);
+    fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
+    fz_dz_norm_n(e_bar);
     FP_ELEM s[N-K];
     restr_vec_by_fp_matrix(s,e_bar,V_tr);
     fp_dz_norm_synd(s);
@@ -462,7 +467,7 @@ int main() {
     //test_expand_pk_RSDP();
     //test_expand_sk_RSDP();
     //test_expand_sk_RSDPG();
-    test_keygen_RSDP();
+    test_keygen_RSDPG();
     return 0;
 }
 
