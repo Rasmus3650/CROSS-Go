@@ -84,7 +84,10 @@ FP_ELEM RESTR_TO_VAL(FP_ELEM x){
     res3 = ( FP_ELEM_CMOV(((x >> 4) &1),RESTR_G_GEN_16,1)) *
            ( FP_ELEM_CMOV(((x >> 5) &1),RESTR_G_GEN_32,1)) ;
     res4 =   FP_ELEM_CMOV(((x >> 6) &1),RESTR_G_GEN_64,1);
-
+    /*printf("res1 = %u\n",res1);
+    printf("res2 = %u\n",res2);
+    printf("res3 = %u\n",res3);
+    printf("res4 = %u\n",res4);*/
     /* Two intermediate reductions necessary:
      *     RESTR_G_GEN_1*RESTR_G_GEN_2*RESTR_G_GEN_4*RESTR_G_GEN_8    < 2^32
      *     RESTR_G_GEN_16*RESTR_G_GEN_32*RESTR_G_GEN_64               < 2^32 */
@@ -119,6 +122,8 @@ void restr_vec_by_fp_matrix(FP_ELEM res[N-K],
                             FP_ELEM V_tr[K][N-K]){
     for (int i = K ;i < N; i++){
        res[i-K] = RESTR_TO_VAL(e[i]);
+       printf("res[%d] = %u\n",i-K,res[i-K]);
+       printf("e[%d] = %u\n",i,e[i]);
     }
     for(int i = 0; i < K; i++){
        for(int j = 0; j < N-K; j++){

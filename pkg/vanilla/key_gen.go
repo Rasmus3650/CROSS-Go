@@ -38,10 +38,19 @@ func FZ_DOUBLE_ZERO_NORM_RSDPG(x int) int {
 func FPRED_SINGLE[t uint16 | uint32](x t) t {
 	return (x & 0x7F) + (x >> 7)
 }
+func (c *CROSSInstance) FPRED_SINGLE_RSDPG(x uint16) uint16 {
+	/*fmt.Println("x*2160140723: ", (uint64(x) * 2160140723))
+	fmt.Println("After bitshift: ", ((uint64(x) * 2160140723) >> 40))
+	fmt.Println("Final: ", uint64(x)-(((uint64(x)*2160140723)>>40)*uint64(c.ProtocolData.P)))*/
+	return uint16(uint64(x) - (((uint64(x) * 2160140723) >> 40) * uint64(c.ProtocolData.P)))
+}
 
 // Implement FPRED_DOUBLE
-func FPRED_DOUBLE[t uint16 | uint32](x t) t {
+func FPRED_DOUBLE(x uint16) uint16 {
 	return FPRED_SINGLE(FPRED_SINGLE(x))
+}
+func (c *CROSSInstance) FPRED_DOUBLE_RSDPG(x uint32) uint32 {
+	return uint32(c.FPRED_SINGLE_RSDPG(uint16(x)))
 }
 func FP_DOUBLE_ZERO_NORM[t uint16 | uint32](x t) t {
 	return (x + ((x + 1) >> 7)) & 0x7F
@@ -50,7 +59,7 @@ func FP_DOUBLE_ZERO_NORM[t uint16 | uint32](x t) t {
 const (
 	RESTR_G_TABLE  uint64 = 0x0140201008040201
 	RESTR_G_GEN           = 16
-	RESTR_G_GEN_1  uint16 = RESTR_G_GEN
+	RESTR_G_GEN_1  uint16 = uint16(RESTR_G_GEN)
 	RESTR_G_GEN_2  uint16 = 256
 	RESTR_G_GEN_4  uint16 = 384
 	RESTR_G_GEN_8  uint16 = 355
@@ -60,21 +69,30 @@ const (
 )
 
 func FP_ELEM_CMOV(bit, trueV, falseV uint16) uint16 {
-	mask := uint16(0) - bit
-	return (mask & trueV) | (^mask & falseV)
+	mask := uint32(0) - uint32(bit) // 0xFFFF if bit == 1, 0x0000 if bit == 0
+	/*fmt.Println("mask: ", mask)
+	fmt.Println("trueV: ", trueV)
+	fmt.Println("falseV: ", falseV)
+	fmt.Println("Result: ", uint16((mask&uint32(trueV))|((^mask&uint32(bit))&uint32(falseV))))
+	fmt.Println("First Part: ", (mask & uint32(trueV)))
+	fmt.Println("Second Part: ", ((^(mask & uint32(bit))) & uint32(falseV)))*/
+	return uint16((mask & uint32(trueV)) | ((^(mask & uint32(bit))) & uint32(falseV)))
 }
 
-func RESTR_TO_VAL_RSDPG(x uint16) uint16 {
-	res1 := (FP_ELEM_CMOV((x>>0)&1, RESTR_G_GEN_1, 1)) *
-		(FP_ELEM_CMOV((x>>1)&1, RESTR_G_GEN_2, 1))
-	res2 := (FP_ELEM_CMOV((x>>2)&1, RESTR_G_GEN_4, 1)) *
-		(FP_ELEM_CMOV((x>>3)&1, RESTR_G_GEN_8, 1))
-	res3 := (FP_ELEM_CMOV((x>>4)&1, RESTR_G_GEN_16, 1)) *
-		(FP_ELEM_CMOV((x>>5)&1, RESTR_G_GEN_32, 1))
-	res4 := FP_ELEM_CMOV((x>>6)&1, RESTR_G_GEN_64, 1)
-
+func (c *CROSSInstance) RESTR_TO_VAL_RSDPG(x uint16) uint16 {
+	res1 := (FP_ELEM_CMOV(((x >> 0) & 1), RESTR_G_GEN_1, 1)) *
+		(FP_ELEM_CMOV(((x >> 1) & 1), RESTR_G_GEN_2, 1))
+	res2 := (FP_ELEM_CMOV(((x >> 2) & 1), RESTR_G_GEN_4, 1)) *
+		(FP_ELEM_CMOV(((x >> 3) & 1), RESTR_G_GEN_8, 1))
+	res3 := (FP_ELEM_CMOV(((x >> 4) & 1), RESTR_G_GEN_16, 1)) *
+		(FP_ELEM_CMOV(((x >> 5) & 1), RESTR_G_GEN_32, 1))
+	res4 := FP_ELEM_CMOV(((x >> 6) & 1), RESTR_G_GEN_64, 1)
+	/*fmt.Println("res1: ", res1)
+	fmt.Println("res2: ", res2)
+	fmt.Println("res3: ", res3)
+	fmt.Println("res4: ", res4)*/
 	// Two intermediate reductions
-	return FPRED_SINGLE(FPRED_SINGLE(res1*res2) * FPRED_SINGLE(res3*res4))
+	return c.FPRED_SINGLE_RSDPG(c.FPRED_SINGLE_RSDPG(res1*res2) * c.FPRED_SINGLE_RSDPG(res3*res4))
 }
 
 func RESTR_TO_VAL[t FP_ELEM](x t) t {
@@ -258,11 +276,14 @@ func (c *CROSSInstance) Fz_dz_norm_n(v []byte) []byte {
 func (c *CROSSInstance) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) []uint16 {
 	res := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
 	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
-		res[i-c.ProtocolData.K] = RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))
+		res[i-c.ProtocolData.K] = c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))
+		//fmt.Println("res: ", res[i-c.ProtocolData.K])
+		//fmt.Println("e_bar[", i, "]: ", e_bar[i])
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			res[j] = uint16(FPRED_DOUBLE(uint32(res[j]) + uint32(RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
+			//TODO: Fix this tomorrow
+			res[j] = uint16(c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
 		}
 	}
 	return res
@@ -282,17 +303,19 @@ func (c *CROSSInstance) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []int) []uint8
 }
 
 func (c *CROSSInstance) Fp_dz_norm_synd(s []uint8) []uint8 {
+	result := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		s[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+		result[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
 	}
-	return s
+	return result
 }
 
 func (c *CROSSInstance) Fp_dz_norm_synd_RSDPG(s []uint16) []uint16 {
+	result := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		s[i] = uint16(FP_DOUBLE_ZERO_NORM(uint32(s[i])))
+		result[i] = uint16(FP_DOUBLE_ZERO_NORM(uint32(s[i])))
 	}
-	return s
+	return result
 }
 
 func (c *CROSSInstance) denselyPackedFpSynSize() uint {
@@ -392,10 +415,9 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 	if err != nil {
 		return KeyPair{}, err
 	}
-	var e_bar []byte
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		//TODO: Fix, maybe? This might be allow for a race-condition (Similar to 38C3 HXP chal: Fajny Jagazyn Wartości Kluczy)
-		e_bar, err = c.CSPRNG_fz_vec(seed_e)
+		e_bar, err := c.CSPRNG_fz_vec(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
@@ -409,7 +431,7 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		if err != nil {
 			return KeyPair{}, err
 		}
-		e_bar = c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
 		temp_s := c.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd_RSDPG(temp_s)

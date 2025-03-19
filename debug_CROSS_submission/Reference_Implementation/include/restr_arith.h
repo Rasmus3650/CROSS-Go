@@ -48,16 +48,8 @@
 
 static inline
 void fz_dz_norm_n(FZ_ELEM v[N]) {
-    // Print the input array
-    printf("Input array:\n");
-    for (int i = 0; i < N; i++) {
-        printf("v[%d] = %f\n", i, v[i]);
-    }
-
-    printf("\nProcessing:\n");
     for (int i = 0; i < N; i++) {
         v[i] = FZ_DOUBLE_ZERO_NORM(v[i]);
-        printf("Iteration %d: v[%d] = %f\n", i, i, v[i]);
     }
 }
 

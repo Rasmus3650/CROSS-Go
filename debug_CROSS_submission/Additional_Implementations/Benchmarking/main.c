@@ -306,6 +306,14 @@ void print_s(FZ_ELEM s[N-K]){
     printf("\n");
     return;
 }
+void print_s_RSDPG(uint16_t s[N-K]){
+    printf("s:\n");
+    for (int i = 0; i < N-K; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
 /*
 void test_expand_sk_RSDPG(){
     printf("Testing expand_sk\n");
@@ -447,13 +455,40 @@ void test_keygen_RSDPG(){
     FZ_ELEM e_bar[N];
     csprng_fz_inf_w(e_G_bar,&csprng_state_e_bar);
     fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
+    //print_e_bar(e_bar);
     fz_dz_norm_n(e_bar);
+    //print_e_bar(e_bar);
     FP_ELEM s[N-K];
+    //print_V_tr(V_tr);
     restr_vec_by_fp_matrix(s,e_bar,V_tr);
+    print_s_RSDPG(s);
     fp_dz_norm_synd(s);
+    print_s_RSDPG(s);
     pack_fp_syn(PK->s,s);
     print_pk(PK->s);
 }
+
+void FP_ELEM_CMOV_test(){
+    FP_ELEM BIT = 1;
+    FP_ELEM TRUE_V = 384;
+    FP_ELEM FALSE_V = 1;
+    printf("BIT: %u\n", BIT);
+    printf("TRUE_V: %u\n", TRUE_V);
+    printf("FALSE_V: %u\n", FALSE_V);
+    printf("Mask: %u\n", ((FP_ELEM)0 - (BIT)));
+    printf("First part: %u\n", (((FP_ELEM)0 - (BIT)) & (TRUE_V)));
+    printf("Second part: %u\n", (~((FP_ELEM)0 - (BIT)) & (FALSE_V)));
+    printf("result: %u\n",(((FP_ELEM)0 - (BIT)) & (TRUE_V)) | (~((FP_ELEM)0 - (BIT)) & (FALSE_V)));
+    //return (((FP_ELEM)0 - (BIT)) & (TRUE_V)) | (~((FP_ELEM)0 - (BIT)) & (FALSE_V));
+    }
+
+
+void FPRED_SINGLE_test(){
+    uint16_t x = 3000;
+    printf("x*2160140723: %u\n", (uint64_t)(x) * 2160140723);
+    printf("After bitshift %u\n", (((uint64_t)(x) * 2160140723) >> 40));
+    printf("Final: %u\n", (((x) - (((uint64_t)(x) * 2160140723) >> 40) * P)));
+    }
 
 
 int main() {
@@ -467,7 +502,9 @@ int main() {
     //test_expand_pk_RSDP();
     //test_expand_sk_RSDP();
     //test_expand_sk_RSDPG();
-    test_keygen_RSDPG();
+    //test_keygen_RSDPG();
+    FPRED_SINGLE_test();
+    //FP_ELEM_CMOV_test();
     return 0;
 }
 
