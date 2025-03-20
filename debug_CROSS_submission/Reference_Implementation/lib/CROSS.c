@@ -128,12 +128,10 @@ void expand_sk(FZ_ELEM e_bar[N],
 }
 #endif
 
-
 void CROSS_keygen(sk_t *SK,
                   pk_t *PK){
   /* generation of random material for public and private key */
   randombytes(SK->seed_sk,KEYPAIR_SEED_LENGTH_BYTES);
-
   uint8_t seed_e_seed_pk[2][KEYPAIR_SEED_LENGTH_BYTES];
 
   /* Expansion of sk->seed, explicit domain separation for CSPRNG */
@@ -154,7 +152,6 @@ void CROSS_keygen(sk_t *SK,
   FZ_ELEM W_mat[M][N-M];
   expand_pk(V_tr,W_mat,PK->seed_pk);
 #endif
-
   /* expansion of secret key material */ 
   /* Expansion of seede, explicit domain separation for CSPRNG */
   const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);

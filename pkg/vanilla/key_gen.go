@@ -47,7 +47,6 @@ func FPRED_DOUBLE(x uint16) uint16 {
 	return FPRED_SINGLE(FPRED_SINGLE(x))
 }
 func (c *CROSSInstance) FPRED_DOUBLE_RSDPG(x uint32) uint32 {
-	//fmt.Println("x: ", x)
 	return c.FPRED_SINGLE_RSDPG(uint32(x))
 }
 func FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
@@ -72,12 +71,6 @@ const (
 
 func FP_ELEM_CMOV(bit, trueV, falseV uint16) uint32 {
 	mask := uint32(0) - uint32(bit) // 0xFFFF if bit == 1, 0x0000 if bit == 0
-	/*fmt.Println("mask: ", mask)
-	fmt.Println("trueV: ", trueV)
-	fmt.Println("falseV: ", falseV)
-	fmt.Println("Result: ", uint16((mask&uint32(trueV))|((^mask&uint32(bit))&uint32(falseV))))
-	fmt.Println("First Part: ", (mask & uint32(trueV)))
-	fmt.Println("Second Part: ", ((^(mask & uint32(bit))) & uint32(falseV)))*/
 	return uint32((mask & uint32(trueV)) | ((^(mask & uint32(bit))) & uint32(falseV)))
 }
 
@@ -89,16 +82,6 @@ func (c *CROSSInstance) RESTR_TO_VAL_RSDPG(x uint16) uint32 {
 	res3 := (FP_ELEM_CMOV(((x >> 4) & 1), RESTR_G_GEN_16, 1)) *
 		(FP_ELEM_CMOV(((x >> 5) & 1), RESTR_G_GEN_32, 1))
 	res4 := FP_ELEM_CMOV(((x >> 6) & 1), RESTR_G_GEN_64, 1)
-	/*fmt.Println("res1: ", res1)
-	fmt.Println("res2: ", res2)
-	fmt.Println("res3: ", res3)
-	fmt.Println("res4: ", res4)
-	// Two intermediate reductions
-	fmt.Println("res1*res2: ", uint32(res1)*uint32(res2))
-	fmt.Println("lhs: ", c.FPRED_SINGLE_RSDPG(uint32(res1*res2)))
-	fmt.Println("res3*res4: ", uint32(res3*res4))
-	fmt.Println("rhs: ", c.FPRED_SINGLE_RSDPG(uint32(res3)*uint32(res4)))
-	fmt.Println("combined: ", c.FPRED_SINGLE_RSDPG(uint32(res1)*uint32(res2))*c.FPRED_SINGLE_RSDPG(uint32(res3)*uint32(res4)))*/
 	return c.FPRED_SINGLE_RSDPG(c.FPRED_SINGLE_RSDPG(uint32(res1)*uint32(res2)) * c.FPRED_SINGLE_RSDPG(uint32(res3)*uint32(res4)))
 }
 
@@ -278,14 +261,8 @@ func (c *CROSSInstance) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) [
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			//TODO: Fix this tomorrow
-			//fmt.Println("x: ", uint32(res[j])+uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
-			//fmt.Println("res[j]: ", uint32(res[j]))
 			res[j] = uint16(c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-			/*fmt.Println("res[j]: ", uint32(res[j]))
-			fmt.Println("RESTR_TO_VAL(e[i]): ", uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i]))))
-			fmt.Println("V_tr[i][j]: ", uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
-			fmt.Println("e[i]*V_tr: ", uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))*/
+
 		}
 	}
 	return res
@@ -295,7 +272,6 @@ func (c *CROSSInstance) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []int) []uint8
 	res := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
 	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
 		res[i-c.ProtocolData.K] = RESTR_TO_VAL(uint8(e_bar[i]))
-		fmt.Println()
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
@@ -402,7 +378,6 @@ func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte
 	return nil, nil, nil, nil, fmt.Errorf("Invalid variant")
 }
 
-// TODO: Implement the switch case for RSDP-G, along with setting the correct CSPRNG
 func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 	seed_sk := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	_, err := rand.Read(seed_sk)
@@ -420,7 +395,6 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		return KeyPair{}, err
 	}
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-		//TODO: Fix, maybe? This might be allow for a race-condition (Similar to 38C3 HXP chal: Fajny Jagazyn Wartości Kluczy)
 		e_bar, err := c.CSPRNG_fz_vec(seed_e)
 		if err != nil {
 			return KeyPair{}, err
@@ -438,46 +412,42 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
 		temp_s := c.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
-		fmt.Println("temp_s: ", temp_s)
-		//s := c.Fp_dz_norm_synd_RSDPG(temp_s)
-		//S := c.Pack_fp_syn_RSDPG(s)
-		//fmt.Println("S: ", S)
-		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: []byte{}}}, nil
+		s := c.Fp_dz_norm_synd_RSDPG(temp_s)
+		S := c.Pack_fp_syn_RSDPG(s)
+		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 	}
-	//TODO: FIX THESE
-
 }
 
-// Dummy KeyGen function for testing purposes ONLY, old implementation
+// Dummy KeyGen function for testing purposes ONLY
 func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
+
 	seed_e_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
-	if err != nil {
-		return KeyPair{}, err
-	}
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
 	V_tr, W_mat, err := c.Expand_pk(seed_pk)
 	if err != nil {
 		return KeyPair{}, err
 	}
-	var e_bar []byte
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-		e_bar, err = c.CSPRNG_fz_vec(seed_e)
+		e_bar, err := c.CSPRNG_fz_vec(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
+		s := c.Fp_dz_norm_synd(temp_s)
+		S := c.Pack_fp_syn(s)
+		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
+
 	} else {
 		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e)
 		if err != nil {
 			return KeyPair{}, err
 		}
-		e_bar = c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
-
+		temp_s := c.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
+		s := c.Fp_dz_norm_synd_RSDPG(temp_s)
+		S := c.Pack_fp_syn_RSDPG(s)
+		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 	}
-	//TODO: Validate these
-	temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
-	s := c.Fp_dz_norm_synd(temp_s)
-	S := c.Pack_fp_syn(s)
-	return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 }
