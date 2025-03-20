@@ -522,6 +522,15 @@ void print_array(uint8_t array[], int length) {
     printf("\n");
 }
 
+void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
+    printf("s:\n");
+    for (int i = 0; i < DENSELY_PACKED_FP_SYN_SIZE; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
+
 int main() {
     //test_hash();
     //test_csprng();
@@ -546,7 +555,7 @@ int main() {
         printf("seed_PK: \n");
         print_array(PK->seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
         printf("PK->s: \n");
-        print_array(PK->s, DENSELY_PACKED_FP_SYN_SIZE);
+        print_pk(PK->s);
     }
     return 0;
 }

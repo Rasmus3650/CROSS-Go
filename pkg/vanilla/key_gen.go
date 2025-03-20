@@ -303,7 +303,7 @@ func (c *CROSSInstance) denselyPackedFpSynSize() uint {
 	bits := internal.BitsToRepresent(uint(c.ProtocolData.P - 1))
 
 	// First part of the formula: ((N-K)/8) * BITS_TO_REPRESENT(P-1)
-	part1 := uint((c.ProtocolData.N - c.ProtocolData.K) / 8 * bits)
+	part1 := uint(((c.ProtocolData.N - c.ProtocolData.K) / 8) * bits)
 
 	// Second part: ROUND_UP(((N-K)%8) * BITS_TO_REPRESENT(P-1), 8) / 8
 	part2 := internal.RoundUp(uint(((c.ProtocolData.N-c.ProtocolData.K)%8)*bits), 8) / 8
