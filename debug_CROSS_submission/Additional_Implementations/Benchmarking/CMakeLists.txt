@@ -13,8 +13,8 @@ message("Compilation flags: ${CMAKE_C_FLAGS}")
 
 #Define problem (RSDP or RSDPG), type, and category
 set(PROBLEM_DEFINE "RSDPG")
-set(TYPE_DEFINE "BALANCED")
-set(CATEGORY_DEFINE "CATEGORY_1")
+set(TYPE_DEFINE "SPEED")
+set(CATEGORY_DEFINE "CATEGORY_5")
 
 # Define required compile-time parameters
 add_compile_definitions(${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1)

@@ -146,20 +146,14 @@ func (c *CROSSInstance) generic_pack_9_bit(in []uint16, outlen, inlen int) []uin
 	// Process the input in chunks of 8 elements
 	for i = 0; i < inlen/8; i++ {
 		out[i*9] = uint8(in[i*8])
-		out[i*9+1] |= uint8(in[i*8] >> 8)
-		out[i*9+1] |= uint8(in[i*8+1] << 1)
-		out[i*9+2] |= uint8(in[i*8+1] >> 7)
-		out[i*9+2] |= uint8(in[i*8+2] << 2)
-		out[i*9+3] |= uint8(in[i*8+2] >> 6)
-		out[i*9+3] |= uint8(in[i*8+3] << 3)
-		out[i*9+4] |= uint8(in[i*8+3] >> 5)
-		out[i*9+4] |= uint8(in[i*8+4] << 4)
-		out[i*9+5] |= uint8(in[i*8+4] >> 4)
-		out[i*9+5] |= uint8(in[i*8+5] << 5)
-		out[i*9+6] |= uint8(in[i*8+5] >> 3)
-		out[i*9+6] |= uint8(in[i*8+6] << 6)
-		out[i*9+7] |= uint8(in[i*8+6] >> 2)
-		out[i*9+8] |= uint8(in[i*8+7] >> 1)
+		out[i*9+1] = uint8(in[i*8]>>8) | uint8(in[i*8+1]<<1)
+		out[i*9+2] = uint8(in[i*8+1]>>7) | uint8(in[i*8+2]<<2)
+		out[i*9+3] = uint8(in[i*8+2]>>6) | uint8(in[i*8+3]<<3)
+		out[i*9+4] = uint8(in[i*8+3]>>5) | uint8(in[i*8+4]<<4)
+		out[i*9+5] = uint8(in[i*8+4]>>4) | uint8(in[i*8+5]<<5)
+		out[i*9+6] = uint8(in[i*8+5]>>3) | uint8(in[i*8+6]<<6)
+		out[i*9+7] = uint8(in[i*8+6]>>2) | uint8(in[i*8+7]<<7)
+		out[i*9+8] = uint8(in[i*8+7] >> 1)
 	}
 
 	// Handle the remaining elements if any

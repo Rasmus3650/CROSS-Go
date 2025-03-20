@@ -211,21 +211,7 @@ void test_expand_digest_to_fixed_weight(){
 }*/
 
 /*
-void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
-               FZ_ELEM W_mat[M][N-M],
-               const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
 
-  // Expansion of pk->seed, explicit domain separation for CSPRNG as in keygen
-  const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
-
-  CSPRNG_STATE_T csprng_state_mat;
-  csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
-  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
-  csprng_fz_mat(W_mat,&csprng_state_mat);
-  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
-  csprng_fp_mat(V_tr,&csprng_state_mat);
-  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
-}
 
 void print_W_mat(FZ_ELEM W_mat[M][N-M]){
     printf("W_mat:\n");
@@ -299,14 +285,6 @@ void print_e_bar(FZ_ELEM e_bar[N]){
 }
 
 void print_s(FZ_ELEM s[N-K]){
-    printf("s:\n");
-    for (int i = 0; i < N-K; i++) {
-        printf("%u, ", s[i]);
-    }
-    printf("\n");
-    return;
-}
-void print_s_RSDPG(uint16_t s[N-K]){
     printf("s:\n");
     for (int i = 0; i < N-K; i++) {
         printf("%u, ", s[i]);
@@ -427,9 +405,35 @@ void test_keygen_RSDP(){
 }
 
 
+
+void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
+               FZ_ELEM W_mat[M][N-M],
+               const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
+
+  // Expansion of pk->seed, explicit domain separation for CSPRNG as in keygen
+  const uint16_t dsc_csprng_seed_pk = CSPRNG_DOMAIN_SEP_CONST + (3*T+2);
+
+  CSPRNG_STATE_T csprng_state_mat;
+  csprng_initialize(&csprng_state_mat, seed_pk, KEYPAIR_SEED_LENGTH_BYTES, dsc_csprng_seed_pk);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+  csprng_fz_mat(W_mat,&csprng_state_mat);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+  csprng_fp_mat(V_tr,&csprng_state_mat);
+  //print_csprng_state(&csprng_state_mat, sizeof(csprng_state_mat));
+}
+void print_s_RSDPG(uint16_t s[N-K]){
+    printf("s:\n");
+    for (int i = 0; i < N-K; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
+
+
 //TODO: Implement this!!!
 void test_keygen_RSDPG(){
-    const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+    const unsigned char seed_sk[] = {231, 221, 225, 64, 121, 143, 37, 241, 138, 71, 192, 51, 249, 204, 213, 132, 238, 169, 90, 166, 30, 38, 152, 213, 77, 73, 128, 111, 48, 71, 21, 189};
     sk_t *SK = malloc(sizeof(sk_t));    
     pk_t *PK = malloc(sizeof(pk_t));    
     memcpy(SK->seed_sk, seed_sk, 32);
@@ -515,6 +519,7 @@ void RESTR_TO_VAL_test(){
     printf("result %u \n", FPRED_SINGLE( FPRED_SINGLE(res1 * res2) * FPRED_SINGLE(res3 * res4) ));
 }
 */
+
 void print_array(uint8_t array[], int length) {
     for (int i = 0; i < length; i++) {
         printf("%u, ", array[i]);
