@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include "fp_arith.h"
 #include "CROSS.h"
-
+/*
 void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
     for (size_t i = 0; i < size; i++) {
         printf("%u ", ((unsigned char*)csprng_state)[i]);
@@ -210,7 +210,7 @@ void test_expand_digest_to_fixed_weight(){
     return;
 }*/
 
-
+/*
 void expand_pk_RSDPG(FP_ELEM V_tr[K][N-K],
                FZ_ELEM W_mat[M][N-M],
                const uint8_t seed_pk[KEYPAIR_SEED_LENGTH_BYTES]){
@@ -268,7 +268,7 @@ fz_inf_w_by_fz_matrix(e_bar,e_G_bar,W_mat);
 fz_dz_norm_n(e_bar);
 }
 
-/*
+
 void test_expand_pk_RSDPG(){
     printf("Testing expand_pk\n");
     FP_ELEM V_tr[K][N-K];
@@ -288,7 +288,7 @@ void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("\n");
     return;
 }
-*/
+
 void print_e_bar(FZ_ELEM e_bar[N]){
     printf("e_bar:\n");
     for (int i = 0; i < N; i++) {
@@ -314,7 +314,7 @@ void print_s_RSDPG(uint16_t s[N-K]){
     printf("\n");
     return;
 }
-/*
+
 void test_expand_sk_RSDPG(){
     printf("Testing expand_sk\n");
     FZ_ELEM e_bar[N];
@@ -385,7 +385,7 @@ void test_expand_sk_RSDP(){
     //print_V_tr(V_tr);
     //print_z_vec(e_bar);
     return;
-}*/
+}
 
 void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
     printf("s:\n");
@@ -395,7 +395,7 @@ void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
     printf("\n");
     return;
 }
-/*
+
 void test_keygen_RSDP(){
     const char * restrict seed_sk = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
     sk_t *SK = malloc(sizeof(sk_t));    
@@ -425,7 +425,7 @@ void test_keygen_RSDP(){
     pack_fp_syn(PK->s,s);
     print_pk(PK->s);
 }
-*/
+
 
 //TODO: Implement this!!!
 void test_keygen_RSDPG(){
@@ -504,9 +504,9 @@ void RESTR_TO_VAL_test(){
     printf("res2 = %u\n",res2);
     printf("res3 = %u\n",res3);
     printf("res4 = %u\n",res4);
-    /* Two intermediate reductions necessary:
-     *     RESTR_G_GEN_1*RESTR_G_GEN_2*RESTR_G_GEN_4*RESTR_G_GEN_8    < 2^32
-     *     RESTR_G_GEN_16*RESTR_G_GEN_32*RESTR_G_GEN_64               < 2^32 */
+    // * Two intermediate reductions necessary:
+    // *     RESTR_G_GEN_1*RESTR_G_GEN_2*RESTR_G_GEN_4*RESTR_G_GEN_8    < 2^32
+    // *     RESTR_G_GEN_16*RESTR_G_GEN_32*RESTR_G_GEN_64               < 2^32 
     printf("res1 * res2 = %u\n", res1 * res2);
     printf("lhs: %u\n", FPRED_SINGLE(res1 * res2));
     printf("res3 * res4 = %u\n", res3 * res4);
@@ -514,7 +514,13 @@ void RESTR_TO_VAL_test(){
     printf("combined: %u\n", FPRED_SINGLE(res1 * res2) * FPRED_SINGLE(res3 * res4));
     printf("result %u \n", FPRED_SINGLE( FPRED_SINGLE(res1 * res2) * FPRED_SINGLE(res3 * res4) ));
 }
-
+*/
+void print_array(uint8_t array[], int length) {
+    for (int i = 0; i < length; i++) {
+        printf("%u, ", array[i]);
+    }
+    printf("\n");
+}
 
 int main() {
     //test_hash();
@@ -527,9 +533,20 @@ int main() {
     //test_expand_pk_RSDP();
     //test_expand_sk_RSDP();
     //test_expand_sk_RSDPG();
-    test_keygen_RSDPG();
+    //test_keygen_RSDPG();
     //FPRED_SINGLE_test();
     //FP_ELEM_CMOV_test();
     //RESTR_TO_VAL_test();
+    for (int i = 0; i < 20; i++) {
+        sk_t *SK = malloc(sizeof(sk_t));
+        pk_t *PK = malloc(sizeof(pk_t));
+        CROSS_keygen(SK, PK);
+        printf("seed_SK: \n");
+        print_array(SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES);
+        printf("seed_PK: \n");
+        print_array(PK->seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
+        printf("PK->s: \n");
+        print_array(PK->s, DENSELY_PACKED_FP_SYN_SIZE);
+    }
     return 0;
 }
