@@ -7,6 +7,12 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
+func (c *CROSS) CSPRNG_state(state sha3.ShakeHash, output_len int) ([]byte, sha3.ShakeHash, error) {
+	output := make([]byte, output_len)
+	state.Read(output)
+	return output, state, nil
+}
+
 func (c *CROSS) CSPRNG(seed []byte, output_len int, dsc uint16) ([]byte, error) {
 	var shake sha3.ShakeHash
 	if c.ProtocolData.Level() == 1 {
@@ -46,7 +52,7 @@ func (c *CROSS) CSPRNG_prime(seed []byte, output_len int, dsc uint16) ([]byte, s
 	shake.Read(output)
 	return output, shake, nil
 }
-func (c *CROSS) CSPRNG_init(seed []byte, output_len int, dsc uint16) (sha3.ShakeHash, error) {
+func (c *CROSS) CSPRNG_init(seed []byte, dsc uint16) (sha3.ShakeHash, error) {
 	var shake sha3.ShakeHash
 	if c.ProtocolData.Level() == 1 {
 		shake = sha3.NewShake128()
@@ -207,6 +213,44 @@ func (c *CROSS) CSPRNG_fp_vec(seed []byte) ([]byte, error) {
 	}
 	return res, nil
 }
+func (c *CROSS) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]byte, error) {
+	res := make([]byte, c.ProtocolData.N)
+	// TODO: uint16 for RSDP-G, uint8 for RSDP
+	FP_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
+	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
+	CSPRNG_buffer, _, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8))
+	if err != nil {
+		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
+	}
+	placed := 0
+	sub_buffer := uint64(0)
+	for i := 0; i < 8; i++ {
+		sub_buffer |= uint64(CSPRNG_buffer[i]) << uint64(8*i)
+	}
+	bits_in_sub_buf := 64
+	pos_in_buf := 8
+	pos_remaining := len(CSPRNG_buffer) - pos_in_buf
+	for placed < c.ProtocolData.N {
+		if bits_in_sub_buf <= 32 && pos_remaining > 0 {
+			refresh_amount := int(math.Min(4, float64(pos_remaining)))
+			refresh_buf := uint32(0)
+			for i := 0; i < refresh_amount; i++ {
+				refresh_buf |= uint32(CSPRNG_buffer[pos_in_buf+i]) << byte(8*i)
+			}
+			pos_in_buf += refresh_amount
+			sub_buffer |= uint64(refresh_buf) << uint64(bits_in_sub_buf)
+			bits_in_sub_buf += 8 * refresh_amount
+			pos_remaining -= refresh_amount
+		}
+		res[placed] = uint8(uint8(sub_buffer) & FP_ELEM_mask)
+		if res[placed] < uint8(c.ProtocolData.P) {
+			placed++
+		}
+		sub_buffer >>= BITS_FOR_P
+		bits_in_sub_buf -= BITS_FOR_P
+	}
+	return res, nil
+}
 
 func (c *CROSS) CSPRNG_fz_vec(seed []byte) ([]byte, error) {
 	res := make([]byte, c.ProtocolData.N)
@@ -246,6 +290,45 @@ func (c *CROSS) CSPRNG_fz_vec(seed []byte) ([]byte, error) {
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
 	return res, nil
+}
+
+func (c *CROSS) CSPRNG_fz_vec_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash, error) {
+	res := make([]byte, c.ProtocolData.N)
+	// TODO: uint16 for RSDP-G, uint8 for RSDP
+	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
+	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
+	CSPRNG_buffer, state, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8))
+	if err != nil {
+		return nil, state, fmt.Errorf("Error in CSPRNG: %v", err)
+	}
+	placed := 0
+	sub_buffer := uint64(0)
+	for i := 0; i < 8; i++ {
+		sub_buffer |= uint64(CSPRNG_buffer[i]) << uint64(8*i)
+	}
+	bits_in_sub_buf := 64
+	pos_in_buf := 8
+	pos_remaining := len(CSPRNG_buffer) - pos_in_buf
+	for placed < c.ProtocolData.N {
+		if bits_in_sub_buf <= 32 && pos_remaining > 0 {
+			refresh_amount := int(math.Min(4, float64(pos_remaining)))
+			refresh_buf := uint32(0)
+			for i := 0; i < refresh_amount; i++ {
+				refresh_buf |= uint32(CSPRNG_buffer[pos_in_buf+i]) << byte(8*i)
+			}
+			pos_in_buf += refresh_amount
+			sub_buffer |= uint64(refresh_buf) << uint64(bits_in_sub_buf)
+			bits_in_sub_buf += 8 * refresh_amount
+			pos_remaining -= refresh_amount
+		}
+		res[placed] = uint8(uint8(sub_buffer) & FZ_ELEM_mask)
+		if res[placed] < uint8(c.ProtocolData.Z) {
+			placed++
+		}
+		sub_buffer >>= BITS_FOR_Z
+		bits_in_sub_buf -= BITS_FOR_Z
+	}
+	return res, state, nil
 }
 
 func (c *CROSS) CSPRNG_fp_vec_chall_1(seed []byte) ([]byte, error) {
@@ -326,6 +409,44 @@ func (c *CROSS) CSPRNG_fz_inf_w(seed []byte) ([]byte, error) {
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
 	return res, nil
+}
+func (c *CROSS) CSPRNG_fz_inf_w_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash, error) {
+	res := make([]byte, c.ProtocolData.M)
+	// TODO: uint16 for RSDP-G, uint8 for RSDP
+	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
+	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
+	CSPRNG_buffer, state, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8))
+	if err != nil {
+		return nil, state, fmt.Errorf("Error in CSPRNG: %v", err)
+	}
+	placed := 0
+	sub_buffer := uint64(0)
+	for i := 0; i < 8; i++ {
+		sub_buffer |= uint64(CSPRNG_buffer[i]) << uint64(8*i)
+	}
+	bits_in_sub_buf := 64
+	pos_in_buf := 8
+	pos_remaining := len(CSPRNG_buffer) - pos_in_buf
+	for placed < c.ProtocolData.M {
+		if bits_in_sub_buf <= 32 && pos_remaining > 0 {
+			refresh_amount := int(math.Min(4, float64(pos_remaining)))
+			refresh_buf := uint32(0)
+			for i := 0; i < refresh_amount; i++ {
+				refresh_buf |= uint32(CSPRNG_buffer[pos_in_buf+i]) << byte(8*i)
+			}
+			pos_in_buf += refresh_amount
+			sub_buffer |= uint64(refresh_buf) << uint64(bits_in_sub_buf)
+			bits_in_sub_buf += 8 * refresh_amount
+			pos_remaining -= refresh_amount
+		}
+		res[placed] = uint8(uint8(sub_buffer) & FZ_ELEM_mask)
+		if res[placed] < uint8(c.ProtocolData.Z) {
+			placed++
+		}
+		sub_buffer >>= BITS_FOR_Z
+		bits_in_sub_buf -= BITS_FOR_Z
+	}
+	return res, state, nil
 }
 
 func (c *CROSS) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error) {

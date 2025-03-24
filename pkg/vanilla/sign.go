@@ -4,7 +4,6 @@ import (
 	"PQC-Master-Thesis/internal/common"
 	"crypto/rand"
 	"fmt"
-	"math/big"
 
 	"golang.org/x/crypto/sha3"
 )
@@ -22,57 +21,41 @@ func (c *CROSSInstance) expand_digest_to_fixed_weight(digest_chall_2 []byte) []b
 	return bool_chall_2
 }
 
-func (c *CROSSInstance) expandSK(seed_sk []byte) ([]byte, [][]byte) {
-	seed_e_pk := make([]byte, (4*c.ProtocolData.Lambda)/8)
-	sha3.ShakeSum128(seed_e_pk, append(seed_sk, byte(3*c.ProtocolData.T+1)))
-	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
-	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
+func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error) {
+	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
-	n_minus_k := c.ProtocolData.N - c.ProtocolData.K
-	V := make([][]byte, n_minus_k)
-	for i := range V {
-		V[i] = make([]byte, c.ProtocolData.K)
-	}
-	buffer := make([]byte, n_minus_k*c.ProtocolData.K)
-
-	// Security probably dies here since p=509 in RSDP-G, might be fine for RSDP
-	sha3.ShakeSum128(buffer, append(seed_pk, byte(3*c.ProtocolData.T+2)))
-	idx := 0
-	for i := 0; i < n_minus_k; i++ {
-		for j := 0; j < c.ProtocolData.K; j++ {
-			// Ensure values are in Fp
-			V[i][j] = buffer[idx]%byte(c.ProtocolData.P-1) + 1
-			if V[i][j] > byte(c.ProtocolData.P) {
-				panic("V[i][j] > P")
-			}
-			idx++
+		seed_e_seed_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
+		if err != nil {
+			return nil, nil, nil, nil, err
 		}
+		V_tr, _, err := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		e_bar, err := c.CSPRNG_fz_vec(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		return V_tr, e_bar, nil, nil, nil
+	} else if c.ProtocolData.Variant() == common.VARIANT_RSDP_G {
+		seed_e_seed_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		V_tr, W_mat, err := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
+		if err != nil {
+			return nil, nil, nil, nil, err
+		}
+		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
+		norm_e_bar := c.Fz_dz_norm_n(e_bar)
+		return V_tr, W_mat, e_G_bar, norm_e_bar, nil
 	}
-	// This will generate trailing zeros in each row, might be wrong?
-	H := make([][]byte, n_minus_k)
-	for i := range H {
-		H[i] = make([]byte, c.ProtocolData.N)
-		// Copy V part
-		copy(H[i][:c.ProtocolData.K], V[i])
-		// Add identity matrix part
-		H[i][c.ProtocolData.K+i] = 1
-	}
-	// This needs to be rejection sampling
-	e_bar := make([]byte, c.ProtocolData.N)
-	sha3.ShakeSum128(e_bar, append(seed_e, byte(3*c.ProtocolData.T+3)))
-	for i, v := range e_bar {
-		e_bar[i] = v%byte(c.ProtocolData.Z-1) + 1
-	}
-	return e_bar, H
-}
-
-// Probably needs re-writing
-func fz_vec_sub(e_bar, e_bar_prime []byte) []byte {
-	result := make([]byte, len(e_bar))
-	for i := range e_bar {
-		result[i] = e_bar[i] - e_bar_prime[i]
-	}
-	return result
+	return nil, nil, nil, nil, fmt.Errorf("Invalid variant")
 }
 
 func element_wise_mul(v, u_prime []byte, Z int) []byte {
@@ -84,7 +67,80 @@ func element_wise_mul(v, u_prime []byte, Z int) []byte {
 }
 
 func (c *CROSSInstance) Sign(sk, msg []byte) ([][]byte, error) {
-	e_bar, H := c.expandSK(sk)
+	e_bar, e_G_bar, V_tr, W_mat, err := c.Expand_sk(sk)
+	root_seed := make([]byte, c.ProtocolData.Lambda/8)
+	salt := make([]byte, c.ProtocolData.Lambda/8)
+	rand.Read(root_seed)
+	rand.Read(salt)
+	round_seeds, err := c.SeedLeaves(root_seed, salt)
+	if err != nil {
+		return nil, fmt.Errorf("Error building seed leaves: %v", err)
+	}
+	e_bar_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
+	v_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
+	u_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
+	s_prime := make([]byte, c.ProtocolData.N-c.ProtocolData.K)
+	cmt_0 := make([]byte, c.ProtocolData.T*((2*c.ProtocolData.Lambda)/8))
+	cmt_1 := make([]byte, c.ProtocolData.T*((2*c.ProtocolData.Lambda)/8))
+	v_G_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.M)
+	for i := 0; i < c.ProtocolData.T; i++ {
+		csprng_input := append(round_seeds[i], salt...)
+		dsc := uint16(0 + i + (2*c.ProtocolData.T - 1))
+		round_state, err := c.CSPRNG_init(csprng_input, dsc)
+		if err != nil {
+			return nil, fmt.Errorf("Error initializing CSPRNG: %v", err)
+		}
+		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			e_bar_prime_i, state, err := c.CSPRNG_fz_vec_prime(round_state)
+			round_state = state
+			if err != nil {
+				return nil, fmt.Errorf("Error generating e_bar_prime: %v", err)
+			}
+			copy(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], e_bar_prime_i)
+		} else {
+			e_G_bar_prime, state, err := c.CSPRNG_fz_inf_w_prime(round_state)
+			round_state = state
+			if err != nil {
+				return nil, fmt.Errorf("Error generating e_G_bar_prime: %v", err)
+			}
+			v_G_val := c.Fz_vec_sub_m(e_G_bar, e_G_bar_prime)
+			v_G_val = c.Fz_dz_norm_m(v_G_val)
+			copy(v_G_bar[i*c.ProtocolData.M:(i+1)*c.ProtocolData.M], v_G_val)
+			e_bar_prime_i := c.Fz_inf_w_by_fz_matrix(e_G_bar_prime, W_mat)
+			e_bar_prime_i = c.Fz_dz_norm_n(e_bar_prime_i)
+		}
+		v_bar_i := c.Fz_vec_sub_n(e_bar, e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N])
+		v := c.Convert_restr_vec_to_fp(v_bar_i)
+		v_bar = c.Fz_dz_norm_n(v_bar_i)
+		copy(v_bar[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], v_bar_i)
+		u_prime_i, err := c.CSPRNG_fp_vec_prime(round_state)
+		if err != nil {
+			return nil, fmt.Errorf("Error generating u_prime: %v", err)
+		}
+		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
+		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
+		s_prime := c.Fp_vec_by_fp_matrix(u, V_tr)
+		s_prime = c.Fp_dz_norm_synd(s_prime)
+		var cmt_0_i_input []byte
+		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			s_prime = c.Pack_fp_syn(s_prime)
+			copy(cmt_0_i_input, append(append(s_prime, make([]byte, c.ProtocolData.N)...), salt...))
+		} else {
+			//TODO: FIX TYPE!
+			res := make([]uint16, len(s_prime))
+			for i := range s_prime {
+				res[i] = uint16(s_prime[i])
+			}
+			s_prime = c.Pack_fp_syn_RSDPG(res)
+			copy(cmt_0_i_input, append(append(s_prime, make([]byte, c.ProtocolData.T*c.ProtocolData.M)...), salt...))
+		}
+
+	}
+}
+
+/*
+func (c *CROSSInstance) Sign(sk, msg []byte) ([][]byte, error) {
+	e_bar, H := c.Expand_sk(sk)
 	C := 2*c.ProtocolData.T - 1
 	seed := make([]byte, c.ProtocolData.Lambda/8)
 	salt := make([]byte, (2*c.ProtocolData.Lambda)/8)
@@ -211,7 +267,7 @@ func (c *CROSSInstance) Sign(sk, msg []byte) ([][]byte, error) {
 
 // DummySign is a dummy implementation of the Sign function, used for testing purposes ONLY
 func (c *CROSSInstance) DummySign(sk, msg, seed, salt []byte) ([][]byte, error) {
-	e_bar, H := c.expandSK(sk)
+	e_bar, H := vanilla.Expand_sk(sk)
 	C := 2*c.ProtocolData.T - 1
 	commitments, err := c.SeedLeaves(seed, salt)
 	if err != nil {
@@ -332,3 +388,4 @@ func (c *CROSSInstance) DummySign(sk, msg, seed, salt []byte) ([][]byte, error) 
 	return sgn, nil
 
 }
+*/

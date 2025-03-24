@@ -1,6 +1,7 @@
 package test_suite
 
 import (
+	"PQC-Master-Thesis/internal"
 	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
@@ -540,16 +541,16 @@ func TestKeygenRSDPG(t *testing.T) {
 }
 
 func TestFP_ELEM_CMOV(t *testing.T) {
-	if 256 != vanilla.FP_ELEM_CMOV(1, 256, 1) {
+	if 256 != internal.FP_ELEM_CMOV(1, 256, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if 1 != vanilla.FP_ELEM_CMOV(0, 256, 1) {
+	if 1 != internal.FP_ELEM_CMOV(0, 256, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if 1 != vanilla.FP_ELEM_CMOV(0, 384, 1) {
+	if 1 != internal.FP_ELEM_CMOV(0, 384, 1) {
 		t.Fatalf("Error in CMOV")
 	}
-	if 384 != vanilla.FP_ELEM_CMOV(1, 384, 1) {
+	if 384 != internal.FP_ELEM_CMOV(1, 384, 1) {
 		t.Fatalf("Error in CMOV")
 	}
 }
