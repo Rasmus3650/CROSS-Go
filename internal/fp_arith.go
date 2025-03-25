@@ -63,6 +63,15 @@ func (c *CROSS) Fp_dz_norm_synd(s []uint8) []uint8 {
 	return result
 }
 
+func (c *CROSS) Fp_dz_norm(s []uint8) []uint8 {
+	result := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
+	for i := 0; i < c.ProtocolData.N; i++ {
+		result[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+	}
+	return result
+}
+
+
 func (c *CROSS) Fp_dz_norm_synd_RSDPG(s []uint16) []uint16 {
 	result := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
@@ -96,6 +105,14 @@ func (c *CROSS) Fp_vec_by_fp_vec_pointwise(a, b []byte) []byte {
 		for i := 0; i < c.ProtocolData.N; i++ {
 			result[i] = byte(FPRED_DOUBLE(uint16(RESTR_TO_VAL(a[i])) * uint16(b[i])))
 		}
+	}
+	return result
+}
+//TODO: THIS ONLY WORKS FOR RSDP
+func (c *CROSS) Fp_vec_by_restr_vec_scaled(e,u_prime []byte, chall_1 byte) []byte{
+	result := make([]byte, c.ProtocolData.N)
+	for i := 0; i < c.ProtocolData.N; i++ {
+		result[i] = byte(FPRED_DOUBLE(uint16(u_prime[i])+ uint16(RESTR_TO_VAL(e[i])) *uint16(chall_1)))
 	}
 	return result
 }

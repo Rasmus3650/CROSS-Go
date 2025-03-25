@@ -15,6 +15,18 @@ func FZ_DOUBLE_ZERO_NORM_RSDPG(x int) int {
 	return (x + ((x + 1) >> 7)) & 0x7F
 }
 
+func (c *CROSS) DenselyPackedFzVecSize() int {
+	return (c.ProtocolData.N/8)*BitsToRepresent(uint(c.ProtocolData.Z-1)) + int(RoundUp(uint((c.ProtocolData.N%8)*BitsToRepresent(uint(c.ProtocolData.Z-1))), 8)/8)
+}
+
+func (c *CROSS) DenselyPackedFpVecSize() int {
+	return (c.ProtocolData.N/8)*BitsToRepresent(uint(c.ProtocolData.P-1)) + int(RoundUp(uint((c.ProtocolData.N%8)*BitsToRepresent(uint(c.ProtocolData.P-1))), 8)/8)
+}
+func (c *CROSS) DenselyPackedFzRSDPGVecSize() int {
+	return (c.ProtocolData.M/8)*BitsToRepresent(uint(c.ProtocolData.Z-1)) + int(RoundUp(uint((c.ProtocolData.M%8)*BitsToRepresent(uint(c.ProtocolData.Z-1))), 8)/8)
+	//((M/8)*BITS_TO_REPRESENT(Z-1) + ROUND_UP( ((M%8)*BITS_TO_REPRESENT(Z-1)),8)/8)
+}
+
 func (c *CROSS) Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	if len(fz_vec_e) != c.ProtocolData.M || len(W_mat) != c.ProtocolData.M*(c.ProtocolData.N-c.ProtocolData.M) {
 		panic("Invalid input dimensions")

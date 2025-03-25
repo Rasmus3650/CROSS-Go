@@ -489,7 +489,7 @@ func (c *CROSS) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error) {
 	return res, state, nil
 }
 
-func (c *CROSS) Expand_digest_to_fixed_weight(digest []byte) ([]byte, error) {
+func (c *CROSS) Expand_digest_to_fixed_weight(digest []byte) ([]bool, error) {
 	fixed_weight_string := make([]byte, c.ProtocolData.T)
 	dsc_csprng_b := uint16(0 + 3*c.ProtocolData.T)
 	CSPRNG_buffer, err := c.CSPRNG(digest, int(RoundUp(uint(c.ProtocolData.BITS_CWSTR_RNG), 8)/8), dsc_csprng_b)
@@ -532,5 +532,13 @@ func (c *CROSS) Expand_digest_to_fixed_weight(digest []byte) ([]byte, error) {
 		sub_buffer >>= uint64(bits_for_pos)
 		bits_in_sub_buf -= bits_for_pos
 	}
-	return fixed_weight_string, nil
+	result := make([]bool, c.ProtocolData.T)
+	for i := 0; i < c.ProtocolData.T; i++ {
+		if fixed_weight_string[i] == 1 {
+			result[i] = true
+		} else {
+			result[i] = false
+		}
+	}
+	return result, nil
 }

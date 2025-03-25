@@ -89,7 +89,7 @@ func (c *CROSSInstance) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	sha3.ShakeSum128(digest_chall_1, append(append(digest_msg, digest_cmt...), salt...))
 	chall_1 := make([]byte, c.ProtocolData.T)
 	sha3.ShakeSum128(chall_1, append(digest_chall_1, byte(c.ProtocolData.T+C)))
-	chall_2 := c.expand_digest_to_fixed_weight(digest_chall_2)
+	chall_2, err := c.Expand_digest_to_fixed_weight(digest_chall_2)
 	seed, err := c.RebuildLeaves(path, salt, chall_2)
 	if err != nil {
 		return false, fmt.Errorf("Error rebuilding leaves: %v", err)

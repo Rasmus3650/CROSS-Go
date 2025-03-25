@@ -150,3 +150,61 @@ func (c *CROSS) Pack_fp_syn(s []uint8) []byte {
 func (c *CROSS) Pack_fp_syn_RSDPG(s []uint16) []byte {
 	return c.generic_pack_fp_RSDPG(s, int(c.denselyPackedFpSynSize()), c.ProtocolData.N-c.ProtocolData.K)
 }
+
+func (c *CROSS) Pack_fz_vec(input []byte) []byte{
+	return c.generic_pack_fz(input, c.DenselyPackedFzVecSize(), c.ProtocolData.N)
+}
+
+func (c *CROSS) generic_pack_3_bit(in []byte, out_len, in_len int) []byte {
+	out := make([]byte, out_len)
+	var i int
+	for i = 0; i < out_len; i++ {
+		out[i] = 0
+	}
+	for i = 0; i < in_len/8; i++ {
+		out[i*3]   = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+    	out[i*3+1]  = (in[i*8+2] >> 2) | (in[i*8+3] << 1) | (in[i*8+4] << 4) | (in[i*8+5] << 7)
+    	out[i*3+2]  = (in[i*8+5] >> 1) | (in[i*8+6] << 2) | (in[i*8+7] << 5)
+	}
+	n_remainder := uint(in_len) & 0x7
+	if n_remainder == 1 {
+		out[i*3] = in[i*8]
+	} else if n_remainder == 2 {
+		out[i*3] = in[i*8] | (in[i*8+1] << 3)
+	} else if n_remainder == 3 {
+		out[i*3] = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+		out[i*3+1] = (in[i*8+2] >> 2)
+	} else if n_remainder == 4{
+		out[i*3]   = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+    	out[i*3+1] = (in[i*8+2] >> 2)  | (in[i*8+3] << 1)
+	} else if n_remainder == 5 {
+		out[i*3]   = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+    	out[i*3+1] = (in[i*8+2] >> 2)  | (in[i*8+3] << 1) | (in[i*8+4] << 4)
+	} else if n_remainder == 6 {
+		out[i*3]   = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+   		out[i*3+1] = (in[i*8+2] >> 2) | (in[i*8+3] << 1) | (in[i*8+4] << 4) | (in[i*8+5] << 7)
+    	out[i*3+2] = (in[i*8+5] >> 1)
+	} else if n_remainder == 7 {
+		out[i*3]   = in[i*8] | (in[i*8+1] << 3) | (in[i*8+2] << 6)
+    	out[i*3+1] = (in[i*8+2] >> 2) | (in[i*8+3] << 1) | (in[i*8+4] << 4) | (in[i*8+5] << 7)
+    	out[i*3+2] = (in[i*8+5] >> 1) | (in[i*8+6] << 2)
+	}
+	return out
+}
+
+func (c *CROSS) generic_pack_fz(input_arr []byte, out_len, in_len int) []byte {
+	if c.ProtocolData.Z == 127{
+		return c.generic_pack_7_bit(input_arr, out_len, in_len)
+	} else if c.ProtocolData.Z == 7 {
+		return c.generic_pack_3_bit(input_arr, out_len, in_len)
+	} else {
+		panic("Unsupported Z value")
+	}
+}
+
+func (c *CROSS) Pack_fz_rsdpg_vec(in []byte) []byte{
+	return c.generic_pack_fz(in, c.DenselyPackedFzRSDPGVecSize(), c.ProtocolData.M)
+}
+func (c *CROSS) Pack_fp_vec (in []byte) []byte{
+	return c.generic_pack_fp(in, c.DenselyPackedFpVecSize(), c.ProtocolData.N)
+}

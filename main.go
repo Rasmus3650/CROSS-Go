@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 	if err != nil {
 		panic(err)
 	}
