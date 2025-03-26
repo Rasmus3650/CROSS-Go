@@ -18,16 +18,16 @@ func TestMerkle(t *testing.T) {
 			t.Errorf("Error: %s", err)
 		}
 		for xyz := 0; xyz < 100; xyz++ {
-			commitments := make([][]byte, instance.ProtocolData.T)
-			for i := 0; i < instance.ProtocolData.T; i++ {
-				commitments[i] = make([]byte, (2*instance.ProtocolData.Lambda)/8)
+			commitments := make([][]byte, instance.GetProtocolData().T)
+			for i := 0; i < instance.GetProtocolData().T; i++ {
+				commitments[i] = make([]byte, (2*instance.GetProtocolData().Lambda)/8)
 				rand.Read(commitments[i])
 			}
 			root, err := instance.TreeRoot(commitments)
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
-			chall_2 := make([]bool, instance.ProtocolData.T)
+			chall_2 := make([]bool, instance.GetProtocolData().T)
 			chall_2[0] = true
 			chall_2[1] = true
 			chall_2[2] = true
@@ -36,7 +36,7 @@ func TestMerkle(t *testing.T) {
 			chall_2[5] = true
 			chall_2[6] = false
 			chall_2[7] = false
-			for i := 8; i < instance.ProtocolData.T; i++ {
+			for i := 8; i < instance.GetProtocolData().T; i++ {
 				chall_2[i] = math.Intn(2) == 0
 			}
 			proof, err := instance.TreeProof(commitments, chall_2)

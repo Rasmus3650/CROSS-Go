@@ -1,33 +1,48 @@
 package internal
 
-func FZRED_SINGLE_RSDPG(x uint16) uint16 {
-	return (x & 0x7F) + (x >> 7)
+import "PQC-Master-Thesis/internal/common"
+
+func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return (x & 0x07) + (x >> 3)
+	} else {
+		return (x & 0x7F) + (x >> 7)
+	}
 }
 
-func FZRED_OPPOSITE_RSDPG(x uint16) uint16 {
-	return x ^ 0x7F
+func (c *CROSS[T, P]) FZRED_OPPOSITE(x T) T {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return x ^ 0x07
+	} else {
+		return x ^ 0x7F
+	}
 }
 
-func FZRED_DOUBLE_RSDPG(x uint16) uint16 {
-	return FZRED_SINGLE_RSDPG(FZRED_SINGLE_RSDPG(x))
+func (c *CROSS[T, P]) FZRED_DOUBLE(x T) T {
+	return c.FZRED_SINGLE(c.FZRED_SINGLE(x))
 }
-func FZ_DOUBLE_ZERO_NORM_RSDPG(x int) int {
-	return (x + ((x + 1) >> 7)) & 0x7F
+func (c *CROSS[T, P]) FZ_DOUBLE_ZERO_NORM(x int) int {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return (((x) + (((x) + 1) >> 3)) & 0x07)
+	} else {
+		return (((x) + (((x) + 1) >> 7)) & 0x7f)
+	}
+
 }
 
-func (c *CROSS) DenselyPackedFzVecSize() int {
+func (c *CROSS[T, P]) DenselyPackedFzVecSize() int {
 	return (c.ProtocolData.N/8)*BitsToRepresent(uint(c.ProtocolData.Z-1)) + int(RoundUp(uint((c.ProtocolData.N%8)*BitsToRepresent(uint(c.ProtocolData.Z-1))), 8)/8)
 }
 
-func (c *CROSS) DenselyPackedFpVecSize() int {
+func (c *CROSS[T, P]) DenselyPackedFpVecSize() int {
 	return (c.ProtocolData.N/8)*BitsToRepresent(uint(c.ProtocolData.P-1)) + int(RoundUp(uint((c.ProtocolData.N%8)*BitsToRepresent(uint(c.ProtocolData.P-1))), 8)/8)
 }
-func (c *CROSS) DenselyPackedFzRSDPGVecSize() int {
+func (c *CROSS[T, P]) DenselyPackedFzRSDPGVecSize() int {
 	return (c.ProtocolData.M/8)*BitsToRepresent(uint(c.ProtocolData.Z-1)) + int(RoundUp(uint((c.ProtocolData.M%8)*BitsToRepresent(uint(c.ProtocolData.Z-1))), 8)/8)
 	//((M/8)*BITS_TO_REPRESENT(Z-1) + ROUND_UP( ((M%8)*BITS_TO_REPRESENT(Z-1)),8)/8)
 }
 
-func (c *CROSS) Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
+func (c *CROSS[T, P]) Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	if len(fz_vec_e) != c.ProtocolData.M || len(W_mat) != c.ProtocolData.M*(c.ProtocolData.N-c.ProtocolData.M) {
 		panic("Invalid input dimensions")
 	}
@@ -43,69 +58,39 @@ func (c *CROSS) Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte {
 	for i := 0; i < c.ProtocolData.M; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.M; j++ {
 			index := i*(c.ProtocolData.N-c.ProtocolData.M) + j
-			fz_vec_res[j] = uint8(FZRED_DOUBLE_RSDPG(uint16(fz_vec_res[j]) + uint16(fz_vec_e[i])*uint16(W_mat[index])))
+			fz_vec_res[j] = byte(c.FZRED_DOUBLE(T(uint16(fz_vec_res[j]) + uint16(fz_vec_e[i])*uint16(W_mat[index]))))
 		}
 	}
-
 	return fz_vec_res
 }
 
-func (c *CROSS) Fz_dz_norm_n(v []byte) []byte {
+func (c *CROSS[T, P]) Fz_dz_norm_n(v []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		res[i] = byte(FZ_DOUBLE_ZERO_NORM_RSDPG(int(v[i])))
+		res[i] = byte(c.FZ_DOUBLE_ZERO_NORM(int(v[i])))
 	}
 	return res
 }
-func (c *CROSS) Fz_dz_norm_m(v []byte) []byte {
+func (c *CROSS[T, P]) Fz_dz_norm_m(v []byte) []byte {
 	res := make([]byte, c.ProtocolData.M)
 	for i := 0; i < c.ProtocolData.M; i++ {
-		res[i] = byte(FZ_DOUBLE_ZERO_NORM_RSDPG(int(v[i])))
+		res[i] = byte(c.FZ_DOUBLE_ZERO_NORM(int(v[i])))
 	}
 	return res
 }
-func (c *CROSS) Fz_vec_sub_n(a []int, b []byte) []byte {
+func (c *CROSS[T, P]) Fz_vec_sub_n(a []int, b []byte) []byte {
 	result := make([]byte, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
 		//TODO: TEST AND MAYBE FIX, SHOULD PROBABLY BE uint8
-		result[i] = byte(FZRED_SINGLE_RSDPG(uint16(a[i]) + FZRED_OPPOSITE_RSDPG(uint16(b[i]))))
+		result[i] = byte(c.FZRED_SINGLE(T(a[i]) + c.FZRED_OPPOSITE(T(b[i]))))
 	}
 	return result
 }
 
-func (c *CROSS) Fz_vec_sub_m(a, b []byte) []byte {
+func (c *CROSS[T, P]) Fz_vec_sub_m(a, b []byte) []byte {
 	result := make([]byte, c.ProtocolData.M)
 	for i := 0; i < c.ProtocolData.M; i++ {
-		//TODO: TEST AND MAYBE FIX, SHOULD PROBABLY BE uint8
-		result[i] = byte(FZRED_SINGLE_RSDPG(uint16(a[i]) + FZRED_OPPOSITE_RSDPG(uint16(b[i]))))
+		result[i] = byte(c.FZRED_SINGLE(T(a[i]) + c.FZRED_OPPOSITE(T(b[i]))))
 	}
 	return result
-}
-
-func (c *CROSS) Restr_vec_by_fp_matrix_RSDPG(e_bar []byte, V_tr []int) []uint16 {
-	res := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
-	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
-		res[i-c.ProtocolData.K] = uint16(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))
-	}
-	for i := 0; i < c.ProtocolData.K; i++ {
-		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			res[j] = uint16(c.FPRED_DOUBLE_RSDPG(uint32(res[j]) + uint32(c.RESTR_TO_VAL_RSDPG(uint16(e_bar[i])))*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-
-		}
-	}
-	return res
-}
-
-func (c *CROSS) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []int) []uint8 {
-	res := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
-	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
-		res[i-c.ProtocolData.K] = RESTR_TO_VAL(uint8(e_bar[i]))
-	}
-	for i := 0; i < c.ProtocolData.K; i++ {
-		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			//TODO: Fix this tomorrow
-			res[j] = uint8(FPRED_DOUBLE(uint16(res[j]) + uint16(RESTR_TO_VAL(uint8(e_bar[i])))*uint16(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-		}
-	}
-	return res
 }

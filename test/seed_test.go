@@ -55,7 +55,7 @@ func TestIntegration(t *testing.T) {
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
-			chall_2 := make([]bool, instance.ProtocolData.T)
+			chall_2 := make([]bool, instance.GetProtocolData().T)
 			chall_2[0] = true
 			chall_2[1] = true
 			chall_2[2] = true
@@ -64,7 +64,7 @@ func TestIntegration(t *testing.T) {
 			chall_2[5] = true
 			chall_2[6] = false
 			chall_2[7] = false
-			for i := 8; i < instance.ProtocolData.T; i++ {
+			for i := 8; i < instance.GetProtocolData().T; i++ {
 				chall_2[i] = math.Intn(2) == 0
 			}
 			path, err := instance.SeedPath(seed, salt, chall_2)
@@ -115,7 +115,7 @@ func TestInt(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
-		chall_2 := make([]bool, instance.ProtocolData.T)
+		chall_2 := make([]bool, instance.GetProtocolData().T)
 		chall_2[0] = true
 		chall_2[1] = true
 		chall_2[2] = true
@@ -124,7 +124,7 @@ func TestInt(t *testing.T) {
 		chall_2[5] = true
 		chall_2[6] = false
 		chall_2[7] = false
-		for i := 8; i < instance.ProtocolData.T; i++ {
+		for i := 8; i < instance.GetProtocolData().T; i++ {
 			chall_2[i] = math.Intn(2) == 0
 		}
 		chall_2[len(chall_2)-1] = true

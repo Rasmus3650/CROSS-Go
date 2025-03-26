@@ -16,7 +16,7 @@ type KeyPair struct {
 	Pub
 }
 
-func (c *CROSSInstance) Expand_pk(seed_pk []byte) ([]int, []byte, error) {
+func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]int, []byte, error) {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		V_tr, err := c.CSPRNG_fp_mat(seed_pk)
 		if err != nil {
@@ -37,7 +37,7 @@ func (c *CROSSInstance) Expand_pk(seed_pk []byte) ([]int, []byte, error) {
 	return nil, nil, fmt.Errorf("Invalid variant")
 }
 
-func (c *CROSSInstance) KeyGen() (KeyPair, error) {
+func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
 	seed_sk := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	_, err := rand.Read(seed_sk)
 	if err != nil {
@@ -58,7 +58,7 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		if err != nil {
 			return KeyPair{}, err
 		}
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
 		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
@@ -70,15 +70,15 @@ func (c *CROSSInstance) KeyGen() (KeyPair, error) {
 		}
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
-		temp_s := c.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
-		s := c.Fp_dz_norm_synd_RSDPG(temp_s)
-		S := c.Pack_fp_syn_RSDPG(s)
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		s := c.Fp_dz_norm_synd(temp_s)
+		S := c.Pack_fp_syn(s)
 		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 	}
 }
 
 // Dummy KeyGen function for testing purposes ONLY
-func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
+func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 
 	seed_e_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
@@ -92,7 +92,7 @@ func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 		if err != nil {
 			return KeyPair{}, err
 		}
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
 		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
@@ -104,9 +104,17 @@ func (c *CROSSInstance) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 		}
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
-		temp_s := c.Restr_vec_by_fp_matrix_RSDPG(e_bar, V_tr)
-		s := c.Fp_dz_norm_synd_RSDPG(temp_s)
-		S := c.Pack_fp_syn_RSDPG(s)
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		s := c.Fp_dz_norm_synd(temp_s)
+		S := c.Pack_fp_syn(s)
 		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
 	}
+}
+
+func (c *CROSSInstance[T, P]) intToT(V []int) []T {
+	result := make([]T, len(V))
+	for i := range V {
+		result[i] = T(V[i])
+	}
+	return result
 }

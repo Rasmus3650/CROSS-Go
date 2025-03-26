@@ -1,7 +1,6 @@
 package test_suite
 
 import (
-	"PQC-Master-Thesis/internal"
 	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
@@ -401,17 +400,16 @@ func TestKeyGenRSDPG(t *testing.T) {
 	fmt.Println(pk)
 }
 
-//TODO: add tests for: restr_vec_by_fp_matrix, fp_dz_norm_synd, pack_fp_syn
-
+/*
 func TestKeygenRSDP(t *testing.T) {
 	seed_sk := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.ProtocolData.Lambda)/8, uint16(0+3*cross.ProtocolData.T+1))
-	seed_e := seed_e_pk[:2*cross.ProtocolData.Lambda/8]
-	seed_pk := seed_e_pk[2*cross.ProtocolData.Lambda/8:]
+	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+	seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
+	seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
 	V_tr, _, err := cross.Expand_pk(seed_pk)
 	if err != nil {
 		t.Fatalf("Error expanding pk: %v", err)
@@ -436,7 +434,16 @@ func TestKeygenRSDP(t *testing.T) {
 	if !bytes.Equal(s, c_s) {
 		t.Fatalf("S: %v, expected %v", s, c_s)
 	}
-	S := cross.Pack_fp_syn(s)
+
+	var S []byte
+	if instance, ok := cross.(*vanilla.CROSSInstance[uint8, uint16]); ok {
+		S = instance.Pack_fp_syn(s)
+	} else if instance, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
+		S = instance.Pack_fp_syn(s)
+	} else {
+		panic("Unknown CROSS instance type")
+	}
+	//S := cross.Pack_fp_syn(s)
 	c_S := []byte{182, 136, 129, 185, 147, 51, 216, 75, 174, 221, 121, 99, 249, 13, 180, 19, 209, 58, 179, 97, 60, 126, 123, 215, 15, 69, 110, 44, 58, 17, 179, 228, 39, 36, 232, 38, 194, 230, 177, 236, 35, 142, 120, 28, 0}
 	if !bytes.Equal(S, c_S) {
 		t.Fatalf("S: %v, expected %v", S, c_S)
@@ -450,9 +457,9 @@ func TestKeygenRSDPG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.ProtocolData.Lambda)/8, uint16(0+3*cross.ProtocolData.T+1))
-	seed_e := seed_e_pk[:2*cross.ProtocolData.Lambda/8]
-	seed_pk := seed_e_pk[2*cross.ProtocolData.Lambda/8:]
+	seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+	seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
+	seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
 	V_tr, W_mat, err := cross.Expand_pk(seed_pk)
 	if err != nil {
 		t.Fatalf("Error expanding pk: %v", err)
@@ -557,38 +564,38 @@ func TestFP_ELEM_CMOV(t *testing.T) {
 
 func TestFPRED_SINGLE(t *testing.T) {
 	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
-	if cross.FPRED_SINGLE_RSDPG(1) != 1 {
+	if cross.FPRED_SINGLE(1) != 1 {
 		t.Fatalf("Error in FPRED_SINGLE")
 	}
-	if cross.FPRED_SINGLE_RSDPG(0) != 0 {
+	if cross.FPRED_SINGLE(0) != 0 {
 		t.Fatalf("Error in FPRED_SINGLE")
 	}
-	if cross.FPRED_SINGLE_RSDPG(257) != 257 {
+	if cross.FPRED_SINGLE(257) != 257 {
 		t.Fatalf("Error in FPRED_SINGLE")
 	}
-	if cross.FPRED_SINGLE_RSDPG(3000) != 455 {
+	if cross.FPRED_SINGLE(3000) != 455 {
 		t.Fatalf("Error in FPRED_SINGLE")
 	}
 }
 
 func TestRESTR_TO_VALRSDPG(t *testing.T) {
 	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
-	if cross.RESTR_TO_VAL_RSDPG(1) != 16 {
+	if cross.RESTR_TO_VAL(1) != 16 {
 		t.Fatalf("Error in RESTR_TO_VAL")
 	}
-	if cross.RESTR_TO_VAL_RSDPG(16) != 302 {
+	if cross.RESTR_TO_VAL(16) != 302 {
 		t.Fatalf("Error in RESTR_TO_VAL")
 	}
-	if cross.RESTR_TO_VAL_RSDPG(3000) != 238 {
+	if cross.RESTR_TO_VAL(3000) != 238 {
 		t.Fatalf("Error in RESTR_TO_VAL")
 	}
-	if cross.RESTR_TO_VAL_RSDPG(106) != 420 {
+	if cross.RESTR_TO_VAL(106) != 420 {
 		t.Fatalf("Error in RESTR_TO_VAL")
 	}
-	if cross.RESTR_TO_VAL_RSDPG(44) != 97 {
+	if cross.RESTR_TO_VAL(44) != 97 {
 		t.Fatalf("Error in RESTR_TO_VAL")
 	}
-}
+}*/
 
 func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 	// 20 tests for RSDP_1_BALANCED

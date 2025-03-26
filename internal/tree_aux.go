@@ -4,18 +4,18 @@ import (
 	"encoding/binary"
 )
 
-func (c *CROSS) LeftChild(node_index, level int) int {
+func (c *CROSS[T, P]) LeftChild(node_index, level int) int {
 	return (2*node_index + 1) - c.TreeParams.Off[level]
 }
 
-func (c *CROSS) Sibling(node_index, level int) int {
+func (c *CROSS[T, P]) Sibling(node_index, level int) int {
 	if node_index%2 == 1 {
 		return node_index + 1
 	} else {
 		return node_index - 1
 	}
 }
-func (c *CROSS) Parent(node_index, level int) int {
+func (c *CROSS[T, P]) Parent(node_index, level int) int {
 	if node_index%2 == 1 {
 		return (node_index-1)/2 + (c.TreeParams.Off[level-1] / 2)
 	} else {
@@ -24,14 +24,14 @@ func (c *CROSS) Parent(node_index, level int) int {
 	}
 
 }
-func (c *CROSS) ParentIndex(index int) []byte {
+func (c *CROSS[T, P]) ParentIndex(index int) []byte {
 	data := make([]byte, 2)
 	// Convert to little-endian
 	binary.LittleEndian.PutUint16(data, uint16(index))
 	return data
 }
 
-func (c *CROSS) GetLevelOfNode(node_index int) int {
+func (c *CROSS[T, P]) GetLevelOfNode(node_index int) int {
 	acc := node_index
 	for i := 0; i < len(c.TreeParams.NPL); i++ {
 		acc -= c.TreeParams.NPL[i]

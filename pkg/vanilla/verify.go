@@ -9,7 +9,7 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func (c *CROSSInstance) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
+func (c *CROSSInstance[T, P]) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
 	//TODO: Check if sig is of correct length
 	salt := make([]byte, (2*c.ProtocolData.Lambda)/8)
 	digest_cmt := make([]byte, (2*c.ProtocolData.Lambda)/8)
@@ -22,7 +22,7 @@ func (c *CROSSInstance) unpackSignature(sig []byte) ([]byte, []byte, []byte, err
 	return salt, digest_cmt, digest_chall_2, nil
 }
 
-func (c *CROSSInstance) unpackPath(path []byte) [][]byte {
+func (c *CROSSInstance[T, P]) unpackPath(path []byte) [][]byte {
 	//TODO: Verify that this is correct
 	idx := 0
 	result := make([][]byte, c.ProtocolData.T)
@@ -35,7 +35,7 @@ func (c *CROSSInstance) unpackPath(path []byte) [][]byte {
 	return result
 }
 
-func (c *CROSSInstance) Verify(pk Pub, msg, sig []byte) (bool, error) {
+func (c *CROSSInstance[T, P]) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	//TODO: Unpack signature
 	/*salt, digest_cmt, digest_chall_2, err := unpackSignature(sig, c.ProtocolData)
 	if err != nil {

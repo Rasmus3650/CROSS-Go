@@ -22,7 +22,7 @@ type Signature struct {
 	resp_0         []resp_0_struct
 }
 
-func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error) {
+func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error) {
 	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
@@ -59,15 +59,7 @@ func (c *CROSSInstance) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte
 	return nil, nil, nil, nil, fmt.Errorf("Invalid variant")
 }
 
-func element_wise_mul(v, u_prime []byte, Z int) []byte {
-	result := make([]byte, len(v))
-	for i := range v {
-		result[i] = byte(v[i]*u_prime[i]) % byte(Z)
-	}
-	return result
-}
-
-func (c *CROSSInstance) Sign(sk, msg []byte) (Signature, error) {
+func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	signature := Signature{}
 	e_bar, e_G_bar, V_tr, W_mat, err := c.Expand_sk(sk)
 	root_seed := make([]byte, c.ProtocolData.Lambda/8)
@@ -121,13 +113,13 @@ func (c *CROSSInstance) Sign(sk, msg []byte) (Signature, error) {
 			return Signature{}, fmt.Errorf("Error generating u_prime: %v", err)
 		}
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
-		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
-		s_prime = c.Fp_vec_by_fp_matrix(u, V_tr)
-		s_prime = c.Fp_dz_norm_synd(s_prime)
+		u := c.Fp_vec_by_fp_vec_pointwise(v, c.byteToT(u_prime_i))
+		s_prime = c.TtoByte(c.Fp_vec_by_fp_matrix(u, c.byteToT(V_tr)))
+		s_prime = c.TtoByte(c.Fp_dz_norm_synd(c.byteToT(s_prime)))
 		var cmt_0_i_input []byte
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-			s_prime = c.Pack_fp_syn(s_prime)
-			v_bar_packed := c.Pack_fz_vec(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N])
+			s_prime = c.Pack_fp_syn(c.byteToT(s_prime))
+			v_bar_packed := c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 			copy(cmt_0_i_input, append(append(s_prime, v_bar_packed...), salt...))
 		} else {
 			//TODO: FIX TYPE!
@@ -135,8 +127,8 @@ func (c *CROSSInstance) Sign(sk, msg []byte) (Signature, error) {
 			for i := range s_prime {
 				res[i] = uint16(s_prime[i])
 			}
-			s_prime = c.Pack_fp_syn_RSDPG(res)
-			v_G_bar_packed := c.Pack_fz_rsdpg_vec(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M])
+			s_prime = c.Pack_fp_syn(c.uint16ToT(res))
+			v_G_bar_packed := c.Pack_fz_rsdpg_vec(c.byteToT(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M]))
 			copy(cmt_0_i_input, append(append(s_prime, v_G_bar_packed...), salt...))
 		}
 		domain_sep_hash := uint16(32768 + i + (2*c.ProtocolData.T - 1))
@@ -188,12 +180,12 @@ func (c *CROSSInstance) Sign(sk, msg []byte) (Signature, error) {
 	// Computing first response
 	y := make([][]byte, c.ProtocolData.T)
 	for i := 0; i < c.ProtocolData.T; i++ {
-		y[i] = c.Fp_vec_by_restr_vec_scaled(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], chall_1[i])
+		y[i] = c.TtoByte(c.Fp_vec_by_restr_vec_scaled(c.byteToT(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), c.byteToT(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), T(chall_1[i])))
 		y[i] = c.Fp_dz_norm(y[i])
 	}
 	y_digest_chall_1 := make([]byte, c.ProtocolData.T*c.DenselyPackedFpVecSize()+((2*c.ProtocolData.Lambda)/8))
 	for i := 0; i < c.ProtocolData.T; i++ {
-		val := c.Pack_fp_vec(y[i])
+		val := c.Pack_fp_vec(c.byteToT(y[i]))
 		copy(y_digest_chall_1[i*c.DenselyPackedFpVecSize():(i+1)*c.DenselyPackedFpVecSize()], val)
 	}
 	copy(y_digest_chall_1[c.ProtocolData.T*c.DenselyPackedFpVecSize():], digest_chall_1)
@@ -226,14 +218,38 @@ func (c *CROSSInstance) Sign(sk, msg []byte) (Signature, error) {
 				return Signature{}, fmt.Errorf("Too many responses published")
 			}
 			//TODO: Ensure this is valid go code, for setting resp_0[i] to values
-			signature.resp_0[published_rsps].y = c.Pack_fp_vec(y[i])
+			signature.resp_0[published_rsps].y = c.Pack_fp_vec(c.byteToT(y[i]))
 			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-				signature.resp_0[published_rsps].v_bar = c.Pack_fz_vec(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N])
+				signature.resp_0[published_rsps].v_bar = c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 			} else {
-				signature.resp_0[published_rsps].v_G_bar = c.Pack_fz_rsdpg_vec(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M])
+				signature.resp_0[published_rsps].v_G_bar = c.Pack_fz_rsdpg_vec(c.byteToT(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M]))
 			}
 			published_rsps++
 		}
 	}
 	return signature, nil
+}
+
+func (c *CROSSInstance[T, P]) byteToT(arr []byte) []T {
+	res := make([]T, len(arr))
+	for i := range arr {
+		res[i] = T(arr[i])
+	}
+	return res
+}
+
+func (c *CROSSInstance[T, P]) uint16ToT(arr []uint16) []T {
+	res := make([]T, len(arr))
+	for i := range arr {
+		res[i] = T(arr[i])
+	}
+	return res
+}
+
+func (c *CROSSInstance[T, P]) TtoByte(arr []T) []byte {
+	res := make([]byte, len(arr))
+	for i := range arr {
+		res[i] = byte(arr[i])
+	}
+	return res
 }

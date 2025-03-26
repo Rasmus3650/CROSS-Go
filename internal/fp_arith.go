@@ -2,25 +2,27 @@ package internal
 
 import "PQC-Master-Thesis/internal/common"
 
-func FPRED_SINGLE[t uint16 | uint32](x t) t {
-	return (x & 0x7F) + (x >> 7)
-}
-func (c *CROSS) FPRED_SINGLE_RSDPG(x uint32) uint32 {
-	return uint32(uint64(x) - (((uint64(x) * 2160140723) >> 40) * uint64(c.ProtocolData.P)))
-}
-
-func FPRED_DOUBLE(x uint16) uint16 {
-	return FPRED_SINGLE(FPRED_SINGLE(x))
-}
-func (c *CROSS) FPRED_DOUBLE_RSDPG(x uint32) uint32 {
-	return c.FPRED_SINGLE_RSDPG(uint32(x))
-}
-func FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
-	return (x + ((x + 1) >> 7)) & 0x7F
+func (c *CROSS[T, P]) FPRED_SINGLE(x P) P {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return (x & 0x7F) + (x >> 7)
+	} else {
+		return P(uint64(x) - (((uint64(x) * 2160140723) >> 40) * uint64(c.ProtocolData.P)))
+	}
 }
 
-func FP_DOUBLE_ZERO_NORM_RSDPG(x uint16) uint16 {
-	return x
+func (c *CROSS[T, P]) FPRED_DOUBLE(x P) P {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return c.FPRED_SINGLE(c.FPRED_SINGLE(x))
+	} else {
+		return c.FPRED_SINGLE(x)
+	}
+}
+func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return (x + ((x + 1) >> 7)) & 0x7F
+	} else {
+		return x
+	}
 }
 
 const (
@@ -35,104 +37,88 @@ const (
 	RESTR_G_GEN_64 uint16 = 505
 )
 
-func FP_ELEM_CMOV(bit, trueV, falseV uint16) uint32 {
+func (c *CROSS[T, P]) FP_ELEM_CMOV(bit T, trueV, falseV uint16) uint32 {
 	mask := uint32(0) - uint32(bit) // 0xFFFF if bit == 1, 0x0000 if bit == 0
 	return uint32((mask & uint32(trueV)) | ((^(mask & uint32(bit))) & uint32(falseV)))
 }
 
-func (c *CROSS) RESTR_TO_VAL_RSDPG(x uint16) uint32 {
-	res1 := (FP_ELEM_CMOV(((x >> 0) & 1), RESTR_G_GEN_1, 1)) *
-		(FP_ELEM_CMOV(((x >> 1) & 1), RESTR_G_GEN_2, 1))
-	res2 := (FP_ELEM_CMOV(((x >> 2) & 1), RESTR_G_GEN_4, 1)) *
-		(FP_ELEM_CMOV(((x >> 3) & 1), RESTR_G_GEN_8, 1))
-	res3 := (FP_ELEM_CMOV(((x >> 4) & 1), RESTR_G_GEN_16, 1)) *
-		(FP_ELEM_CMOV(((x >> 5) & 1), RESTR_G_GEN_32, 1))
-	res4 := FP_ELEM_CMOV(((x >> 6) & 1), RESTR_G_GEN_64, 1)
-	return c.FPRED_SINGLE_RSDPG(c.FPRED_SINGLE_RSDPG(uint32(res1)*uint32(res2)) * c.FPRED_SINGLE_RSDPG(uint32(res3)*uint32(res4)))
+// Might be returning uint16 instead of 8 in RSDP
+func (c *CROSS[T, P]) RESTR_TO_VAL(x T) P {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return P((RESTR_G_TABLE >> (8 * uint64(x))))
+	} else {
+		res1 := (c.FP_ELEM_CMOV(((x >> 0) & 1), RESTR_G_GEN_1, 1)) *
+			(c.FP_ELEM_CMOV(((x >> 1) & 1), RESTR_G_GEN_2, 1))
+		res2 := (c.FP_ELEM_CMOV(((x >> 2) & 1), RESTR_G_GEN_4, 1)) *
+			(c.FP_ELEM_CMOV(((x >> 3) & 1), RESTR_G_GEN_8, 1))
+		res3 := (c.FP_ELEM_CMOV(((x >> 4) & 1), RESTR_G_GEN_16, 1)) *
+			(c.FP_ELEM_CMOV(((x >> 5) & 1), RESTR_G_GEN_32, 1))
+		res4 := c.FP_ELEM_CMOV(((x >> 6) & 1), RESTR_G_GEN_64, 1)
+		return c.FPRED_SINGLE(c.FPRED_SINGLE(P(uint32(res1)*uint32(res2))) * c.FPRED_SINGLE(P(uint32(res3)*uint32(res4))))
+	}
 }
 
-func RESTR_TO_VAL(x uint8) uint8 {
-	return uint8((RESTR_G_TABLE >> (8 * uint64(x))))
-}
-
-func (c *CROSS) Fp_dz_norm_synd(s []uint8) []uint8 {
-	result := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
+func (c *CROSS[T, P]) Fp_dz_norm_synd(s []T) []T {
+	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		result[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+		result[i] = T(c.FP_DOUBLE_ZERO_NORM(uint16(s[i])))
 	}
 	return result
 }
 
-func (c *CROSS) Fp_dz_norm(s []uint8) []uint8 {
+func (c *CROSS[T, P]) Fp_dz_norm(s []uint8) []uint8 {
 	result := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		result[i] = uint8(FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+		result[i] = uint8(c.FP_DOUBLE_ZERO_NORM(uint16(s[i])))
 	}
 	return result
 }
 
-
-func (c *CROSS) Fp_dz_norm_synd_RSDPG(s []uint16) []uint16 {
-	result := make([]uint16, c.ProtocolData.N-c.ProtocolData.K)
-	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		result[i] = uint16(FP_DOUBLE_ZERO_NORM_RSDPG(s[i]))
-	}
-	return result
-}
-
-func (c *CROSS) Convert_restr_vec_to_fp(in []byte) []byte {
-	result := make([]byte, c.ProtocolData.N)
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-		for i := 0; i < c.ProtocolData.N; i++ {
-			result[i] = byte(RESTR_TO_VAL(uint8(in[i])))
-		}
-	} else {
-		for i := 0; i < c.ProtocolData.N; i++ {
-			result[i] = byte(c.RESTR_TO_VAL_RSDPG(uint16(in[i])))
-		}
-	}
-	return result
-}
-
-func (c *CROSS) Fp_vec_by_fp_vec_pointwise(a, b []byte) []byte {
-	//TODO: Probably needs to be generic types instead of bytes
-	result := make([]byte, c.ProtocolData.N)
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-		for i := 0; i < c.ProtocolData.N; i++ {
-			result[i] = byte(c.FPRED_DOUBLE_RSDPG(uint32(RESTR_TO_VAL(a[i])) * uint32(b[i])))
-		}
-	} else {
-		for i := 0; i < c.ProtocolData.N; i++ {
-			result[i] = byte(FPRED_DOUBLE(uint16(RESTR_TO_VAL(a[i])) * uint16(b[i])))
-		}
-	}
-	return result
-}
-//TODO: THIS ONLY WORKS FOR RSDP
-func (c *CROSS) Fp_vec_by_restr_vec_scaled(e,u_prime []byte, chall_1 byte) []byte{
-	result := make([]byte, c.ProtocolData.N)
+func (c *CROSS[T, P]) Convert_restr_vec_to_fp(in []byte) []T {
+	result := make([]T, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		result[i] = byte(FPRED_DOUBLE(uint16(u_prime[i])+ uint16(RESTR_TO_VAL(e[i])) *uint16(chall_1)))
+		result[i] = T(c.RESTR_TO_VAL(T(in[i])))
 	}
 	return result
 }
 
-func (c *CROSS) Fp_vec_by_fp_matrix(e, V_tr []byte) []byte {
-	result := make([]byte, c.ProtocolData.N-c.ProtocolData.K)
+func (c *CROSS[T, P]) Fp_vec_by_fp_vec_pointwise(a, b []T) []T {
+	result := make([]T, c.ProtocolData.N)
+	for i := 0; i < c.ProtocolData.N; i++ {
+		result[i] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(a[i]))) * FP_DOUBLE_PREC[T, P](b[i])))
+	}
+	return result
+}
+
+func (c *CROSS[T, P]) Fp_vec_by_restr_vec_scaled(e, u_prime []T, chall_1 T) []T {
+	result := make([]T, c.ProtocolData.N)
+	for i := 0; i < c.ProtocolData.N; i++ {
+		result[i] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](u_prime[i]) + FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(e[i])))*FP_DOUBLE_PREC[T, P](chall_1)))
+	}
+	return result
+}
+
+func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []T) []T {
+	res := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
+		res[i-c.ProtocolData.K] = T(c.RESTR_TO_VAL(T(e_bar[i])))
+	}
+	for i := 0; i < c.ProtocolData.K; i++ {
+		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+			res[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](res[j]) + FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(T(e_bar[i]))))*FP_DOUBLE_PREC[T, P](V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
+		}
+	}
+	return res
+}
+
+func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
+	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	copy(result, e[c.ProtocolData.K:])
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-		for i := 0; i < c.ProtocolData.K; i++ {
-			for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-				result[j] = byte(FPRED_DOUBLE(uint16(result[j]) + uint16(e[i])*uint16(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-			}
-		}
-	} else {
-		//TODO: Probably needs to be generic types instead of bytes
-		for i := 0; i < c.ProtocolData.K; i++ {
-			for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-				result[j] = byte(c.FPRED_DOUBLE_RSDPG(uint32(result[j]) + uint32(e[i])*uint32(V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-			}
+	for i := 0; i < c.ProtocolData.K; i++ {
+		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+			result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + FP_DOUBLE_PREC[T, P](e[i])*FP_DOUBLE_PREC[T, P](V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
 		}
 	}
+
 	return result
 }

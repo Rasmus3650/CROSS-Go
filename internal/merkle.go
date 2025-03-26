@@ -9,15 +9,15 @@ import (
 	"golang.org/x/crypto/sha3"
 )
 
-func (c *CROSS) TreeRoot(commitments [][]byte) ([]byte, error) {
-	T, err := c.ComputeMerkleTree(commitments)
+func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) ([]byte, error) {
+	t, err := c.ComputeMerkleTree(commitments)
 	if err != nil {
 		return nil, err
 	}
-	return T[0], nil
+	return t[0], nil
 }
 
-func (c *CROSS) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) {
+func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := c.placeOnLeaves(commitments)
 		startNode := c.TreeParams.LSI[0]
@@ -89,7 +89,7 @@ func (c *CROSS) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) {
 	}
 }
 
-func (c *CROSS) label_leaves(chall_2 []bool) []bool {
+func (c *CROSS[T, P]) label_leaves(chall_2 []bool) []bool {
 	T_prime := make([]bool, c.TreeParams.Total_nodes)
 	C := 0
 	for i := 0; i < len(c.TreeParams.LSI); i++ {
@@ -103,19 +103,19 @@ func (c *CROSS) label_leaves(chall_2 []bool) []bool {
 	return T_prime
 }
 
-func (c *CROSS) placeOnLeaves(cmt_0 [][]byte) [][]byte {
-	T := make([][]byte, c.TreeParams.Total_nodes)
+func (c *CROSS[T, P]) placeOnLeaves(cmt_0 [][]byte) [][]byte {
+	t := make([][]byte, c.TreeParams.Total_nodes)
 	C := 0
 	for i := 0; i < len(c.TreeParams.LSI); i++ {
 		for j := 0; j < c.TreeParams.NCL[i]; j++ {
-			T[(c.TreeParams.LSI[i] + j)] = cmt_0[C]
+			t[(c.TreeParams.LSI[i] + j)] = cmt_0[C]
 			C++
 		}
 	}
-	return T
+	return t
 }
 
-func (c *CROSS) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error) {
+func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T, err := c.ComputeMerkleTree(commitments)
 		if err != nil {
@@ -158,7 +158,7 @@ func (c *CROSS) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error
 	}
 }
 
-func (c *CROSS) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, error) {
+func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, error) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := c.placeOnLeaves(cmt_0)
 		// End of PlaceCMTonLeaves
