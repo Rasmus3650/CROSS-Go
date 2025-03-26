@@ -46,9 +46,8 @@ func TestIntegration(t *testing.T) {
 			t.Errorf("Error: %s", err)
 		}
 		for xyz := 0; xyz < 100; xyz++ {
-			// TODO: Make seed and salt dependent on the security level
-			seed := make([]byte, 32)
-			salt := make([]byte, 64)
+			seed := make([]byte, instance.GetProtocolData().Lambda/8)
+			salt := make([]byte, 2*instance.GetProtocolData().Lambda/8)
 			rand.Read(seed)
 			rand.Read(salt)
 			leaves, err := instance.SeedLeaves(seed, salt)
@@ -98,20 +97,16 @@ func InSet(set [][]byte, element []byte) bool {
 }
 
 func TestInt(t *testing.T) {
-	// Errors: Small-RSDP-3, Small-RSDP-G-5, Balanced-RSDP-G-5
-	// Some weird probabilistic edge-case
-	// Maybe offset should be accumulated?
 	instance, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 	if err != nil {
 		t.Errorf("Error: %s", err)
 	}
-	for xyz := 0; xyz < 1; xyz++ {
+	for xyz := 0; xyz < 100; xyz++ {
 		seed := make([]byte, 32)
 		salt := make([]byte, 64)
 		rand.Read(seed)
 		rand.Read(salt)
 		leaves, err := instance.SeedLeaves(seed, salt)
-		//fmt.Println("leaves: ", leaves[len(leaves)-1])
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
@@ -133,7 +128,6 @@ func TestInt(t *testing.T) {
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
-		// EVERYTHING WORKS UNTIL HERE
 		leaves_prime, err := instance.RebuildLeaves(path, salt, chall_2)
 		if err != nil {
 			t.Errorf("Error: %s", err)
@@ -144,13 +138,6 @@ func TestInt(t *testing.T) {
 				res = append(res, leaves[i])
 			}
 		}
-		//fmt.Println("Leaves: ", res)
-		//fmt.Println("Leaves prime: ", leaves_prime)
-		//fmt.Println("Rebuilt leaves: ", leaves_prime)
-		//fmt.Println("Len of rebuilt leaves: ", len(leaves))
-		//fmt.Println("---------------------------------------------------------")
-		//fmt.Println("leaves: ", leaves)
-		//fmt.Println("Len of leaves: ", len(leaves))
 		for i := 0; i < len(leaves_prime); i++ {
 			if !InSet(leaves, leaves_prime[i]) {
 				fmt.Println("Error: Leaf ", i, " not in set")

@@ -4,8 +4,6 @@ import (
 	"PQC-Master-Thesis/internal/common"
 	"fmt"
 	"math"
-
-	"golang.org/x/crypto/sha3"
 )
 
 func (c *CROSS[T, P]) Leaves(tree [][]byte) [][]byte {
@@ -24,18 +22,16 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		t[0] = seed
 		start_node := 0
-		res := make([][]byte, c.TreeParams.Total_nodes)
-		ctr := 0
 		for level := 0; level <= len(c.TreeParams.NPL)-1; level++ {
 			for i := 0; i <= c.TreeParams.NPL[level]-c.TreeParams.LPL[level]-1; i++ {
 				node := start_node + i
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
-				res[ctr] = append(append(t[node], salt...), c.ParentIndex(node)...)
-				ctr++
-				hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
-				sha3.ShakeSum128(hash, append(append(t[node], salt...), c.ParentIndex(node)...))
+				hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
+				if err != nil {
+					return nil, fmt.Errorf("Error: %s", err)
+				}
 				t[left_child] = hash[:c.ProtocolData.Lambda/8]
 				t[right_child] = hash[c.ProtocolData.Lambda/8:]
 			}
@@ -46,10 +42,12 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		t[0] = seed
-		hash := make([]byte, (4*c.ProtocolData.Lambda)/8)
-		sha3.ShakeSum128(hash, append(append(t[0], salt...), c.ParentIndex(0)...))
+		quad_seeds, err := c.CSPRNG(append(t[0], salt...), (4*c.ProtocolData.Lambda)/8, uint16(0))
+		if err != nil {
+			return nil, fmt.Errorf("Error: %s", err)
+		}
 		for i := 1; i <= 4; i++ {
-			t[i] = hash[(i-1)*c.ProtocolData.Lambda/8 : i*c.ProtocolData.Lambda/8]
+			t[i] = quad_seeds[(i-1)*c.ProtocolData.Lambda/8 : i*c.ProtocolData.Lambda/8]
 		}
 		children := make([]int, 4)
 		if c.ProtocolData.T%4 == 0 {
@@ -82,9 +80,12 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 			}
 		}
 		result := [][]byte{}
+		dsc_counter := 0
 		for i := 0; i <= 3; i++ {
-			hash := make([]byte, (children[i]*c.ProtocolData.Lambda)/8)
-			sha3.ShakeSum128(hash, append(append(t[i+1], salt...), c.ParentIndex(i+1)...))
+			hash, err := c.CSPRNG(append(t[i+1], salt...), children[i]*c.ProtocolData.Lambda, uint16(0+dsc_counter))
+			if err != nil {
+				return nil, fmt.Errorf("Error: %s", err)
+			}
 			for j := 0; j < children[i]; j++ {
 				result = append(result, hash[j*c.ProtocolData.Lambda/8:(j+1)*c.ProtocolData.Lambda/8])
 			}
@@ -181,8 +182,6 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		start_node := 1
 		pub_nodes := 0
-		res := make([][]byte, c.TreeParams.Total_nodes)
-		ctr := 0
 		for level := 1; level <= len(c.TreeParams.NPL)-1; level++ {
 			for i := 0; i <= c.TreeParams.NPL[level]-1; i++ {
 				node := start_node + i
@@ -194,10 +193,10 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 					pub_nodes++
 				}
 				if T_prime[node] && i < c.TreeParams.NPL[level]-c.TreeParams.LPL[level] {
-					hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
-					res[ctr] = append(append(t[node], salt...), c.ParentIndex(node)...)
-					ctr++
-					sha3.ShakeSum128(hash, append(append(t[node], salt...), c.ParentIndex(node)...))
+					hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
+					if err != nil {
+						return nil, fmt.Errorf("Error: %s", err)
+					}
 					t[left_child] = hash[:c.ProtocolData.Lambda/8]
 					t[right_child] = hash[c.ProtocolData.Lambda/8:]
 					T_prime[left_child] = true
@@ -206,13 +205,11 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 			}
 			start_node += c.TreeParams.NPL[level]
 		}
-		res_prime := [][]byte{}
 		result := [][]byte{}
 		leaves := c.Leaves(t)
 		for i := 0; i < len(leaves); i++ {
 			if chall_2[i] {
 				result = append(result, leaves[i])
-				res_prime = append(res_prime, res[i])
 			}
 		}
 		return result, nil

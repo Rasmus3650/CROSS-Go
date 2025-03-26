@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"math"
-
-	"golang.org/x/crypto/sha3"
 )
 
 func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) ([]byte, error) {
@@ -26,8 +24,10 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 				left_child := startNode + i
 				right_child := left_child + 1
 				parent := c.Parent(left_child, level)
-				hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
-				sha3.ShakeSum128(hash, append(T[left_child], T[right_child]...))
+				hash, err := c.CSPRNG(append(T[left_child], T[right_child]...), (2*c.ProtocolData.Lambda)/8, uint16(32768))
+				if err != nil {
+					return nil, err
+				}
 				T[parent] = hash
 			}
 			startNode -= c.TreeParams.NPL[level-1]
@@ -74,13 +74,17 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 				prephash = append(prephash, T[5+j+children_offset]...)
 			}
 			children_offset += children[i]
-			hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
-			sha3.ShakeSum128(hash, prephash)
+			hash, err := c.CSPRNG(prephash[i*((2*c.ProtocolData.Lambda)/8):(i+1)*((2*c.ProtocolData.Lambda)/8)], children[i]*(2*c.ProtocolData.Lambda)/8, uint16(32768))
+			if err != nil {
+				return nil, err
+			}
 			T[i+1] = hash
 		}
-		hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
 		data := bytes.Join(T[1:4], nil)
-		sha3.ShakeSum128(hash, data)
+		hash, err := c.CSPRNG(data, 2*c.ProtocolData.Lambda/8, uint16(32768))
+		if err != nil {
+			return nil, err
+		}
 		T[0] = hash
 		return T, nil
 
@@ -186,11 +190,13 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 					right_child = proof[sibling]
 					T[sibling] = right_child
 				}
-				hash := make([]byte, (2*c.ProtocolData.Lambda)/8)
 				if left_child == nil || right_child == nil {
 					return nil, fmt.Errorf("Left or right child is nil")
 				}
-				sha3.ShakeSum128(hash, append(left_child, right_child...))
+				hash, err := c.CSPRNG(append(left_child, right_child...), (2*c.ProtocolData.Lambda)/8, uint16(32768))
+				if err != nil {
+					return nil, err
+				}
 				T[parent] = hash
 				T_prime[parent] = true
 			}
