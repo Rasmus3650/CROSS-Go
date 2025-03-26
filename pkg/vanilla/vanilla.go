@@ -16,6 +16,10 @@ type CROSSAllMethods interface {
 	Expand_pk(seed_pk []byte) ([]int, []byte, error)
 	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error)
 
+	//arith
+	Fz_dz_norm_n(v []byte) []byte
+	Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte
+
 	//seed
 	SeedLeaves(seed, salt []byte) ([][]byte, error)
 	RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, error)
