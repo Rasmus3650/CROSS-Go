@@ -79,7 +79,6 @@ func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
 
 // Dummy KeyGen function for testing purposes ONLY
 func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
-
 	seed_e_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]

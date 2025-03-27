@@ -49,7 +49,7 @@
 void pseed(unsigned char seed[SEED_LENGTH_BYTES]){
      fprintf(stderr,"-");
    for (int i = 0 ; i < SEED_LENGTH_BYTES; i++){
-     fprintf(stderr,"%02X", seed[i]);
+     fprintf(stderr,"%u", seed[i]);
    }
      fprintf(stderr,"- ");
 }
@@ -265,10 +265,13 @@ void gen_seed_tree(unsigned char seed_tree[NUM_NODES_SEED_TREE * SEED_LENGTH_BYT
             memcpy(csprng_input,
                     seed_tree + father_node*SEED_LENGTH_BYTES,
                     SEED_LENGTH_BYTES);
-
+            /*printf("seed: ");
+            for (int i = 0; i < SEED_LENGTH_BYTES; i++) {
+                printf("%u ", csprng_input[i]);
+            }
+            printf("\n");*/
             /* Domain separation using father node index */
             uint16_t domain_sep = CSPRNG_DOMAIN_SEP_CONST + father_node;
-
             /* Generate the children (stored contiguously).
              * By construction, the tree has always two children */
             csprng_initialize(&tree_csprng_state, csprng_input, csprng_input_len, domain_sep);
@@ -417,3 +420,5 @@ uint8_t rebuild_tree(unsigned char
     return (error == 0);
 } /* end regenerate_leaves */
 #endif
+
+

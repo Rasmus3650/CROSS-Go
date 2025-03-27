@@ -28,6 +28,8 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
+				//fmt.Println("seed: ", t[node])
+				//fmt.Println("salt: ", salt)
 				hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 				if err != nil {
 					return nil, fmt.Errorf("Error: %s", err)
@@ -49,6 +51,7 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 		for i := 1; i <= 4; i++ {
 			t[i] = quad_seeds[(i-1)*c.ProtocolData.Lambda/8 : i*c.ProtocolData.Lambda/8]
 		}
+
 		children := make([]int, 4)
 		if c.ProtocolData.T%4 == 0 {
 			for i := 0; i < len(children); i++ {
@@ -81,8 +84,9 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 		}
 		result := [][]byte{}
 		dsc_counter := 0
-		for i := 0; i <= 3; i++ {
-			hash, err := c.CSPRNG(append(t[i+1], salt...), children[i]*c.ProtocolData.Lambda, uint16(0+dsc_counter))
+		for i := 0; i < 4; i++ {
+			dsc_counter += 1
+			hash, err := c.CSPRNG(append(t[i+1], salt...), children[i]*(c.ProtocolData.Lambda/8), uint16(0+dsc_counter))
 			if err != nil {
 				return nil, fmt.Errorf("Error: %s", err)
 			}

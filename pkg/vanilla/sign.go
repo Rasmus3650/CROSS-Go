@@ -208,7 +208,6 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	if err != nil {
 		return Signature{}, fmt.Errorf("Error generating seed path: %v", err)
 	}
-	//TODO: Unpack into []byte
 	signature.proof = proof
 	signature.path = path
 	published_rsps := 0
@@ -227,6 +226,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 			published_rsps++
 		}
 	}
+	//TODO: Unpack into []byte
 	return signature, nil
 }
 

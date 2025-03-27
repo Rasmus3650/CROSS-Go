@@ -148,7 +148,7 @@ void test_csprng_fp_vec_chall_1(){
     csprng_fp_vec_chall_1(chall_1,&csprng_state_mat);
     print_chall_1(chall_1);
     return;
-}*/
+}
 
 void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("e_G_bar:\n");
@@ -196,7 +196,7 @@ void test_csprng_fz_mat(){
     print_W_mat(W_mat);
     return;
 }
-
+*/
 int main() {
     //test_hash();
     //test_csprng();
@@ -205,7 +205,7 @@ int main() {
     //test_csprng_fp_vec();
     //test_csprng_fp_vec_chall_1();
     //test_csprng_fz_inf_w();
-    test_csprng_fz_mat();
+    //test_csprng_fz_mat();
     return 0;
 }
 

@@ -1,7 +1,7 @@
 #include "csprng_hash.h"
 #include <stdio.h>
 #include <stdint.h>
-
+/*
 void print_csprng_state(const CSPRNG_STATE_T *csprng_state, size_t size) {
     for (size_t i = 0; i < size; i++) {
         printf("%u ", ((unsigned char*)csprng_state)[i]);
@@ -150,7 +150,7 @@ void test_csprng_fp_vec_chall_1(){
     return;
 }
 
-/*void print_e_G_bar(FZ_ELEM e_G_bar[M]){
+void print_e_G_bar(FZ_ELEM e_G_bar[M]){
     printf("e_G_bar:\n");
     for (int i = 0; i < M; i++) {
         printf("%u, ", e_G_bar[i]);
@@ -178,7 +178,7 @@ int main() {
     //test_hash();
     //test_csprng();
     //test_csprng_fp_mat();
-    test_csprng_fz_vec();
+    //test_csprng_fz_vec();
     //test_csprng_fp_vec();
     //test_csprng_fp_vec_chall_1();
     return 0;
