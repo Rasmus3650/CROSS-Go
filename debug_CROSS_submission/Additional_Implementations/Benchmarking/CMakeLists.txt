@@ -18,7 +18,7 @@ set(TYPE_DEFINE "SPEED")
 set(OMIT_SEED_TREE "NO_TREES=1")
 #Else
 #set(OMIT_SEED_TREE "")
-set(CATEGORY_DEFINE "CATEGORY_1")
+set(CATEGORY_DEFINE "CATEGORY_5")
 
 # Define required compile-time parameters
 add_compile_definitions(${PROBLEM_DEFINE}=1 ${TYPE_DEFINE}=1 ${CATEGORY_DEFINE}=1 ${OMIT_SEED_TREE})

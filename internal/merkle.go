@@ -74,13 +74,13 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 				prephash = append(prephash, T[5+j+children_offset]...)
 			}
 			children_offset += children[i]
-			hash, err := c.CSPRNG(prephash[i*((2*c.ProtocolData.Lambda)/8):(i+1)*((2*c.ProtocolData.Lambda)/8)], children[i]*(2*c.ProtocolData.Lambda)/8, uint16(32768))
+			hash, err := c.CSPRNG(prephash, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 			if err != nil {
 				return nil, err
 			}
 			T[i+1] = hash
 		}
-		data := bytes.Join(T[1:4], nil)
+		data := bytes.Join(T[1:5], nil)
 		hash, err := c.CSPRNG(data, 2*c.ProtocolData.Lambda/8, uint16(32768))
 		if err != nil {
 			return nil, err

@@ -41,6 +41,15 @@
 #define TO_PUBLISH 1
 #define NOT_TO_PUBLISH 0
 
+void print_arrayA(uint8_t *arr, size_t size) {
+    int ctr = 0;
+    for (size_t i = 0; i < size; i++) {
+        printf("%u, ", arr[i]);
+        ctr++;
+    }
+    printf("\n");
+}
+
 void tree_root(uint8_t root[HASH_DIGEST_LENGTH],
                               uint8_t leaves[T][HASH_DIGEST_LENGTH]){
 
