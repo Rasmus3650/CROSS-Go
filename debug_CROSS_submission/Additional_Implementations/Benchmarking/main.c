@@ -25,7 +25,7 @@ void seedLeavesSeedPathTestSpeed(){
         "ZZZZZZZZZZZZZZZZ"
     };
     // Iterate over each seed
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 3; i++) {
         printf("START!!!");
         uint8_t root_seed[SEED_LENGTH_BYTES] = {231, 221, 225, 64, 121, 143, 37, 241, 138, 71, 192, 51, 249, 204, 213, 132};
         uint8_t salt[SALT_LENGTH_BYTES] = {238, 169, 90, 166, 30, 38, 152, 213, 77, 73, 128, 111, 48, 71, 21, 189, 87, 208, 83, 98, 5, 78, 40, 139, 212, 111, 142, 127, 45, 164, 151, 255};

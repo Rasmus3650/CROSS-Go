@@ -98,22 +98,21 @@ int seed_leaves(unsigned char rounds_seeds[T*SEED_LENGTH_BYTES],
    CSPRNG_STATE_T csprng_states[4];
    csprng_initialize(&csprng_states[0], csprng_input, csprng_input_len, CSPRNG_DOMAIN_SEP_CONST);
    csprng_randombytes(quad_seed,4*SEED_LENGTH_BYTES,&csprng_states[0]);
-
    int remainders[4] = {0};
    if(T%4 > 0){ remainders[0] = 1; } 
    if(T%4 > 1){ remainders[1] = 1; } 
    if(T%4 > 2){ remainders[2] = 1; } 
-   
+
    int offset = 0;
    uint16_t dsc_counter = 0;
    for (int i = 0; i < 4; i++){
        memcpy(csprng_input,&quad_seed[i*SEED_LENGTH_BYTES],SEED_LENGTH_BYTES);
        dsc_counter += 1;
        csprng_initialize(&csprng_states[i], csprng_input, csprng_input_len, CSPRNG_DOMAIN_SEP_CONST + dsc_counter);
-       
        csprng_randombytes(&rounds_seeds[((T/4)*i+offset)*SEED_LENGTH_BYTES],
                           (T/4+remainders[i])*SEED_LENGTH_BYTES,
                           &csprng_states[i]);
+        
        offset += remainders[i];
    }
    return T;
@@ -420,5 +419,7 @@ uint8_t rebuild_tree(unsigned char
     return (error == 0);
 } /* end regenerate_leaves */
 #endif
+
+
 
 
