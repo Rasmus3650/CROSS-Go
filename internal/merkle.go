@@ -19,16 +19,18 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := c.placeOnLeaves(commitments)
 		startNode := c.TreeParams.LSI[0]
-		for level := len(c.TreeParams.NPL) - 1; level >= 1; level-- {
+		for level := len(c.TreeParams.NPL) - 1; level > 0; level-- {
 			for i := c.TreeParams.NPL[level] - 2; i >= 0; i -= 2 {
-				left_child := startNode + i
-				right_child := left_child + 1
-				parent := c.Parent(left_child, level)
-				hash, err := c.CSPRNG(append(T[left_child], T[right_child]...), (2*c.ProtocolData.Lambda)/8, uint16(32768))
+				current_node := startNode + i
+				parent_node := c.Parent(current_node, level)
+				hash_input := make([]byte, 2*((2*c.ProtocolData.Lambda)/8))
+				copy(hash_input, T[current_node])
+				copy(hash_input[2*c.ProtocolData.Lambda/8:], T[current_node+1])
+				hash, err := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 				if err != nil {
 					return nil, err
 				}
-				T[parent] = hash
+				T[parent_node] = hash
 			}
 			startNode -= c.TreeParams.NPL[level-1]
 		}
@@ -125,27 +127,32 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 		if err != nil {
 			return nil, err
 		}
-		T_prime := c.label_leaves(chall_2)
+		mtp := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
+		flag_tree := c.label_leaves(chall_2)
+		published := 0
 		start_node := c.TreeParams.LSI[0]
-		proof := make([][]byte, c.TreeParams.Total_nodes)
-		for level := len(c.TreeParams.NPL) - 1; level >= 1; level-- {
+		// -1 in len?
+		for level := len(c.TreeParams.NPL) - 1; level > 0; level-- {
 			for i := c.TreeParams.NPL[level] - 2; i >= 0; i -= 2 {
-				node := start_node + i
-				parent := c.Parent(node, level)
-				sibling := c.Sibling(node, level)
-				if T_prime[node] || T_prime[sibling] {
-					T_prime[parent] = true
+				current_node := start_node + i
+				parent_node := c.Parent(current_node, level)
+				flag_tree[parent_node] = flag_tree[current_node] || flag_tree[current_node+1]
+				/* Add left sibling only if right one was computed but left wasn't */
+				if !flag_tree[current_node] && flag_tree[current_node+1] {
+					mtp[published] = make([]byte, 2*c.ProtocolData.Lambda/8)
+					copy(mtp[published], T[current_node])
+					published++
 				}
-				if !T_prime[node] && T_prime[sibling] {
-					proof[node] = T[node]
-				}
-				if T_prime[node] && !T_prime[sibling] {
-					proof[sibling] = T[sibling]
+				/* Add right sibling only if left was computed but right wasn't */
+				if flag_tree[current_node] && !flag_tree[current_node+1] {
+					mtp[published] = make([]byte, 2*c.ProtocolData.Lambda/8)
+					copy(mtp[published], T[current_node+1])
+					published++
 				}
 			}
 			start_node -= c.TreeParams.NPL[level-1]
 		}
-		return proof, nil
+		return mtp, nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		if len(chall_2) != len(commitments) {
 			return nil, fmt.Errorf("Length mismatch between commitments (len: %d) and challenge (len: %d)", len(commitments), len(chall_2))
@@ -163,49 +170,48 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 }
 
 func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, error) {
+	/*Their terms:
+	recomputed_leaves = cmt_0
+	mtp = proof
+	leaves_to_reveal = chall_2*/
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := c.placeOnLeaves(cmt_0)
-		// End of PlaceCMTonLeaves
 		T_prime := c.label_leaves(chall_2)
+		published := 0
 		start_node := c.TreeParams.LSI[0]
-		for level := len(c.TreeParams.NPL) - 1; level >= 1; level-- {
+		for level := len(c.TreeParams.NPL) - 1; level > 0; level-- {
 			for i := c.TreeParams.NPL[level] - 2; i >= 0; i -= 2 {
-				node := start_node + i
-				parent := c.Parent(node, level)
-				sibling := c.Sibling(node, level)
-				var left_child []byte
-				var right_child []byte
-				if !T_prime[node] && !T_prime[sibling] {
+				current_node := start_node + i
+				parent_node := c.Parent(current_node, level)
+				hash_input := make([]byte, 2*((2*c.ProtocolData.Lambda)/8))
+				if !T_prime[current_node] && !T_prime[current_node+1] {
 					continue
 				}
-				if T_prime[node] {
-					left_child = T[node]
+				if T_prime[current_node] {
+					copy(hash_input, T[current_node])
 				} else {
-					left_child = proof[node]
-					T[node] = left_child
+					copy(hash_input, proof[published])
+					published++
 				}
-				if T_prime[sibling] {
-					right_child = T[sibling]
+				if T_prime[current_node+1] {
+					copy(hash_input[2*c.ProtocolData.Lambda/8:], T[current_node+1])
 				} else {
-					right_child = proof[sibling]
-					T[sibling] = right_child
+					copy(hash_input[2*c.ProtocolData.Lambda/8:], proof[published])
+					published++
 				}
-				if left_child == nil || right_child == nil {
-					return nil, fmt.Errorf("Left or right child is nil")
-				}
-				hash, err := c.CSPRNG(append(left_child, right_child...), (2*c.ProtocolData.Lambda)/8, uint16(32768))
+				hash, err := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 				if err != nil {
 					return nil, err
 				}
-				T[parent] = hash
-				T_prime[parent] = true
+				T[parent_node] = hash
+				T_prime[parent_node] = true
 			}
 			start_node -= c.TreeParams.NPL[level-1]
 		}
 		return T[0], nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		pub_nodes := 0
-		for i := 0; i <= c.ProtocolData.T-1; i++ {
+		for i := 0; i < c.ProtocolData.T; i++ {
 			if chall_2[i] {
 				cmt_0[i] = proof[pub_nodes]
 				pub_nodes++

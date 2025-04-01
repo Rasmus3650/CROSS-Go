@@ -5,7 +5,7 @@ import (
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
 	"crypto/rand"
-	math "math/rand"
+	"fmt"
 	"testing"
 )
 
@@ -27,17 +27,11 @@ func TestMerkle(t *testing.T) {
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
-			chall_2 := make([]bool, instance.GetProtocolData().T)
-			chall_2[0] = true
-			chall_2[1] = true
-			chall_2[2] = true
-			chall_2[3] = true
-			chall_2[4] = false
-			chall_2[5] = true
-			chall_2[6] = false
-			chall_2[7] = false
-			for i := 8; i < instance.GetProtocolData().T; i++ {
-				chall_2[i] = math.Intn(2) == 0
+			digest := make([]byte, 32)
+			rand.Read(digest)
+			chall_2, err := instance.Expand_digest_to_fixed_weight(digest)
+			if err != nil {
+				t.Errorf("Error: %s", err)
 			}
 			proof, err := instance.TreeProof(commitments, chall_2)
 			if err != nil {
@@ -5431,11 +5425,9 @@ func TestMerkleRSDPSmall(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error computing tree proof: %v", err)
 		}
-		if len(flatten(proof)) != len(test.proof) {
-			t.Fatalf("Proof lengths dont match")
-		}
+		fmt.Println(proof)
 		if !bytes.Equal(flatten(proof), test.proof) {
-			t.Fatalf("Computed proof does not match expected proof")
+			t.Fatalf("Proof	dont match")
 		}
 	}
 	cross, err = vanilla.NewCROSS(common.RSDP_3_SMALL)

@@ -50,6 +50,7 @@ type (
 		BITS_N_FZ_CT_RNG           int
 		BITS_M_FZ_CT_RNG           int
 		BITS_CWSTR_RNG             int
+		TREE_NODES_TO_STORE        int
 	}
 
 	CONFIG_IDENT uint8
@@ -289,6 +290,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              28028,
 			BITS_N_FZ_CT_RNG:           717,
 			BITS_CWSTR_RNG:             10390,
+			TREE_NODES_TO_STORE:        129,
 		}
 	case RSDP_1_BALANCED:
 		data.T = 256
@@ -299,6 +301,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              28028,
 			BITS_N_FZ_CT_RNG:           717,
 			BITS_CWSTR_RNG:             4776,
+			TREE_NODES_TO_STORE:        108,
 		}
 	case RSDP_1_FAST:
 		data.T = 157
@@ -309,6 +312,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              28028,
 			BITS_N_FZ_CT_RNG:           717,
 			BITS_CWSTR_RNG:             3656,
+			TREE_NODES_TO_STORE:        82,
 		}
 	case RSDP_3_SMALL:
 		data.T = 580
@@ -319,6 +323,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              60711,
 			BITS_N_FZ_CT_RNG:           1065,
 			BITS_CWSTR_RNG:             12880,
+			TREE_NODES_TO_STORE:        184,
 		}
 	case RSDP_3_BALANCED:
 		data.T = 384
@@ -329,6 +334,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              60711,
 			BITS_N_FZ_CT_RNG:           1065,
 			BITS_CWSTR_RNG:             8586,
+			TREE_NODES_TO_STORE:        165,
 		}
 	case RSDP_3_FAST:
 		data.T = 239
@@ -339,6 +345,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              60711,
 			BITS_N_FZ_CT_RNG:           1065,
 			BITS_CWSTR_RNG:             5264,
+			TREE_NODES_TO_STORE:        125,
 		}
 	case RSDP_5_SMALL:
 		data.T = 832
@@ -349,6 +356,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              108689,
 			BITS_N_FZ_CT_RNG:           1431,
 			BITS_CWSTR_RNG:             18150,
+			TREE_NODES_TO_STORE:        251,
 		}
 	case RSDP_5_BALANCED:
 		data.T = 512
@@ -359,6 +367,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              108689,
 			BITS_N_FZ_CT_RNG:           1431,
 			BITS_CWSTR_RNG:             10746,
+			TREE_NODES_TO_STORE:        220,
 		}
 	case RSDP_5_FAST:
 		data.T = 321
@@ -369,6 +378,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_V_CT_RNG:              108689,
 			BITS_N_FZ_CT_RNG:           1431,
 			BITS_CWSTR_RNG:             8343,
+			TREE_NODES_TO_STORE:        167,
 		}
 	case RSDP_G_1_SMALL:
 		data.T = 512
@@ -380,6 +390,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              5677,
 			BITS_M_FZ_CT_RNG:           343,
 			BITS_CWSTR_RNG:             9153,
+			TREE_NODES_TO_STORE:        117,
 		}
 	case RSDP_G_1_BALANCED:
 		data.T = 256
@@ -391,6 +402,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              5677,
 			BITS_M_FZ_CT_RNG:           343,
 			BITS_CWSTR_RNG:             4776,
+			TREE_NODES_TO_STORE:        101,
 		}
 	case RSDP_G_1_FAST:
 		data.T = 147
@@ -402,6 +414,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              5677,
 			BITS_M_FZ_CT_RNG:           343,
 			BITS_CWSTR_RNG:             3472,
+			TREE_NODES_TO_STORE:        76,
 		}
 	case RSDP_G_3_SMALL:
 		data.T = 512
@@ -413,6 +426,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              11655,
 			BITS_M_FZ_CT_RNG:           539,
 			BITS_CWSTR_RNG:             9981,
+			TREE_NODES_TO_STORE:        165,
 		}
 	case RSDP_G_3_BALANCED:
 		data.T = 268
@@ -424,6 +438,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              11655,
 			BITS_M_FZ_CT_RNG:           539,
 			BITS_CWSTR_RNG:             6444,
+			TREE_NODES_TO_STORE:        138,
 		}
 	case RSDP_G_3_FAST:
 		data.T = 224
@@ -435,6 +450,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              11655,
 			BITS_M_FZ_CT_RNG:           539,
 			BITS_CWSTR_RNG:             5128,
+			TREE_NODES_TO_STORE:        119,
 		}
 	case RSDP_G_5_SMALL:
 		data.T = 642
@@ -446,6 +462,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              20594,
 			BITS_M_FZ_CT_RNG:           679,
 			BITS_CWSTR_RNG:             15140,
+			TREE_NODES_TO_STORE:        220,
 		}
 	case RSDP_G_5_BALANCED:
 		data.T = 356
@@ -457,6 +474,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              20594,
 			BITS_M_FZ_CT_RNG:           679,
 			BITS_CWSTR_RNG:             8937,
+			TREE_NODES_TO_STORE:        185,
 		}
 	case RSDP_G_5_FAST:
 		data.T = 300
@@ -468,6 +486,7 @@ func GetProtocolConfig(config CONFIG_IDENT) (ProtocolData, error) {
 			BITS_W_CT_RNG:              20594,
 			BITS_M_FZ_CT_RNG:           679,
 			BITS_CWSTR_RNG:             7929,
+			TREE_NODES_TO_STORE:        153,
 		}
 	default:
 		return ProtocolData{}, fmt.Errorf("invalid config value")
