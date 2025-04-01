@@ -13,6 +13,7 @@ type CROSSAllMethods interface {
 	GetTreeParams() common.TreeParams
 	KeyGen() (KeyPair, error)
 	DummyKeyGen(seed_sk []byte) (KeyPair, error)
+	Sign(sk, msg []byte) (Signature, error)
 	Expand_pk(seed_pk []byte) ([]int, []byte, error)
 	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error)
 

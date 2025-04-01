@@ -1,8 +1,8 @@
-#include "csprng_hash.h"
 #include <stdio.h>
 #include <stdint.h>
-#include "merkle_tree.h"
-
+#include <string.h>
+#include <stdlib.h>
+#include "CROSS.h"
 
 void print_array(uint8_t *arr, size_t size) {
     int ctr = 0;
@@ -13,81 +13,74 @@ void print_array(uint8_t *arr, size_t size) {
     printf("\n");
 }
 
-/*void merkleTestSpeed(){
-    const char *seeds[] = {
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        "HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
-        "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-    };
-    for (int j = 0; j < 3; j++) {
-        uint8_t root[HASH_DIGEST_LENGTH];
-    uint8_t leaves[T][HASH_DIGEST_LENGTH];
-    for (int i = 0; i < T; i++) {
-        randombytes(leaves[i],HASH_DIGEST_LENGTH);
+void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
+    for (int i = 0; i < DENSELY_PACKED_FP_SYN_SIZE; i++) {
+        printf("%u, ", s[i]);
     }
-    printf("Leaves: \n");
-   for (int i = 0; i < T; i++) {
-        print_array(leaves[i], HASH_DIGEST_LENGTH);
-    }
-    tree_root(root, leaves);
-    printf("Root: \n");
-    print_array(root,HASH_DIGEST_LENGTH);
-    printf("Chall_2: \n");
-    
-
-    //tree_proof
-    uint8_t chall_2[T]={0};
-    const char *input = seeds[j];
-    expand_digest_to_fixed_weight(chall_2,input);
-    uint8_t proof[W*HASH_DIGEST_LENGTH];
-    print_array(chall_2,T);
-    tree_proof(proof,leaves,chall_2);
-    printf("Proof: \n");
-    for (int i = 0; i < W; i++) {
-        print_array(proof + i*HASH_DIGEST_LENGTH, HASH_DIGEST_LENGTH);
-    }
-    }
-}*/
-
-void merkleTest(){
-    const char *seeds[] = {
-        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        "HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
-        "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-    };
-    for (int j = 0; j < 3; j++) {
-        uint8_t root[HASH_DIGEST_LENGTH];
-        uint8_t leaves[T][HASH_DIGEST_LENGTH];
-        for (int i = 0; i < T; i++) {
-            randombytes(leaves[i],HASH_DIGEST_LENGTH);
-        }
-        printf("Leaves: \n");
-        for (int i = 0; i < T; i++) {
-            print_array(leaves[i], HASH_DIGEST_LENGTH);
-        }
-        uint8_t tree[NUM_NODES_MERKLE_TREE * HASH_DIGEST_LENGTH] = {0};
-        tree_root(root, tree, leaves);
-        printf("Root: \n");
-        print_array(root,HASH_DIGEST_LENGTH);
-        printf("Chall_2: \n");
-    
-
-        //tree_proof
-        uint8_t chall_2[T]={0};
-        const char *input = seeds[j];
-        expand_digest_to_fixed_weight(chall_2,input);
-        uint8_t proof[HASH_DIGEST_LENGTH*TREE_NODES_TO_STORE] = {0};
-        print_array(chall_2,T);
-        tree_proof(proof, tree, chall_2);
-        printf("Proof: \n");
-        for (int i = 0; i < TREE_NODES_TO_STORE; i++) {
-            print_array(proof + i*HASH_DIGEST_LENGTH, HASH_DIGEST_LENGTH);
-        }
-    }
+    printf("\n");
+    return;
 }
 
+void print_large_array(uint8_t *arr, size_t size) {
+    int ctr = 0;
+    for (size_t i = 0; i < size; i++) {
+        if (ctr % 64 == 0){
+            printf("\n");
+        }
+        printf("%u, ", arr[i]);
+        ctr++;
+    }
+    printf("\n");
+}
 
 int main() {
-    merkleTest();
+    sk_t *SK = malloc(sizeof(sk_t));
+    pk_t *PK = malloc(sizeof(pk_t));
+    CROSS_keygen(SK, PK);
+    printf("seed_SK: \n");
+    print_array(SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES);
+    printf("seed_PK: \n");
+    print_array(PK->seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
+    printf("PK->s: \n");
+    print_pk(PK->s);
+    CROSS_sig_t *SIG = malloc(sizeof(CROSS_sig_t));
+    if (SIG) {
+        memset(SIG, 0, sizeof(CROSS_sig_t));
+    }
+    CROSS_sign(SK, "Hello, World!", 13, SIG);
+    printf("------ Signature ------\n");
+    printf("Salt: ");
+    print_array(SIG->salt, SALT_LENGTH_BYTES);
+    printf("\n");
+    printf("Digest CMT: ");
+    print_array(SIG->digest_cmt, HASH_DIGEST_LENGTH);
+    printf("\n");
+    printf("Digest Chall 2: ");
+    print_array(SIG->digest_chall_2, HASH_DIGEST_LENGTH);
+    printf("\n");
+    //Variate next two if in speed
+    printf("Path: \n");
+    print_large_array(SIG->path, TREE_NODES_TO_STORE*SEED_LENGTH_BYTES);
+    printf("\n");
+    printf("Proof: \n");
+    print_large_array(SIG->proof, TREE_NODES_TO_STORE*HASH_DIGEST_LENGTH);
+    //
+    printf("\n");
+    printf("Resp 1: \n");
+    for (int i = 0; i < T-W; i++) {
+        print_array(SIG->resp_1[i], HASH_DIGEST_LENGTH);
+    }
+    printf("\n");
+    printf("Resp 0: \n");
+    printf("y: ");
+    for (int i = 0; i < T-W; i++) {
+        print_array(SIG->resp_0[i].y, DENSELY_PACKED_FP_VEC_SIZE);
+    }
+    printf("v_bar: ");
+    for (int i = 0; i < T-W; i++) {
+    print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
+    }
+    
+    printf("\n");
     return 0;
 }
