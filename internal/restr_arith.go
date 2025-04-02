@@ -78,7 +78,7 @@ func (c *CROSS[T, P]) Fz_dz_norm_m(v []byte) []byte {
 	}
 	return res
 }
-func (c *CROSS[T, P]) Fz_vec_sub_n(a []int, b []byte) []byte {
+func (c *CROSS[T, P]) Fz_vec_sub_n(a []byte, b []byte) []byte {
 	result := make([]byte, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
 		//TODO: TEST AND MAYBE FIX, SHOULD PROBABLY BE uint8

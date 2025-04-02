@@ -67,7 +67,7 @@ func (c *CROSS[T, P]) Fp_dz_norm_synd(s []T) []T {
 }
 
 func (c *CROSS[T, P]) Fp_dz_norm(s []uint8) []uint8 {
-	result := make([]uint8, c.ProtocolData.N-c.ProtocolData.K)
+	result := make([]uint8, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
 		result[i] = uint8(c.FP_DOUBLE_ZERO_NORM(uint16(s[i])))
 	}
@@ -85,7 +85,7 @@ func (c *CROSS[T, P]) Convert_restr_vec_to_fp(in []byte) []T {
 func (c *CROSS[T, P]) Fp_vec_by_fp_vec_pointwise(a, b []T) []T {
 	result := make([]T, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		result[i] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(a[i]))) * FP_DOUBLE_PREC[T, P](b[i])))
+		result[i] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](T(a[i])) * FP_DOUBLE_PREC[T, P](b[i])))
 	}
 	return result
 }

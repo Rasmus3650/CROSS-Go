@@ -72,11 +72,11 @@ int main() {
     }
     printf("\n");
     printf("Resp 0: \n");
-    printf("y: ");
+    printf("y: \n");
     for (int i = 0; i < T-W; i++) {
         print_array(SIG->resp_0[i].y, DENSELY_PACKED_FP_VEC_SIZE);
     }
-    printf("v_bar: ");
+    printf("v_bar: \n");
     for (int i = 0; i < T-W; i++) {
     print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
     }

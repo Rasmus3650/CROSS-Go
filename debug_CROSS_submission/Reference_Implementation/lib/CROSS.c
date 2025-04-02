@@ -88,7 +88,7 @@ void expand_sk(FZ_ELEM e_bar[N],
                      &csprng_state);
 
   expand_pk(V_tr,seed_e_seed_pk[1]);
-
+  
   /* Expansion of seede, explicit domain separation for CSPRNG as in keygen */
   const uint16_t dsc_csprng_seed_e = CSPRNG_DOMAIN_SEP_CONST + (3*T+3);
 
@@ -175,6 +175,15 @@ void CROSS_keygen(sk_t *SK,
   pack_fp_syn(PK->s,s);
 }
 
+void print_array1(uint8_t *arr, size_t size) {
+    int ctr = 0;
+    for (size_t i = 0; i < size; i++) {
+        printf("%u, ", arr[i]);
+        ctr++;
+    }
+    printf("\n");
+}
+
 /* sign cannot fail */
 void CROSS_sign(const sk_t *SK,
                const char *const m,
@@ -196,6 +205,8 @@ void CROSS_sign(const sk_t *SK,
 
     uint8_t root_seed[SEED_LENGTH_BYTES];
     randombytes(root_seed,SEED_LENGTH_BYTES);
+    printf("Root_seed: \n");
+    print_array1(root_seed,SEED_LENGTH_BYTES);
     randombytes(sig->salt,SALT_LENGTH_BYTES);
 
 #if defined(NO_TREES)
@@ -207,7 +218,6 @@ void CROSS_sign(const sk_t *SK,
     unsigned char round_seeds[T*SEED_LENGTH_BYTES] = {0};
     seed_leaves(round_seeds, seed_tree);
 #endif
-
     FZ_ELEM e_bar_prime[T][N];
     FZ_ELEM v_bar[T][N];
     FP_ELEM u_prime[T][N];
@@ -285,12 +295,10 @@ void CROSS_sign(const sk_t *SK,
 #endif
         /* Fixed endianness marshalling of round counter */
         uint16_t domain_sep_hash = HASH_DOMAIN_SEP_CONST+i+(2*T-1);
-
         hash(cmt_0[i], cmt_0_i_input, sizeof(cmt_0_i_input), domain_sep_hash);
         memcpy(cmt_1_i_input,
                round_seeds+SEED_LENGTH_BYTES*i,
                SEED_LENGTH_BYTES);
-        
         hash(&cmt_1[i*HASH_DIGEST_LENGTH], cmt_1_i_input, sizeof(cmt_1_i_input), domain_sep_hash);
     }
 
@@ -323,7 +331,6 @@ void CROSS_sign(const sk_t *SK,
     FP_ELEM chall_1[T];
     csprng_initialize(&csprng_state, digest_chall_1, sizeof(digest_chall_1), dsc_csprng_chall_1);
     csprng_fp_vec_chall_1(chall_1, &csprng_state);
-
     /* Computation of the first round of responses */
     FP_ELEM y[T][N];
     for(int i = 0; i < T; i++){
@@ -341,7 +348,6 @@ void CROSS_sign(const sk_t *SK,
     }
     /* Second challenge extraction */
     memcpy(y_digest_chall_1+T*DENSELY_PACKED_FP_VEC_SIZE,digest_chall_1,HASH_DIGEST_LENGTH);
-
     hash(sig->digest_chall_2, y_digest_chall_1, sizeof(y_digest_chall_1), HASH_DOMAIN_SEP_CONST);
 
     uint8_t chall_2[T]={0};

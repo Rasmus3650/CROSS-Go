@@ -14,7 +14,7 @@ func TestExpandSkRSDP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	V_tr, e_bar, _, _, err := cross.Expand_sk(seed)
+	V_tr, _, _, e_bar, err := cross.Expand_sk(seed)
 	if err != nil {
 		t.Fatalf("Error expanding sk: %v", err)
 	}
