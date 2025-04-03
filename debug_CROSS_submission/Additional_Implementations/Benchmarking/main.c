@@ -61,9 +61,11 @@ int main() {
     //Variate next two if in speed
     printf("Path: \n");
     print_large_array(SIG->path, TREE_NODES_TO_STORE*SEED_LENGTH_BYTES);
+    //print_large_array(SIG->path, W*SEED_LENGTH_BYTES);
     printf("\n");
     printf("Proof: \n");
     print_large_array(SIG->proof, TREE_NODES_TO_STORE*HASH_DIGEST_LENGTH);
+    //print_large_array(SIG->proof, W*HASH_DIGEST_LENGTH);
     //
     printf("\n");
     printf("Resp 1: \n");
@@ -76,9 +78,10 @@ int main() {
     for (int i = 0; i < T-W; i++) {
         print_array(SIG->resp_0[i].y, DENSELY_PACKED_FP_VEC_SIZE);
     }
-    printf("v_bar: \n");
+    printf("v_G_bar: \n");
     for (int i = 0; i < T-W; i++) {
-    print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
+    //print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
+    print_array(SIG->resp_0[i].v_G_bar, DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE);
     }
     
     printf("\n");

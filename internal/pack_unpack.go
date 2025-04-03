@@ -51,6 +51,7 @@ func (c *CROSS[T, P]) generic_pack_7_bit(in []T, outlen, inlen int) []uint8 {
 }
 
 func (c *CROSS[T, P]) generic_pack_9_bit(in []T, outlen, inlen int) []uint8 {
+	//TODO: Figure out why this works????
 	out := make([]uint8, outlen)
 	var i int
 	for i = range out {

@@ -17,7 +17,7 @@ func (c *CROSS[T, P]) FPRED_DOUBLE(x P) P {
 		return c.FPRED_SINGLE(x)
 	}
 }
-func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x uint16) uint16 {
+func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x P) P {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		return (x + ((x + 1) >> 7)) & 0x7F
 	} else {
@@ -61,15 +61,15 @@ func (c *CROSS[T, P]) RESTR_TO_VAL(x T) P {
 func (c *CROSS[T, P]) Fp_dz_norm_synd(s []T) []T {
 	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		result[i] = T(c.FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+		result[i] = T(c.FP_DOUBLE_ZERO_NORM(FP_DOUBLE_PREC[T, P](s[i])))
 	}
 	return result
 }
 
-func (c *CROSS[T, P]) Fp_dz_norm(s []uint8) []uint8 {
-	result := make([]uint8, c.ProtocolData.N)
+func (c *CROSS[T, P]) Fp_dz_norm(s []T) []T {
+	result := make([]T, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		result[i] = uint8(c.FP_DOUBLE_ZERO_NORM(uint16(s[i])))
+		result[i] = T(c.FP_DOUBLE_ZERO_NORM(FP_DOUBLE_PREC[T, P](s[i])))
 	}
 	return result
 }

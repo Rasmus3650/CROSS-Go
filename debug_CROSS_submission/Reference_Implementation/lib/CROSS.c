@@ -183,7 +183,6 @@ void print_array1(uint8_t *arr, size_t size) {
     }
     printf("\n");
 }
-
 /* sign cannot fail */
 void CROSS_sign(const sk_t *SK,
                const char *const m,
@@ -279,7 +278,6 @@ void CROSS_sign(const sk_t *SK,
         fz_dz_norm_n(v_bar[i]);
         /* expand u_prime */
         csprng_fp_vec(u_prime[i], &csprng_state);
-
         FP_ELEM u[N];
         fp_vec_by_fp_vec_pointwise(u, v, u_prime[i]);
         fp_vec_by_fp_matrix(s_prime, u, V_tr);

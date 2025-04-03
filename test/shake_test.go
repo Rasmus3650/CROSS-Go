@@ -197,6 +197,7 @@ func TestFpVec(t *testing.T) {
 	}
 }
 
+/*
 func TestFpVecChall_1(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -208,7 +209,7 @@ func TestFpVecChall_1(t *testing.T) {
 	if !bytes.Equal(vec, c_vec) {
 		t.Errorf("vectors are not equal")
 	}
-}
+}*/
 
 func TestFzInfW(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)

@@ -213,10 +213,10 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) ([]byte, error) {
 	}
 	return res, nil
 }
-func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]byte, error) {
-	res := make([]byte, c.ProtocolData.N)
+func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]uint16, error) {
+	res := make([]uint16, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
-	FP_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
+	FP_ELEM_mask := (uint16(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
 	CSPRNG_buffer, _, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8))
 	if err != nil {
@@ -242,8 +242,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]byte, error) 
 			bits_in_sub_buf += 8 * refresh_amount
 			pos_remaining -= refresh_amount
 		}
-		res[placed] = uint8(uint8(sub_buffer) & FP_ELEM_mask)
-		if res[placed] < uint8(c.ProtocolData.P) {
+		res[placed] = uint16(uint16(sub_buffer) & FP_ELEM_mask)
+		if res[placed] < uint16(c.ProtocolData.P) {
 			placed++
 		}
 		sub_buffer >>= BITS_FOR_P
@@ -331,10 +331,10 @@ func (c *CROSS[T, P]) CSPRNG_fz_vec_prime(state sha3.ShakeHash) ([]byte, sha3.Sh
 	return res, state, nil
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) ([]byte, error) {
-	res := make([]byte, c.ProtocolData.T)
+func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) ([]T, error) {
+	res := make([]T, c.ProtocolData.T)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
-	FP_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.P-2))) - 1
+	FP_ELEM_mask := (T(1) << BitsToRepresent(uint(c.ProtocolData.P-2))) - 1
 	dsc := uint16(0 + 3*c.ProtocolData.T - 1)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 2))
 	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_CHALL_1_FPSTAR_CT_RNG), 8)/8), dsc)
@@ -361,8 +361,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) ([]byte, error) {
 			bits_in_sub_buf += 8 * refresh_amount
 			pos_remaining -= refresh_amount
 		}
-		res[placed] = uint8(uint8(sub_buffer)&FP_ELEM_mask) + 1
-		if res[placed] < uint8(c.ProtocolData.P) {
+		res[placed] = T(T(sub_buffer)&FP_ELEM_mask) + 1
+		if res[placed] < T(c.ProtocolData.P) {
 			placed++
 		}
 		sub_buffer >>= BITS_FOR_P

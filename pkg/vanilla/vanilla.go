@@ -13,7 +13,6 @@ type CROSSAllMethods interface {
 	GetTreeParams() common.TreeParams
 	KeyGen() (KeyPair, error)
 	DummyKeyGen(seed_sk []byte) (KeyPair, error)
-	Sign(sk, msg []byte) (Signature, error)
 	DummySign(salt, root_seed, sk, msg []byte) (Signature, error)
 	Expand_pk(seed_pk []byte) ([]int, []byte, error)
 	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error)
@@ -37,7 +36,6 @@ type CROSSAllMethods interface {
 	CSPRNG_fp_mat(seed []byte) ([]int, error)
 	CSPRNG_fz_vec(seed []byte) ([]byte, error)
 	CSPRNG_fp_vec(seed []byte) ([]byte, error)
-	CSPRNG_fp_vec_chall_1(seed []byte) ([]byte, error)
 	CSPRNG_fz_inf_w(seed []byte) ([]byte, error)
 	CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error)
 	Expand_digest_to_fixed_weight(digest []byte) ([]bool, error)
