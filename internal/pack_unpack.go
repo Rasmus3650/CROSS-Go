@@ -1,6 +1,8 @@
 package internal
 
-import "PQC-Master-Thesis/internal/common"
+import (
+	"PQC-Master-Thesis/internal/common"
+)
 
 func (c *CROSS[T, P]) generic_pack_7_bit(in []T, outlen, inlen int) []uint8 {
 	out := make([]byte, outlen) // Allocate the output array
@@ -205,4 +207,155 @@ func (c *CROSS[T, P]) Pack_fz_rsdpg_vec(in []T) []byte {
 }
 func (c *CROSS[T, P]) Pack_fp_vec(in []T) []byte {
 	return c.generic_pack_fp(in, c.DenselyPackedFpVecSize(), c.ProtocolData.N)
+}
+
+func (c *CROSS[T, P]) generic_unpack_9_bit(inp []byte, outlen int, inlen uint) ([]T, bool) {
+	is_packed_padd_ok := true
+	var i int
+	in := make([]uint16, inlen)
+	for i, val := range inp {
+		in[i] = uint16(val)
+	}
+
+	out := make([]uint16, outlen)
+	for i = 0; i < outlen; i++ {
+		out[i] = 0
+	}
+	for i = 0; i < int(inlen)/9; i++ {
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+		out[i*8+3] = ((in[i*9+3] >> 3) | (in[i*9+4] << 5)) & 0x1FF
+		out[i*8+4] = ((in[i*9+4] >> 4) | (in[i*9+5] << 4)) & 0x1FF
+		out[i*8+5] = ((in[i*9+5] >> 5) | (in[i*9+6] << 3)) & 0x1FF
+		out[i*8+6] = ((in[i*9+6] >> 6) | (in[i*9+7] << 2)) & 0x1FF
+		out[i*8+7] = ((in[i*9+7] >> 7) | (in[i*9+8] << 1)) & 0x1FF
+	}
+	n_remainder := outlen & 0x7
+	switch n_remainder {
+	case 1:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+	case 2:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+	case 3:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+	case 4:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+		out[i*8+3] = ((in[i*9+3] >> 3) | (in[i*9+4] << 5)) & 0x1FF
+	case 5:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+		out[i*8+3] = ((in[i*9+3] >> 3) | (in[i*9+4] << 5)) & 0x1FF
+		out[i*8+4] = ((in[i*9+4] >> 4) | (in[i*9+5] << 4)) & 0x1FF
+	case 6:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+		out[i*8+3] = ((in[i*9+3] >> 3) | (in[i*9+4] << 5)) & 0x1FF
+		out[i*8+4] = ((in[i*9+4] >> 4) | (in[i*9+5] << 4)) & 0x1FF
+		out[i*8+5] = ((in[i*9+5] >> 5) | (in[i*9+6] << 3)) & 0x1FF
+	case 7:
+		out[i*8] = (in[i*9] | (in[i*9+1] << 8)) & 0x1FF
+		out[i*8+1] = ((in[i*9+1] >> 1) | (in[i*9+2] << 7)) & 0x1FF
+		out[i*8+2] = ((in[i*9+2] >> 2) | (in[i*9+3] << 6)) & 0x1FF
+		out[i*8+3] = ((in[i*9+3] >> 3) | (in[i*9+4] << 5)) & 0x1FF
+		out[i*8+4] = ((in[i*9+4] >> 4) | (in[i*9+5] << 4)) & 0x1FF
+		out[i*8+5] = ((in[i*9+5] >> 5) | (in[i*9+6] << 3)) & 0x1FF
+		out[i*8+6] = ((in[i*9+6] >> 6) | (in[i*9+7] << 2)) & 0x1FF
+	}
+	if n_remainder > 0 {
+		is_packed_padd_ok = ((in[inlen-1] & (0xFF << n_remainder)) == 0)
+	}
+	result := make([]T, outlen)
+	for i := range out {
+		result[i] = T(out[i])
+	}
+	return result, is_packed_padd_ok
+}
+
+func (c *CROSS[T, P]) generic_unpack_7_bit(in []byte, outlen int, inlen uint) ([]T, bool) {
+	is_packed_padd_ok := true
+	var i int
+	out := make([]byte, outlen)
+	for i = 0; i < outlen; i++ {
+		out[i] = 0
+	}
+	for i = 0; i < outlen/8; i++ {
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+		out[i*8+3] = (in[i*7+2] >> 5) | ((in[i*7+3] << 3) & 0x7F)
+		out[i*8+4] = (in[i*7+3] >> 4) | ((in[i*7+4] << 4) & 0x7F)
+		out[i*8+5] = (in[i*7+4] >> 3) | ((in[i*7+5] << 5) & 0x7F)
+		out[i*8+6] = (in[i*7+5] >> 2) | ((in[i*7+6] << 6) & 0x7F)
+		out[i*8+7] = in[i*7+6] >> 1
+	}
+	n_remainder := outlen & 0x7
+	switch n_remainder {
+	case 1:
+		out[i*8] = in[i*7] & 0x7F
+	case 2:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+	case 3:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+	case 4:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+		out[i*8+3] = (in[i*7+2] >> 5) | ((in[i*7+3] << 3) & 0x7F)
+	case 5:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+		out[i*8+3] = (in[i*7+2] >> 5) | ((in[i*7+3] << 3) & 0x7F)
+		out[i*8+4] = (in[i*7+3] >> 4) | ((in[i*7+4] << 4) & 0x7F)
+	case 6:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+		out[i*8+3] = (in[i*7+2] >> 5) | ((in[i*7+3] << 3) & 0x7F)
+		out[i*8+4] = (in[i*7+3] >> 4) | ((in[i*7+4] << 4) & 0x7F)
+		out[i*8+5] = (in[i*7+4] >> 3) | ((in[i*7+5] << 5) & 0x7F)
+	case 7:
+		out[i*8] = in[i*7] & 0x7F
+		out[i*8+1] = (in[i*7] >> 7) | ((in[i*7+1] << 1) & 0x7F)
+		out[i*8+2] = (in[i*7+1] >> 6) | ((in[i*7+2] << 2) & 0x7F)
+		out[i*8+3] = (in[i*7+2] >> 5) | ((in[i*7+3] << 3) & 0x7F)
+		out[i*8+4] = (in[i*7+3] >> 4) | ((in[i*7+4] << 4) & 0x7F)
+		out[i*8+5] = (in[i*7+4] >> 3) | ((in[i*7+5] << 5) & 0x7F)
+		out[i*8+6] = (in[i*7+5] >> 2) | ((in[i*7+6] << 6) & 0x7F)
+	}
+	if n_remainder > 0 {
+		is_packed_padd_ok = ((in[inlen-1] & (0xFF << (8 - n_remainder))) == 0)
+	}
+	//TODO: FIND A BETTER WAY?
+	result := make([]T, outlen)
+	for i := range out {
+		result[i] = T(out[i])
+	}
+	return result, is_packed_padd_ok
+}
+
+func (c *CROSS[T, P]) generic_unpack_fp(in []byte, outlen int, inlen uint) ([]T, bool) {
+	is_packed_padd_ok := true
+	var result []T
+	if c.ProtocolData.P == 127 {
+		result, is_packed_padd_ok = c.generic_unpack_7_bit(in, outlen, inlen)
+	} else if c.ProtocolData.P == 509 {
+		result, is_packed_padd_ok = c.generic_unpack_9_bit(in, outlen, inlen)
+	}
+	return result, is_packed_padd_ok
+}
+
+func (c *CROSS[T, P]) Unpack_fp_syn(s []byte) ([]T, bool) {
+	return c.generic_unpack_fp(s, c.ProtocolData.N-c.ProtocolData.K, c.denselyPackedFpSynSize())
 }

@@ -1,46 +1,61 @@
 package vanilla
 
-import (
-	"PQC-Master-Thesis/internal/common"
-	"bytes"
-	"fmt"
-	"math/big"
-
-	"golang.org/x/crypto/sha3"
-)
-
-func (c *CROSSInstance[T, P]) unpackSignature(sig []byte) ([]byte, []byte, []byte, error) {
-	//TODO: Check if sig is of correct length
-	salt := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	digest_cmt := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	digest_chall_2 := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	//TODO: unpack path, proof resp
-	salt = sig[:(2*c.ProtocolData.Lambda)/8]
-	digest_cmt = sig[(2*c.ProtocolData.Lambda)/8 : (4*c.ProtocolData.Lambda)/8]
-	digest_chall_2 = sig[(4*c.ProtocolData.Lambda)/8 : (6*c.ProtocolData.Lambda)/8]
-
-	return salt, digest_cmt, digest_chall_2, nil
-}
-
-func (c *CROSSInstance[T, P]) unpackPath(path []byte) [][]byte {
-	//TODO: Verify that this is correct
-	idx := 0
-	result := make([][]byte, c.ProtocolData.T)
-	for idx < len(path) {
-		if path[idx] != byte(0) {
-			result[idx] = path[idx : idx+(2*c.ProtocolData.Lambda)/8]
-			idx += (2 * c.ProtocolData.Lambda) / 8
-		}
+// TODO: Check if we are allowed to bail out early, maybe should wait till final check
+func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, error) {
+	V_tr, W_mat, err := c.Expand_pk(pk.SeedPK)
+	if err != nil {
+		return false, err
 	}
-	return result
+	s, is_padd_key_ok := c.Unpack_fp_syn(pk.S)
+	digest_msg_cmt_salt := make([]byte, 3*(2*c.ProtocolData.Lambda/8))
+	hash_val, err := c.CSPRNG(m, 2*c.ProtocolData.Lambda/8, uint16(32768))
+	if err != nil {
+		return false, err
+	}
+	copy(digest_msg_cmt_salt, hash_val)
+	copy(digest_msg_cmt_salt[2*(2*c.ProtocolData.Lambda/8):], sig.Digest_cmt)
+	copy(digest_msg_cmt_salt[3*(2*c.ProtocolData.Lambda/8):], sig.Salt)
+	digest_chall_1, err := c.CSPRNG(digest_msg_cmt_salt, 2*c.ProtocolData.Lambda/8, uint16(32768))
+	if err != nil {
+		return false, err
+	}
+	chall_1, err := c.CSPRNG_fp_vec_chall_1(digest_chall_1)
+	if err != nil {
+		return false, err
+	}
+	chall_2, err := c.Expand_digest_to_fixed_weight(sig.Digest_chall_2)
+	is_stree_padding_ok := false
+	round_seeds, err := c.RebuildLeaves(sig.Path, sig.Salt, chall_2)
+	if err != nil {
+		return false, err
+	}
+	is_stree_padding_ok = true
+	var cmt_0_i_input []byte
+	//remember to add salt, makes every dish more tasty
+	cmt_1_i_input := make([]byte, 3*c.ProtocolData.Lambda/8)
+	copy(cmt_1_i_input[c.ProtocolData.Lambda/8:], sig.Salt)
+	cmt_0 := make([]byte, c.ProtocolData.T*(2*c.ProtocolData.Lambda/8))
+	cmt_1 := make([]byte, c.ProtocolData.T*(2*c.ProtocolData.Lambda/8))
+	e_bar_prime := make([]byte, c.ProtocolData.N)
+	u_prime := make([]T, c.ProtocolData.N)
+	y_prime := make([]T, c.ProtocolData.N)
+	y_prime_H := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+	s_prime := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+	y := make([]T, c.ProtocolData.T*c.ProtocolData.N)
+	used_rsps := 0
+	is_signature_ok := true
+	is_packed_padd_ok := true
+	//for loop starts here
+
 }
 
+/*
 func (c *CROSSInstance[T, P]) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	//TODO: Unpack signature
-	/*salt, digest_cmt, digest_chall_2, err := unpackSignature(sig, c.ProtocolData)
+	salt, digest_cmt, digest_chall_2, err := unpackSignature(sig, c.ProtocolData)
 	if err != nil {
 		return false, fmt.Errorf("Error unpacking signature: %v", err)
-	}*/
+	}
 
 	//TODO: Don't bail out early, just return false in the end
 	//TODO: When doing g^something ensure that it is a valid byte (check reference code)
@@ -185,3 +200,4 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, msg, sig []byte) (bool, error) {
 	}
 	return false, nil
 }
+*/

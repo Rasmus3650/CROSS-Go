@@ -182,6 +182,7 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, err
 	}
 }
 
+// TODO important: Add the zero padding from line 413-419 of seedtree.c, else forgery might be possible
 func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, error) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T_prime := c.computeNodesToPublish(chall_2)

@@ -34,56 +34,5 @@ void print_large_array(uint8_t *arr, size_t size) {
 }
 
 int main() {
-    sk_t *SK = malloc(sizeof(sk_t));
-    pk_t *PK = malloc(sizeof(pk_t));
-    CROSS_keygen(SK, PK);
-    printf("seed_SK: \n");
-    print_array(SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES);
-    printf("seed_PK: \n");
-    print_array(PK->seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
-    printf("PK->s: \n");
-    print_pk(PK->s);
-    CROSS_sig_t *SIG = malloc(sizeof(CROSS_sig_t));
-    if (SIG) {
-        memset(SIG, 0, sizeof(CROSS_sig_t));
-    }
-    CROSS_sign(SK, "Hello, World!", 13, SIG);
-    printf("------ Signature ------\n");
-    printf("Salt: ");
-    print_array(SIG->salt, SALT_LENGTH_BYTES);
-    printf("\n");
-    printf("Digest CMT: ");
-    print_array(SIG->digest_cmt, HASH_DIGEST_LENGTH);
-    printf("\n");
-    printf("Digest Chall 2: ");
-    print_array(SIG->digest_chall_2, HASH_DIGEST_LENGTH);
-    printf("\n");
-    //Variate next two if in speed
-    printf("Path: \n");
-    print_large_array(SIG->path, TREE_NODES_TO_STORE*SEED_LENGTH_BYTES);
-    //print_large_array(SIG->path, W*SEED_LENGTH_BYTES);
-    printf("\n");
-    printf("Proof: \n");
-    print_large_array(SIG->proof, TREE_NODES_TO_STORE*HASH_DIGEST_LENGTH);
-    //print_large_array(SIG->proof, W*HASH_DIGEST_LENGTH);
-    //
-    printf("\n");
-    printf("Resp 1: \n");
-    for (int i = 0; i < T-W; i++) {
-        print_array(SIG->resp_1[i], HASH_DIGEST_LENGTH);
-    }
-    printf("\n");
-    printf("Resp 0: \n");
-    printf("y: \n");
-    for (int i = 0; i < T-W; i++) {
-        print_array(SIG->resp_0[i].y, DENSELY_PACKED_FP_VEC_SIZE);
-    }
-    printf("v_G_bar: \n");
-    for (int i = 0; i < T-W; i++) {
-    //print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
-    print_array(SIG->resp_0[i].v_G_bar, DENSELY_PACKED_FZ_RSDP_G_VEC_SIZE);
-    }
-    
-    printf("\n");
     return 0;
 }
