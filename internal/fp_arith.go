@@ -25,6 +25,14 @@ func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x P) P {
 	}
 }
 
+func (c *CROSS[T, P]) FPRED_OPPOSITE(x P) P {
+	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		return (x ^ 0x7F)
+	} else {
+		return c.FPRED_SINGLE(FP_DOUBLE_PREC[T, P](T(c.ProtocolData.P)) - x)
+	}
+}
+
 const (
 	RESTR_G_TABLE  uint64 = 0x0140201008040201
 	RESTR_G_GEN           = 16
@@ -120,5 +128,15 @@ func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
 		}
 	}
 
+	return result
+}
+
+func (c *CROSS[T, P]) Fp_synd_minus_fp_vec_scaled(y_prime_H []T, chall_1 T, s []T) []T {
+	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+	for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+		tmp := c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](s[j]) * FP_DOUBLE_PREC[T, P](chall_1))
+		tmp = c.FP_DOUBLE_ZERO_NORM(tmp)
+		result[j] = T(c.FPRED_SINGLE(FP_DOUBLE_PREC[T, P](y_prime_H[j]) + c.FPRED_OPPOSITE(tmp)))
+	}
 	return result
 }

@@ -213,8 +213,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) ([]byte, error) {
 	}
 	return res, nil
 }
-func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]uint16, error) {
-	res := make([]uint16, c.ProtocolData.N)
+func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]T, error) {
+	res := make([]T, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint16(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
@@ -242,8 +242,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]uint16, error
 			bits_in_sub_buf += 8 * refresh_amount
 			pos_remaining -= refresh_amount
 		}
-		res[placed] = uint16(uint16(sub_buffer) & FP_ELEM_mask)
-		if res[placed] < uint16(c.ProtocolData.P) {
+		res[placed] = T(uint16(sub_buffer) & FP_ELEM_mask)
+		if res[placed] < T(c.ProtocolData.P) {
 			placed++
 		}
 		sub_buffer >>= BITS_FOR_P

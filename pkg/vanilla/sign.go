@@ -72,7 +72,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	}
 	e_bar_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	v_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
-	u_prime := make([]uint16, c.ProtocolData.T*c.ProtocolData.N)
+	u_prime := make([]T, c.ProtocolData.T*c.ProtocolData.N)
 	s_prime := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	cmt_0 := make([][]byte, c.ProtocolData.T)
 	cmt_1 := make([]byte, c.ProtocolData.T*((2*c.ProtocolData.Lambda)/8))
@@ -114,7 +114,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 			return Signature{}, fmt.Errorf("Error generating u_prime: %v", err)
 		}
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
-		u := c.Fp_vec_by_fp_vec_pointwise(v, c.uint16ToT(u_prime_i))
+		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
 		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
@@ -179,7 +179,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	y := make([][]T, c.ProtocolData.T)
 
 	for i := 0; i < c.ProtocolData.T; i++ {
-		y[i] = c.Fp_vec_by_restr_vec_scaled(c.byteToT(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), c.uint16ToT(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), chall_1[i])
+		y[i] = c.Fp_vec_by_restr_vec_scaled(c.byteToT(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], chall_1[i])
 		y[i] = c.Fp_dz_norm(y[i])
 	}
 	y_digest_chall_1 := make([]byte, c.ProtocolData.T*c.DenselyPackedFpVecSize()+((2*c.ProtocolData.Lambda)/8))
@@ -240,7 +240,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 	}
 	e_bar_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	v_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
-	u_prime := make([]uint16, c.ProtocolData.T*c.ProtocolData.N)
+	u_prime := make([]T, c.ProtocolData.T*c.ProtocolData.N)
 	s_prime := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	cmt_0 := make([][]byte, c.ProtocolData.T)
 	cmt_1 := make([]byte, c.ProtocolData.T*((2*c.ProtocolData.Lambda)/8))
@@ -282,7 +282,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 			return Signature{}, fmt.Errorf("Error generating u_prime: %v", err)
 		}
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
-		u := c.Fp_vec_by_fp_vec_pointwise(v, c.uint16ToT(u_prime_i))
+		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
 		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
@@ -347,7 +347,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 	y := make([][]T, c.ProtocolData.T)
 
 	for i := 0; i < c.ProtocolData.T; i++ {
-		y[i] = c.Fp_vec_by_restr_vec_scaled(c.byteToT(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), c.uint16ToT(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), chall_1[i])
+		y[i] = c.Fp_vec_by_restr_vec_scaled(c.byteToT(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N]), u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], chall_1[i])
 		y[i] = c.Fp_dz_norm(y[i])
 	}
 	y_digest_chall_1 := make([]byte, c.ProtocolData.T*c.DenselyPackedFpVecSize()+((2*c.ProtocolData.Lambda)/8))

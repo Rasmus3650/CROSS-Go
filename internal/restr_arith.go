@@ -94,3 +94,19 @@ func (c *CROSS[T, P]) Fz_vec_sub_m(a, b []byte) []byte {
 	}
 	return result
 }
+
+func (c *CROSS[T, P]) Is_fz_vec_in_restr_group_n(in []byte) bool {
+	is_in_okay := true
+	for i := 0; i < c.ProtocolData.N; i++ {
+		is_in_okay = is_in_okay && (in[i] < byte(c.ProtocolData.Z))
+	}
+	return is_in_okay
+}
+
+func (c *CROSS[T, P]) Is_fz_vec_in_restr_group_m(in []byte) bool {
+	is_in_okay := true
+	for i := 0; i < c.ProtocolData.M; i++ {
+		is_in_okay = is_in_okay && (in[i] < byte(c.ProtocolData.Z))
+	}
+	return is_in_okay
+}
