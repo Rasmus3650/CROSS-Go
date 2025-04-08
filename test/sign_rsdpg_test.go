@@ -347,6 +347,13 @@ func TestRSDPG1FastSign(t *testing.T) {
 			t.Fatal("y not equal")
 
 		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
+		}
 	}
 }
 
@@ -869,6 +876,13 @@ func TestRSDPG3FastSign(t *testing.T) {
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
 
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }
@@ -1614,6 +1628,13 @@ func TestRSDPG5FastSign(t *testing.T) {
 			t.Fatal("y not equal")
 
 		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
+		}
 	}
 }
 
@@ -1842,6 +1863,13 @@ func TestRSDPG1SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
 
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }
@@ -2214,6 +2242,13 @@ func TestRSDPG3SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
 
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }
@@ -2758,6 +2793,13 @@ func TestRSDPG5SmallSign(t *testing.T) {
 			t.Fatal("y not equal")
 
 		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
+		}
 	}
 }
 
@@ -2994,7 +3036,13 @@ func TestRSDPG1BalancedSign(t *testing.T) {
 		}
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
-
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }
@@ -3401,6 +3449,13 @@ func TestRSDPG3BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
 
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }
@@ -3962,6 +4017,13 @@ func TestRSDPG5BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Y, y_arr) {
 			t.Fatal("y not equal")
 
+		}
+		result, err := cross.Verify(pk, m, signature)
+		if err != nil {
+			t.Fatal("Err: ", err)
+		}
+		if !result {
+			t.Fatal("Signature not validated")
 		}
 	}
 }

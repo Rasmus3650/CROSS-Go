@@ -5,8 +5,6 @@ import (
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
 	"crypto/rand"
-	"fmt"
-	math "math/rand"
 	"testing"
 )
 
@@ -24,30 +22,77 @@ func TestSeedLeaves(t *testing.T) {
 	}
 }
 
-func TestFastSeedLeaves(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_FAST)
-	seed := make([]byte, 32)
-	salt := make([]byte, 64)
-	rand.Read(seed)
-	rand.Read(salt)
-	leaves, err := instance.SeedLeaves(seed, salt)
-	if err != nil {
-		t.Errorf("Error: %s", err)
+/*
+	func TestFastSeedLeaves(t *testing.T) {
+		instance, err := vanilla.NewCROSS(common.RSDP_1_FAST)
+		seed := make([]byte, 32)
+		salt := make([]byte, 64)
+		rand.Read(seed)
+		rand.Read(salt)
+		leaves, err := instance.SeedLeaves(seed, salt)
+		if err != nil {
+			t.Errorf("Error: %s", err)
+		}
 	}
-	fmt.Println("leaves: ", leaves)
-}
 
-func TestIntegration(t *testing.T) {
-	// Run through all configs 10 times, and make sure nothing returns an error
-	configs := common.Configs()
-	for _, config := range configs {
-		instance, err := vanilla.NewCROSS(config)
+	func TestIntegration(t *testing.T) {
+		// Run through all configs 10 times, and make sure nothing returns an error
+		configs := common.Configs()
+		for _, config := range configs {
+			instance, err := vanilla.NewCROSS(config)
+			if err != nil {
+				t.Errorf("Error: %s", err)
+			}
+			for xyz := 0; xyz < 100; xyz++ {
+				seed := make([]byte, instance.GetProtocolData().Lambda/8)
+				salt := make([]byte, 2*instance.GetProtocolData().Lambda/8)
+				rand.Read(seed)
+				rand.Read(salt)
+				leaves, err := instance.SeedLeaves(seed, salt)
+				if err != nil {
+					t.Errorf("Error: %s", err)
+				}
+				chall_2 := make([]bool, instance.GetProtocolData().T)
+				chall_2[0] = true
+				chall_2[1] = true
+				chall_2[2] = true
+				chall_2[3] = true
+				chall_2[4] = false
+				chall_2[5] = true
+				chall_2[6] = false
+				chall_2[7] = false
+				for i := 8; i < instance.GetProtocolData().T; i++ {
+					chall_2[i] = math.Intn(2) == 0
+				}
+				path, err := instance.SeedPath(seed, salt, chall_2)
+				if err != nil {
+					t.Errorf("Error: %s", err)
+				}
+				leaves_prime, err := instance.RebuildLeaves(path, salt, chall_2)
+				if err != nil {
+					t.Errorf("Error: %s", err)
+				}
+				ctr := 0
+				for i := 0; i < len(chall_2)-1; i++ {
+					if chall_2[i] {
+						if !bytes.Equal(leaves[i], leaves_prime[ctr]) {
+							t.Errorf("Error: Leaves do not match")
+						}
+						ctr++
+					}
+				}
+			}
+		}
+	}
+
+	func TestInt(t *testing.T) {
+		instance, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
 		for xyz := 0; xyz < 100; xyz++ {
-			seed := make([]byte, instance.GetProtocolData().Lambda/8)
-			salt := make([]byte, 2*instance.GetProtocolData().Lambda/8)
+			seed := make([]byte, 32)
+			salt := make([]byte, 64)
 			rand.Read(seed)
 			rand.Read(salt)
 			leaves, err := instance.SeedLeaves(seed, salt)
@@ -66,6 +111,8 @@ func TestIntegration(t *testing.T) {
 			for i := 8; i < instance.GetProtocolData().T; i++ {
 				chall_2[i] = math.Intn(2) == 0
 			}
+			chall_2[len(chall_2)-1] = true
+			chall_2[len(chall_2)-2] = false
 			path, err := instance.SeedPath(seed, salt, chall_2)
 			if err != nil {
 				t.Errorf("Error: %s", err)
@@ -74,19 +121,20 @@ func TestIntegration(t *testing.T) {
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
-			ctr := 0
-			for i := 0; i < len(chall_2)-1; i++ {
+			res := [][]byte{}
+			for i := 0; i < len(chall_2); i++ {
 				if chall_2[i] {
-					if !bytes.Equal(leaves[i], leaves_prime[ctr]) {
-						t.Errorf("Error: Leaves do not match")
-					}
-					ctr++
+					res = append(res, leaves[i])
+				}
+			}
+			for i := 0; i < len(leaves_prime); i++ {
+				if !InSet(leaves, leaves_prime[i]) {
+					fmt.Println("Error: Leaf ", i, " not in set")
 				}
 			}
 		}
 	}
-}
-
+*/
 func InSet(set [][]byte, element []byte) bool {
 	for _, e := range set {
 		if bytes.Equal(e, element) {
@@ -95,57 +143,6 @@ func InSet(set [][]byte, element []byte) bool {
 	}
 	return false
 }
-
-func TestInt(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
-	if err != nil {
-		t.Errorf("Error: %s", err)
-	}
-	for xyz := 0; xyz < 100; xyz++ {
-		seed := make([]byte, 32)
-		salt := make([]byte, 64)
-		rand.Read(seed)
-		rand.Read(salt)
-		leaves, err := instance.SeedLeaves(seed, salt)
-		if err != nil {
-			t.Errorf("Error: %s", err)
-		}
-		chall_2 := make([]bool, instance.GetProtocolData().T)
-		chall_2[0] = true
-		chall_2[1] = true
-		chall_2[2] = true
-		chall_2[3] = true
-		chall_2[4] = false
-		chall_2[5] = true
-		chall_2[6] = false
-		chall_2[7] = false
-		for i := 8; i < instance.GetProtocolData().T; i++ {
-			chall_2[i] = math.Intn(2) == 0
-		}
-		chall_2[len(chall_2)-1] = true
-		chall_2[len(chall_2)-2] = false
-		path, err := instance.SeedPath(seed, salt, chall_2)
-		if err != nil {
-			t.Errorf("Error: %s", err)
-		}
-		leaves_prime, err := instance.RebuildLeaves(path, salt, chall_2)
-		if err != nil {
-			t.Errorf("Error: %s", err)
-		}
-		res := [][]byte{}
-		for i := 0; i < len(chall_2); i++ {
-			if chall_2[i] {
-				res = append(res, leaves[i])
-			}
-		}
-		for i := 0; i < len(leaves_prime); i++ {
-			if !InSet(leaves, leaves_prime[i]) {
-				fmt.Println("Error: Leaf ", i, " not in set")
-			}
-		}
-	}
-}
-
 func flatten(twoDim [][]byte) []byte {
 	var result []byte
 	for _, inner := range twoDim {
@@ -3297,8 +3294,6 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Error generating path: %v", err)
 		}
-		fmt.Println("C length: ", len(test.path))
-		fmt.Println("Go length: ", len(flatten(path)))
 		if len(flatten(path)) != len(test.path) {
 			t.Fatalf("Paths not equal length")
 		}

@@ -14,6 +14,7 @@ type CROSSAllMethods interface {
 	KeyGen() (KeyPair, error)
 	DummyKeyGen(seed_sk []byte) (KeyPair, error)
 	DummySign(salt, root_seed, sk, msg []byte) (Signature, error)
+	Verify(pk Pub, m []byte, sig Signature) (bool, error)
 	Expand_pk(seed_pk []byte) ([]int, []byte, error)
 	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error)
 

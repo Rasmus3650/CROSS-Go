@@ -12,7 +12,7 @@ message("Compilation flags: ${CMAKE_C_FLAGS}")
 
 
 #Define problem (RSDP or RSDPG), type (SIG_SIZE, BALANCED, SPEED), and category
-set(PROBLEM_DEFINE "RSDPG")
+set(PROBLEM_DEFINE "RSDP")
 set(TYPE_DEFINE "BALANCED")
 #If speed, set this
 #set(OMIT_SEED_TREE "NO_TREES=1")

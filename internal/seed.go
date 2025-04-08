@@ -212,16 +212,20 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 			}
 			start_node += c.TreeParams.NPL[level]
 		}
-		result := [][]byte{}
-		leaves := c.Leaves(t)
-		for i := 0; i < len(leaves); i++ {
-			if chall_2[i] {
-				result = append(result, leaves[i])
-			}
-		}
+		result := c.Leaves(t)
 		return result, nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
-		return path, nil
+		round_seeds := make([][]byte, c.ProtocolData.T)
+		published := 0
+		for i := 0; i < c.ProtocolData.T; i++ {
+			if chall_2[i] {
+				round_seeds[i] = path[published]
+				published++
+			} else {
+				round_seeds[i] = make([]byte, c.ProtocolData.Lambda/8)
+			}
+		}
+		return round_seeds, nil
 	} else {
 		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
 	}

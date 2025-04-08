@@ -3,6 +3,7 @@ package vanilla
 import (
 	"PQC-Master-Thesis/internal/common"
 	"bytes"
+	"fmt"
 )
 
 func (c *CROSSInstance[T, P]) int16ToT(arr []int) []T {
@@ -26,8 +27,8 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 		return false, err
 	}
 	copy(digest_msg_cmt_salt, hash_val)
-	copy(digest_msg_cmt_salt[2*(2*c.ProtocolData.Lambda/8):], sig.Digest_cmt)
-	copy(digest_msg_cmt_salt[3*(2*c.ProtocolData.Lambda/8):], sig.Salt)
+	copy(digest_msg_cmt_salt[(2*c.ProtocolData.Lambda/8):], sig.Digest_cmt)
+	copy(digest_msg_cmt_salt[2*(2*c.ProtocolData.Lambda/8):], sig.Salt)
 	digest_chall_1, err := c.CSPRNG(digest_msg_cmt_salt, 2*c.ProtocolData.Lambda/8, uint16(32768))
 	if err != nil {
 		return false, err
@@ -56,6 +57,9 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 	cmt_1_i_input := make([]byte, 3*c.ProtocolData.Lambda/8)
 	copy(cmt_1_i_input[c.ProtocolData.Lambda/8:], sig.Salt)
 	cmt_0 := make([][]byte, c.ProtocolData.T)
+	for i := 0; i < c.ProtocolData.T; i++ {
+		cmt_0[i] = make([]byte, 2*c.ProtocolData.Lambda/8)
+	}
 	cmt_1 := make([]byte, c.ProtocolData.T*(2*c.ProtocolData.Lambda/8))
 	e_bar_prime := make([]byte, c.ProtocolData.N)
 	u_prime := make([]T, c.ProtocolData.N)
@@ -63,10 +67,10 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 	y_prime_H := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	s_prime := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	y := make([]T, c.ProtocolData.T*c.ProtocolData.N)
+	v_bar := make([]byte, c.ProtocolData.N)
 	used_rsps := 0
 	is_signature_ok := true
 	is_packed_padd_ok := true
-	//for loop starts here
 	for i := 0; i < c.ProtocolData.T; i++ {
 		domain_sep_csprng := uint16(0 + i + (2*c.ProtocolData.T - 1))
 		domain_sep_hash := uint16(32768 + i + (2*c.ProtocolData.T - 1))
@@ -107,11 +111,10 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 			temp_val, bool_res := c.Unpack_fp_vec(sig.Resp_0[used_rsps].Y)
 			copy(y[i*c.ProtocolData.N:], temp_val)
 			is_packed_padd_ok = is_packed_padd_ok && bool_res
-			v_bar := make([]byte, c.ProtocolData.N)
 			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-				v_bar, bool_res := c.Unpack_fz_vec(sig.Resp_0[used_rsps].V_bar)
+				v_bar, bool_res = c.Unpack_fz_vec(sig.Resp_0[used_rsps].V_bar)
 				is_packed_padd_ok = is_packed_padd_ok && bool_res
-				copy(cmt_0_i_input[c.DenselyPackedFpSynSize():], v_bar)
+				copy(cmt_0_i_input[c.DenselyPackedFpSynSize():], sig.Resp_0[used_rsps].V_bar)
 				is_signature_ok = is_signature_ok && c.Is_fz_vec_in_restr_group_n(v_bar)
 			} else {
 				copy(cmt_0_i_input[c.DenselyPackedFpSynSize():], sig.Resp_0[used_rsps].V_G_bar)
@@ -127,15 +130,15 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 			y_prime_H = c.Fp_vec_by_fp_matrix(y_prime, c.int16ToT(V_tr))
 			y_prime_H = c.Fp_dz_norm_synd(y_prime_H)
 			s_prime = c.Fp_synd_minus_fp_vec_scaled(y_prime_H, chall_1[i], s)
-			s_prime = c.Fp_dz_norm(s_prime)
+			s_prime = c.Fp_dz_norm_synd(s_prime)
 			copy(cmt_0_i_input, c.Pack_fp_syn(s_prime))
 			hash_val, err = c.CSPRNG(cmt_0_i_input, 2*c.ProtocolData.Lambda/8, domain_sep_hash)
-			copy(cmt_0[i], hash_val)
+			cmt_0[i] = hash_val
 		}
 	}
 	digest_cmt_0_cmt_1 := make([]byte, 2*(2*c.ProtocolData.Lambda/8))
 	digest_val, err := c.RecomputeRoot(cmt_0, sig.Proof, chall_2)
-	//TODO: set this to recomputeroot's result
+	// TODO: set this to recomputeroot's result
 	is_mtree_padding_ok := true
 	if err != nil {
 		return false, err
@@ -158,6 +161,14 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 	}
 	does_digest_cmt_match := bytes.Equal(digest_cmt_prime, sig.Digest_cmt)
 	does_digest_chall_2_match := bytes.Equal(digest_chall_2_prime, sig.Digest_chall_2)
+	fmt.Println("is_signature_ok: ", is_signature_ok)
+	fmt.Println("does_digest_cmt_match: ", does_digest_cmt_match)
+	fmt.Println("does_digest_chall_2_match: ", does_digest_chall_2_match)
+	fmt.Println("is_mtree_padding_ok: ", is_mtree_padding_ok)
+	fmt.Println("is_stree_padding_ok: ", is_stree_padding_ok)
+	fmt.Println("is_padd_key_ok: ", is_padd_key_ok)
+	fmt.Println("is_packed_padd_ok: ", is_packed_padd_ok)
+
 	is_signature_ok = is_signature_ok &&
 		does_digest_cmt_match &&
 		does_digest_chall_2_match &&

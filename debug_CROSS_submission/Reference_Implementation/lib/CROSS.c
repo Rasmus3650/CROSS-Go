@@ -183,6 +183,7 @@ void print_array1(uint8_t *arr, size_t size) {
     }
     printf("\n");
 }
+
 /* sign cannot fail */
 void CROSS_sign(const sk_t *SK,
                const char *const m,
@@ -376,6 +377,20 @@ void CROSS_sign(const sk_t *SK,
     }
 }
 
+void print_s_prime(FP_ELEM *s_prime) {
+    for (int i = 0; i < N-K; i++) {
+        printf("%u, ", s_prime[i]);
+    }
+    printf("\n");
+}
+
+void print_v_bar(FZ_ELEM *v_bar) {
+    for (int i = 0; i < N; i++) {
+        printf("%u, ", v_bar[i]);
+    }
+    printf("\n");
+}
+
 /* verify returns 1 if signature is ok, 0 otherwise */
 int CROSS_verify(const pk_t *const PK,
                  const char *const m,
@@ -506,6 +521,8 @@ int CROSS_verify(const pk_t *const PK,
             FZ_ELEM* v_bar_ptr = cmt_0_i_input+DENSELY_PACKED_FP_SYN_SIZE;
             is_packed_padd_ok = is_packed_padd_ok &&
                                 unpack_fz_vec(v_bar, sig->resp_0[used_rsps].v_bar);
+            printf("v_bar after unpack: \n");
+            print_v_bar(v_bar);
             memcpy(v_bar_ptr,
                    &sig->resp_0[used_rsps].v_bar,
                    DENSELY_PACKED_FZ_VEC_SIZE);
@@ -533,13 +550,22 @@ int CROSS_verify(const pk_t *const PK,
             fp_vec_by_fp_vec_pointwise(y_prime,v,y[i]);
             fp_vec_by_fp_matrix(y_prime_H,y_prime,V_tr);
             fp_dz_norm_synd(y_prime_H);
+            printf("y_prime_H: \n");
+            print_s_prime(y_prime_H);
+            printf("s: \n");
+            print_s_prime(s);
+            printf("chall_1[%d]: ", i);
+            printf("%u \n", chall_1[i]);
             fp_synd_minus_fp_vec_scaled(s_prime,
                                         y_prime_H,
                                         chall_1[i],
                                         s);
             fp_dz_norm_synd(s_prime);
             pack_fp_syn(cmt_0_i_input, s_prime);
-
+            printf("cmt_0_i_input after pack: \n");
+            print_array1(cmt_0_i_input, DENSELY_PACKED_FP_SYN_SIZE+
+            DENSELY_PACKED_FZ_VEC_SIZE+
+            SALT_LENGTH_BYTES);
             hash(cmt_0[i], cmt_0_i_input, sizeof(cmt_0_i_input), domain_sep_hash);
         }
     } /* end for iterating on ZKID iterations */
@@ -550,10 +576,20 @@ int CROSS_verify(const pk_t *const PK,
 
     uint8_t digest_cmt0_cmt1[2*HASH_DIGEST_LENGTH];
 
+    //printf("cmt_0: \n");
+    //Print cmt_0
+    /*for (int i = 0; i < T; i++){
+        printf("cmt_0[%d]: ", i);
+        print_array1(cmt_0[i], HASH_DIGEST_LENGTH);
+    }
+    printf("chall_2: \n");
+    print_array1(chall_2, T);*/
     uint8_t is_mtree_padding_ok = recompute_root(digest_cmt0_cmt1,
                                                  cmt_0,
                                                  sig->proof,
                                                  chall_2);
+    printf("Recompute root: \n");
+    print_array1(digest_cmt0_cmt1, HASH_DIGEST_LENGTH);
     hash(digest_cmt0_cmt1 + HASH_DIGEST_LENGTH, cmt_1, sizeof(cmt_1), HASH_DOMAIN_SEP_CONST);
 
     uint8_t digest_cmt_prime[HASH_DIGEST_LENGTH];
