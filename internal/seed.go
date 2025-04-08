@@ -158,22 +158,32 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, err
 			return nil, err
 		}
 		path := c.computeNodesToPublish(chall_2)
-		seedPath := [][]byte{}
+		seed_path := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
+		for i := 0; i < len(seed_path); i++ {
+			seed_path[i] = make([]byte, c.ProtocolData.Lambda/8)
+		}
+		published := 0
 		for i := 0; i < len(path); i++ {
 			if path[i] {
-				seedPath = append(seedPath, t[i])
+				seed_path[published] = t[i]
+				published++
 			}
 		}
-		return seedPath, nil
+		return seed_path, nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		leaves, err := c.SeedLeaves(seed, salt)
 		if err != nil {
 			return nil, err
 		}
-		var result [][]byte
+		result := make([][]byte, c.ProtocolData.W)
+		for i := 0; i < len(result); i++ {
+			result[i] = make([]byte, c.ProtocolData.Lambda/8)
+		}
+		published := 0
 		for i := 0; i < len(chall_2); i++ {
 			if chall_2[i] {
-				result = append(result, leaves[i])
+				result[published] = leaves[i]
+				published++
 			}
 		}
 		return result, nil
