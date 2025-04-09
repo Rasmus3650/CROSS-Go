@@ -24,12 +24,12 @@ type CROSSAllMethods interface {
 
 	//seed
 	SeedLeaves(seed, salt []byte) ([][]byte, error)
-	RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, error)
+	RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool, error)
 	SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, error)
 
 	//merkle
 	TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error)
-	RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, error)
+	RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool, error)
 	TreeRoot(commitments [][]byte) ([]byte, error)
 
 	//Shake

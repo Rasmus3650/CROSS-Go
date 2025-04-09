@@ -128,6 +128,9 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 			return nil, err
 		}
 		mtp := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
+		for i := 0; i < len(mtp); i++ {
+			mtp[i] = make([]byte, 2*c.ProtocolData.Lambda/8)
+		}
 		flag_tree := c.label_leaves(chall_2)
 		published := 0
 		start_node := c.TreeParams.LSI[0]
@@ -139,13 +142,11 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 				flag_tree[parent_node] = flag_tree[current_node] || flag_tree[current_node+1]
 				/* Add left sibling only if right one was computed but left wasn't */
 				if !flag_tree[current_node] && flag_tree[current_node+1] {
-					mtp[published] = make([]byte, 2*c.ProtocolData.Lambda/8)
 					copy(mtp[published], T[current_node])
 					published++
 				}
 				/* Add right sibling only if left was computed but right wasn't */
 				if flag_tree[current_node] && !flag_tree[current_node+1] {
-					mtp[published] = make([]byte, 2*c.ProtocolData.Lambda/8)
 					copy(mtp[published], T[current_node+1])
 					published++
 				}
@@ -169,7 +170,7 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 	}
 }
 
-func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, error) {
+func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool, error) {
 	/*Their terms:
 	recomputed_leaves = cmt_0
 	mtp = proof
@@ -201,14 +202,22 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 				}
 				hash, err := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 				if err != nil {
-					return nil, err
+					return nil, false, err
 				}
 				T[parent_node] = hash
 				T_prime[parent_node] = true
 			}
 			start_node -= c.TreeParams.NPL[level-1]
 		}
-		return T[0], nil
+		error_rate := uint8(0)
+		for i := published; i < c.ProtocolData.TREE_NODES_TO_STORE; i++ {
+			// Check each byte in the row
+			for j := 0; j < 2*c.ProtocolData.Lambda/8; j++ {
+				error_rate |= proof[i][j]
+			}
+		}
+
+		return T[0], error_rate == 0, nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		pub_nodes := 0
 		for i := 0; i < c.ProtocolData.T; i++ {
@@ -217,8 +226,9 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 				pub_nodes++
 			}
 		}
-		return c.TreeRoot(cmt_0)
+		root, err := c.TreeRoot(cmt_0)
+		return root, err == nil, err
 	} else {
-		return nil, fmt.Errorf("Invalid scheme type")
+		return nil, false, fmt.Errorf("Invalid scheme type")
 	}
 }

@@ -324,10 +324,14 @@ func TestRSDPG1FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -854,10 +858,14 @@ func TestRSDPG3FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -1605,10 +1613,14 @@ func TestRSDPG5FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -1841,10 +1853,14 @@ func TestRSDPG1SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -2220,10 +2236,14 @@ func TestRSDPG3SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -2770,10 +2790,14 @@ func TestRSDPG5SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -3015,10 +3039,14 @@ func TestRSDPG1BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -3427,10 +3455,14 @@ func TestRSDPG3BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -3995,10 +4027,14 @@ func TestRSDPG5BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		copy(new_path, test.Path)
+		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		copy(new_proof, test.Proof)
+		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {

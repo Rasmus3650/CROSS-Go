@@ -193,7 +193,7 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, err
 }
 
 // TODO important: Add the zero padding from line 413-419 of seedtree.c, else forgery might be possible
-func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, error) {
+func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool, error) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T_prime := c.computeNodesToPublish(chall_2)
 		t := make([][]byte, c.TreeParams.Total_nodes)
@@ -212,7 +212,7 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 				if T_prime[node] && i < c.TreeParams.NPL[level]-c.TreeParams.LPL[level] {
 					hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 					if err != nil {
-						return nil, fmt.Errorf("Error: %s", err)
+						return nil, false, fmt.Errorf("Error: %s", err)
 					}
 					t[left_child] = hash[:c.ProtocolData.Lambda/8]
 					t[right_child] = hash[c.ProtocolData.Lambda/8:]
@@ -223,7 +223,16 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 			start_node += c.TreeParams.NPL[level]
 		}
 		result := c.Leaves(t)
-		return result, nil
+
+		error_rate := uint8(0)
+		// Check each row of the remaining rows of the path
+		for i := pub_nodes; i < c.ProtocolData.TREE_NODES_TO_STORE; i++ {
+			// Check each byte in the row
+			for j := 0; j < c.ProtocolData.Lambda/8; j++ {
+				error_rate |= path[i][j]
+			}
+		}
+		return result, error_rate == 0, nil
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		round_seeds := make([][]byte, c.ProtocolData.T)
 		published := 0
@@ -235,8 +244,8 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 				round_seeds[i] = make([]byte, c.ProtocolData.Lambda/8)
 			}
 		}
-		return round_seeds, nil
+		return round_seeds, true, nil
 	} else {
-		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
+		return nil, false, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
 	}
 }

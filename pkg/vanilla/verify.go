@@ -38,12 +38,13 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 		return false, err
 	}
 	chall_2, err := c.Expand_digest_to_fixed_weight(sig.Digest_chall_2)
-	is_stree_padding_ok := false
-	round_seeds, err := c.RebuildLeaves(sig.Path, sig.Salt, chall_2)
 	if err != nil {
 		return false, err
 	}
-	is_stree_padding_ok = true
+	round_seeds, is_stree_padding_ok, err := c.RebuildLeaves(sig.Path, sig.Salt, chall_2)
+	if err != nil {
+		return false, err
+	}
 	var cmt_0_i_input []byte
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		cmt_0_i_input = make([]byte, int(c.DenselyPackedFpSynSize())+c.DenselyPackedFzVecSize()+(2*c.ProtocolData.Lambda/8))
@@ -133,13 +134,15 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 			s_prime = c.Fp_dz_norm_synd(s_prime)
 			copy(cmt_0_i_input, c.Pack_fp_syn(s_prime))
 			hash_val, err = c.CSPRNG(cmt_0_i_input, 2*c.ProtocolData.Lambda/8, domain_sep_hash)
+			if err != nil {
+				return false, err
+			}
 			cmt_0[i] = hash_val
 		}
 	}
 	digest_cmt_0_cmt_1 := make([]byte, 2*(2*c.ProtocolData.Lambda/8))
-	digest_val, err := c.RecomputeRoot(cmt_0, sig.Proof, chall_2)
+	digest_val, is_mtree_padding_ok, err := c.RecomputeRoot(cmt_0, sig.Proof, chall_2)
 	// TODO: set this to recomputeroot's result
-	is_mtree_padding_ok := true
 	if err != nil {
 		return false, err
 	}
@@ -150,6 +153,9 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 	}
 	copy(digest_cmt_0_cmt_1[2*c.ProtocolData.Lambda/8:], digest_hash_val)
 	digest_cmt_prime, err := c.CSPRNG(digest_cmt_0_cmt_1, 2*c.ProtocolData.Lambda/8, uint16(32768))
+	if err != nil {
+		return false, err
+	}
 	y_digest_chall_1 := make([]byte, c.ProtocolData.T*c.DenselyPackedFpVecSize()+(2*c.ProtocolData.Lambda/8))
 	for x := 0; x < c.ProtocolData.T; x++ {
 		copy(y_digest_chall_1[x*c.DenselyPackedFpVecSize():(x+1)*c.DenselyPackedFpVecSize()], c.Pack_fp_vec(y[x*c.ProtocolData.N:(x+1)*c.ProtocolData.N]))

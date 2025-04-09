@@ -65,7 +65,7 @@ func TestMerkle(t *testing.T) {
 					cmt_0[i] = commitments[i]
 				}
 			}
-			root_prime, err := instance.RecomputeRoot(cmt_0, proof, chall_2)
+			root_prime, _, err := instance.RecomputeRoot(cmt_0, proof, chall_2)
 			if err != nil {
 				t.Errorf("Error: %s", err)
 			}
@@ -158,7 +158,10 @@ func run(cross vanilla.CROSSAllMethods, test_vectors []MERKLE_STRUCT, t *testing
 		if err != nil {
 			t.Fatalf("Error computing tree proof: %v", err)
 		}
-		if !bytes.Equal(flatten(proof), test.proof) {
+		//Test proof was copied without trailing zeroes
+		new_proof := make([]byte, len(common.Flatten(proof)))
+		copy(new_proof, test.proof)
+		if !bytes.Equal(common.Flatten(proof), new_proof) {
 			t.Fatalf("Computed proof does not match expected proof")
 		}
 	}
