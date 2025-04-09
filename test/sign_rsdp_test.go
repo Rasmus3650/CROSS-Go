@@ -471,56 +471,54 @@ func TestRSDP1SmallSign(t *testing.T) {
 				11, 108, 13, 41, 29, 136, 69, 55, 212, 244, 56, 178, 130, 88, 198, 25, 8, 202, 101, 201, 77, 163, 69, 187, 106, 9, 1, 132, 4, 145, 73, 179, 204, 155, 161, 185, 45, 204, 144, 14, 22, 153, 241, 60, 6, 30, 108, 18},
 		},
 	}
-	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
-		if err != nil {
-			t.Fatal("Err: ", err)
-		}
-		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
-		if err != nil {
-			t.Fatal("Err: ", err)
-		}
-		if !bytes.Equal(test.Salt, signature.Salt) {
-			t.Fatal("Salts not equal")
-		}
-		if !bytes.Equal(test.Digest_cmt, signature.Digest_cmt) {
-			t.Fatal("Digest_cmt not equal")
+	pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
+	key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+	cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
+	if err != nil {
+		t.Fatal("Err: ", err)
+	}
+	m := []byte("Hello, World!")
+	signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+	if err != nil {
+		t.Fatal("Err: ", err)
+	}
+	if !bytes.Equal(test.Salt, signature.Salt) {
+		t.Fatal("Salts not equal")
+	}
+	if !bytes.Equal(test.Digest_cmt, signature.Digest_cmt) {
+		t.Fatal("Digest_cmt not equal")
 
-		}
-		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
-			t.Fatal("Digest_chall_2 not equal")
-		}
-		if !bytes.Equal(test.Path, flatten(signature.Path)) {
-			t.Fatal("Path not equal")
-		}
-		if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
-			t.Fatal("Proof not equal")
-		}
-		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
-			t.Fatal("resp_1 not equal")
-		}
-		var y_arr []byte
-		var v_bar_arr []byte
-		for _, val := range signature.Resp_0 {
-			y_arr = append(y_arr, val.Y...)
-			v_bar_arr = append(v_bar_arr, val.V_bar...)
-		}
-		if !bytes.Equal(test.V_bar, v_bar_arr) {
-			t.Fatal("v_bar not equal")
-		}
-		if !bytes.Equal(test.Y, y_arr) {
-			t.Fatal("y not equal")
-		}
-		result, err := cross.Verify(pk, m, signature)
-		if err != nil {
-			t.Fatal("Err: ", err)
-		}
-		if !result {
-			t.Fatal("Signature not validated")
-		}
+	}
+	if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
+		t.Fatal("Digest_chall_2 not equal")
+	}
+	if !bytes.Equal(test.Path, flatten(signature.Path)) {
+		t.Fatal("Path not equal")
+	}
+	if !bytes.Equal(test.Proof, flatten(signature.Proof)) {
+		t.Fatal("Proof not equal")
+	}
+	if !bytes.Equal(test.Resp_1, signature.Resp_1) {
+		t.Fatal("resp_1 not equal")
+	}
+	var y_arr []byte
+	var v_bar_arr []byte
+	for _, val := range signature.Resp_0 {
+		y_arr = append(y_arr, val.Y...)
+		v_bar_arr = append(v_bar_arr, val.V_bar...)
+	}
+	if !bytes.Equal(test.V_bar, v_bar_arr) {
+		t.Fatal("v_bar not equal")
+	}
+	if !bytes.Equal(test.Y, y_arr) {
+		t.Fatal("y not equal")
+	}
+	result, err := cross.Verify(pk, m, signature)
+	if err != nil {
+		t.Fatal("Err: ", err)
+	}
+	if !result {
+		t.Fatal("Signature not validated")
 	}
 }
 
