@@ -1,6 +1,7 @@
 package kat
 
 import (
+	"PQC-Master-Thesis/internal/common"
 	"bufio"
 	"encoding/hex"
 	"fmt"
@@ -22,9 +23,36 @@ type FileData struct {
 	Sm       [][]byte
 }
 
+type KATData struct {
+	variant  common.CONFIG_IDENT
+	pk_size  int
+	sig_size int
+}
+
 func ExtractData() {
 	dir := "debug_CROSS_submission/KAT/"
 	var filesData []FileData
+	KATData := []KATData{
+		{variant: common.RSDP_1_BALANCED, pk_size: 77, sig_size: 13152},
+		{variant: common.RSDP_G_1_BALANCED, pk_size: 54, sig_size: 9120},
+		{variant: common.RSDP_3_BALANCED, pk_size: 115, sig_size: 29853},
+		{variant: common.RSDP_G_3_BALANCED, pk_size: 83, sig_size: 22464},
+		{variant: common.RSDP_5_BALANCED, pk_size: 153, sig_size: 53527},
+		{variant: common.RSDP_G_5_BALANCED, pk_size: 106, sig_size: 40100},
+		{variant: common.RSDP_1_SMALL, pk_size: 77, sig_size: 12432},
+		{variant: common.RSDP_G_1_SMALL, pk_size: 54, sig_size: 8960},
+		{variant: common.RSDP_3_SMALL, pk_size: 115, sig_size: 28391},
+		{variant: common.RSDP_G_3_SMALL, pk_size: 83, sig_size: 20452},
+		{variant: common.RSDP_5_SMALL, pk_size: 153, sig_size: 50818},
+		{variant: common.RSDP_G_5_SMALL, pk_size: 106, sig_size: 36454},
+		{variant: common.RSDP_1_FAST, pk_size: 77, sig_size: 18432},
+		{variant: common.RSDP_G_1_FAST, pk_size: 54, sig_size: 11980},
+		{variant: common.RSDP_3_FAST, pk_size: 115, sig_size: 41406},
+		{variant: common.RSDP_G_3_FAST, pk_size: 83, sig_size: 26772},
+		{variant: common.RSDP_5_FAST, pk_size: 153, sig_size: 74590},
+		{variant: common.RSDP_G_5_FAST, pk_size: 106, sig_size: 48102},
+	}
+	fmt.Println(KATData)
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
