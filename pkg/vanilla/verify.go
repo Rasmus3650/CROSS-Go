@@ -16,6 +16,55 @@ func (c *CROSSInstance[T, P]) int16ToT(arr []int) []T {
 
 // TODO: Check if we are allowed to bail out early, maybe should wait till final check
 func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, error) {
+	// Length checks for all attributes of the signature
+	valid_signature := true
+	if len(sig.Salt) != 2*c.ProtocolData.Lambda/8 {
+		valid_signature = false
+	}
+	if len(sig.Digest_cmt) != 2*c.ProtocolData.Lambda/8 {
+		valid_signature = false
+	}
+	if len(sig.Digest_chall_2) != 2*c.ProtocolData.Lambda/8 {
+		valid_signature = false
+	}
+
+	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
+		if len(sig.Path) != c.ProtocolData.TREE_NODES_TO_STORE {
+			valid_signature = false
+		}
+		if len(sig.Proof) != c.ProtocolData.TREE_NODES_TO_STORE {
+			valid_signature = false
+		}
+	} else {
+		if len(sig.Path) != c.ProtocolData.W {
+			valid_signature = false
+		}
+		if len(sig.Proof) != c.ProtocolData.W {
+			valid_signature = false
+		}
+	}
+	if len(sig.Resp_0) != c.ProtocolData.T-c.ProtocolData.W {
+		for i := 0; i < c.ProtocolData.T-c.ProtocolData.W; i++ {
+			if len(sig.Resp_0[i].Y) != c.DenselyPackedFpVecSize() {
+				valid_signature = false
+			}
+			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+				if len(sig.Resp_0[i].V_bar) != c.DenselyPackedFzVecSize() {
+					valid_signature = false
+				}
+			} else {
+				if len(sig.Resp_0[i].V_G_bar) != c.DenselyPackedFzRSDPGVecSize() {
+					valid_signature = false
+				}
+			}
+		}
+	}
+	if len(sig.Resp_1) != (c.ProtocolData.T-c.ProtocolData.W)*((2*c.ProtocolData.Lambda)/8) {
+		valid_signature = false
+	}
+	if !valid_signature {
+		return false, fmt.Errorf("invalid signature")
+	}
 	V_tr, W_mat, err := c.Expand_pk(pk.SeedPK)
 	if err != nil {
 		return false, err
