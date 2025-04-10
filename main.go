@@ -1,15 +1,7 @@
 package main
 
-import (
-	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/pkg/vanilla"
-)
+import kat "PQC-Master-Thesis/KAT"
 
 func main() {
-	cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
-	if err != nil {
-		panic(err)
-	}
-	cross.KeyGen()
-
+	kat.ExtractData()
 }
