@@ -96,7 +96,9 @@ int main() {
         fprintf(fp_req, "pk =\n");
         fprintf(fp_req, "sk =\n");
         fprintf(fp_req, "smlen =\n");
-        fprintf(fp_req, "sm =\n\n");
+        fprintf(fp_req, "sm =\n");
+        fprintf(fp_req, "root_seed =\n");
+        fprintf(fp_req, "salt =\n\n");
     }
     fclose(fp_req);
 
@@ -136,6 +138,9 @@ int main() {
         m = (unsigned char *)calloc(mlen, sizeof(unsigned char));
         m1 = (unsigned char *)calloc(mlen+CRYPTO_BYTES, sizeof(unsigned char));
         sm = (unsigned char *)calloc(mlen+CRYPTO_BYTES, sizeof(unsigned char));
+        uint8_t root_seed[SEED_LENGTH_BYTES];
+        uint8_t salt[SALT_LENGTH_BYTES];
+
 
         if ( !ReadHex(fp_req, m, (int)mlen, "msg = ") ) {
             printf("ERROR: unable to read 'msg' from <%s>\n", fn_req);
@@ -151,14 +156,15 @@ int main() {
         fprintBstr(fp_rsp, "pk = ", pk, CRYPTO_PUBLICKEYBYTES);
         fprintBstr(fp_rsp, "sk = ", sk, CRYPTO_SECRETKEYBYTES);
 
-        if ( (ret_val = crypto_sign(sm, &smlen, m, mlen, sk)) != 0) {
+        if ( (ret_val = crypto_sign(sm, &smlen, m, mlen, sk, root_seed, salt)) != 0) {
             printf("crypto_sign returned <%d>\n", ret_val);
             return KAT_CRYPTO_FAILURE;
         }
         fprintf(fp_rsp, "smlen = %llu\n", smlen);
         fprintBstr(fp_rsp, "sm = ", sm, smlen);
-        fprintf(fp_rsp, "\n");
-
+        fprintBstr(fp_rsp, "root_seed = ", root_seed, SEED_LENGTH_BYTES);
+        fprintBstr(fp_rsp, "salt = ", salt, SALT_LENGTH_BYTES);
+        fprintf(fp_rsp, "\n");        
 
         if ( (ret_val = crypto_sign_open(m1, &mlen1, sm, smlen, pk)) != 0) {
             printf("crypto_sign_open returned <%d>\n", ret_val);

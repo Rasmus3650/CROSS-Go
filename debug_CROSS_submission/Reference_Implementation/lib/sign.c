@@ -51,22 +51,30 @@ int crypto_sign_keypair(unsigned char *pk,
 /*... generating a signed message sm[0],sm[1],...,sm[*smlen-1]                */
 /*... from original message m[0],m[1],...,m[mlen-1]                           */
 /*... under secret key sk[0],sk[1],...                                        */
-int crypto_sign(unsigned char *sm,                              // out parameter
-                unsigned long long *smlen,                      // out parameter
-                const unsigned char *m,                         // in parameter
-                unsigned long long mlen,                        // in parameter
-                const unsigned char *sk)                        // in parameter
+int crypto_sign(unsigned char *sm,                              // out: message || signature
+   unsigned long long *smlen,                      // out: total length
+   const unsigned char *m,                         // in: message
+   unsigned long long mlen,                        // in: message length
+   const unsigned char *sk,                        // in: secret key
+   uint8_t *out_root_seed,                         // out: generated root_seed
+   uint8_t *out_salt)                              // out: generated salt
 {
-   /* sign cannot fail */
-   memcpy(sm, m, mlen);
-   CROSS_sign((const sk_t *) sk,                            // in parameter
-             (const char *const) m,                             // in parameter
-             (const uint64_t) mlen,                             // in parameter
-             (CROSS_sig_t *) (sm+mlen));                        // out parameter
-   *smlen = mlen + (unsigned long long) sizeof(CROSS_sig_t);
+// Copy message into beginning of sm
+memcpy(sm, m, mlen);
 
-   return 0;  // NIST convention: 0 == zero errors
-} // end crypto_sign
+// Generate the signature (directly after the message)
+KAT_CROSS_sign((const sk_t *) sk,
+      (const char *const) m,
+      (const uint64_t) mlen,
+      (CROSS_sig_t *) (sm + mlen),   // Signature stored at sm + mlen
+      out_root_seed,
+      out_salt);
+
+// Total length = message + signature
+*smlen = mlen + (unsigned long long) sizeof(CROSS_sig_t);
+
+return 0; // success
+}// end crypto_sign
 
 /*----------------------------------------------------------------------------*/
 /*                                                                            */

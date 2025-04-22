@@ -216,13 +216,13 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 	}
 	does_digest_cmt_match := bytes.Equal(digest_cmt_prime, sig.Digest_cmt)
 	does_digest_chall_2_match := bytes.Equal(digest_chall_2_prime, sig.Digest_chall_2)
-	fmt.Println("is_signature_ok: ", is_signature_ok)
-	fmt.Println("does_digest_cmt_match: ", does_digest_cmt_match)
-	fmt.Println("does_digest_chall_2_match: ", does_digest_chall_2_match)
-	fmt.Println("is_mtree_padding_ok: ", is_mtree_padding_ok)
-	fmt.Println("is_stree_padding_ok: ", is_stree_padding_ok)
-	fmt.Println("is_padd_key_ok: ", is_padd_key_ok)
-	fmt.Println("is_packed_padd_ok: ", is_packed_padd_ok)
+	// fmt.Println("is_signature_ok: ", is_signature_ok)
+	// fmt.Println("does_digest_cmt_match: ", does_digest_cmt_match)
+	// fmt.Println("does_digest_chall_2_match: ", does_digest_chall_2_match)
+	// fmt.Println("is_mtree_padding_ok: ", is_mtree_padding_ok)
+	// fmt.Println("is_stree_padding_ok: ", is_stree_padding_ok)
+	// fmt.Println("is_padd_key_ok: ", is_padd_key_ok)
+	// fmt.Println("is_packed_padd_ok: ", is_packed_padd_ok)
 
 	is_signature_ok = is_signature_ok &&
 		does_digest_cmt_match &&

@@ -15,15 +15,17 @@ import (
 )
 
 type FileData struct {
-	Filename string
-	Count    []int
-	Seed     [][]byte
-	Mlen     []int
-	Msg      [][]byte
-	Pk       [][]byte
-	Sk       [][]byte
-	Smlen    [][]byte
-	Sm       [][]byte
+	Filename  string
+	Count     []int
+	Seed      [][]byte
+	Mlen      []int
+	Msg       [][]byte
+	Pk        [][]byte
+	Sk        [][]byte
+	Smlen     []int
+	Sm        [][]byte
+	Root_seed [][]byte
+	Salt      [][]byte
 }
 
 type KATData struct {
@@ -56,11 +58,12 @@ var katDataList = []KATData{
 func ExtractData() {
 	dir := "debug_CROSS_submission/KAT/"
 	var filesData []FileData
+	//var genFilesData []FileData
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-		if !info.IsDir() && strings.HasSuffix(info.Name(), ".req") {
+		if !info.IsDir() && strings.HasSuffix(info.Name(), ".rsp") {
 			fileData := readFile(path, info.Name())
 			filesData = append(filesData, fileData)
 		}
@@ -84,9 +87,14 @@ func readFile(filePath, filename string) FileData {
 	var fileData FileData
 	fileData.Filename = filename
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		if err != nil && len(line) == 0 {
+			break
+		}
+
+		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
@@ -95,6 +103,7 @@ func readFile(filePath, filename string) FileData {
 		if len(parts) < 2 {
 			continue
 		}
+
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
 
@@ -118,16 +127,18 @@ func readFile(filePath, filename string) FileData {
 			decoded, _ := hex.DecodeString(value)
 			fileData.Sk = append(fileData.Sk, decoded)
 		case "smlen":
-			decoded, _ := hex.DecodeString(value)
-			fileData.Smlen = append(fileData.Smlen, decoded)
+			m, _ := strconv.Atoi(value)
+			fileData.Smlen = append(fileData.Smlen, m)
 		case "sm":
 			decoded, _ := hex.DecodeString(value)
 			fileData.Sm = append(fileData.Sm, decoded)
+		case "root_seed":
+			decoded, _ := hex.DecodeString(value)
+			fileData.Root_seed = append(fileData.Root_seed, decoded)
+		case "salt":
+			decoded, _ := hex.DecodeString(value)
+			fileData.Salt = append(fileData.Salt, decoded)
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file:", err)
 	}
 
 	return fileData
@@ -142,7 +153,8 @@ func WriteReqFiles(filesData []FileData) {
 	}
 
 	for _, fileData := range filesData {
-		outputPath := filepath.Join(outputDir, fileData.Filename)
+		filename := strings.TrimSuffix(fileData.Filename, ".rsp") + ".req"
+		outputPath := filepath.Join(outputDir, filename)
 		file, err := os.Create(outputPath)
 		if err != nil {
 			fmt.Println("Error creating file:", err)
@@ -160,7 +172,9 @@ func WriteReqFiles(filesData []FileData) {
 			fmt.Fprint(writer, "pk =\n")
 			fmt.Fprint(writer, "sk =\n")
 			fmt.Fprint(writer, "smlen =\n")
-			fmt.Fprint(writer, "sm =\n\n")
+			fmt.Fprint(writer, "sm =\n")
+			fmt.Fprintf(writer, "root_seed =\n")
+			fmt.Fprintf(writer, "salt =\n\n")
 		}
 
 		writer.Flush()
@@ -183,16 +197,16 @@ func WriteRespFiles(filesData []FileData) {
 		fmt.Println("Error creating output directory:", err)
 		return
 	}
-	for i, fileData := range filesData {
-		filename := strings.TrimSuffix(fileData.Filename, ".req") + ".rsp"
-		outputPath := filepath.Join(outputDir, filename)
+
+	for _, fileData := range filesData {
+		outputPath := filepath.Join(outputDir, fileData.Filename)
 		file, err := os.Create(outputPath)
 		if err != nil {
 			fmt.Println("Error creating file:", err)
 			continue
 		}
 		defer file.Close()
-		re := regexp.MustCompile(`PQCsignKAT_(\d+)_(\d+)\.req`)
+		re := regexp.MustCompile(`PQCsignKAT_(\d+)_(\d+)\.rsp`)
 		matches := re.FindStringSubmatch(fileData.Filename)
 		if len(matches) != 3 {
 			log.Fatalf("Invalid filename format: %s", fileData.Filename)
@@ -207,49 +221,48 @@ func WriteRespFiles(filesData []FileData) {
 		if !found {
 			log.Fatalf("Variant not found for pk_size=%d, sig_size=%d", pkInt, sigInt)
 		}
-		fmt.Println("Found variant: ", variant)
-		cross, err := vanilla.NewCROSS(variant)
-		if err != nil {
-			log.Fatalf("Error creating CROSS instance: %v", err)
+		writer := bufio.NewWriter(file)
+		fmt.Fprint(writer, "# CROSS")
+		fmt.Fprint(writer, "\n\n")
+
+		for i := range len(fileData.Count) {
+			cross, err := vanilla.NewCROSS(variant)
+			if err != nil {
+				log.Fatalf("Error creating CROSS instance: %v", err)
+			}
+			keypair, err := cross.DummyKeyGen(fileData.Sk[i])
+			if err != nil {
+				log.Fatalf("Error generating key pair: %v", err)
+			}
+			fmt.Println("Key pair generated successfully")
+
+			signature, err := cross.DummySign(fileData.Salt[i], fileData.Root_seed[i], keypair.Pri, fileData.Msg[i])
+			if err != nil {
+				log.Fatalf("Error signing message: %v", err)
+			}
+			fmt.Println("Signature generated successfully")
+
+			//Verify just to be sure
+			verified, err := cross.Verify(keypair.Pub, fileData.Msg[i], signature)
+			if err != nil {
+				log.Fatalf("Error verifying signature: %v", err)
+			}
+			if !verified {
+				log.Fatalf("Signature verification failed")
+			}
+			fmt.Fprintf(writer, "count = %d\n", fileData.Count[i])
+			fmt.Fprintf(writer, "seed = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Seed[i])))
+			fmt.Fprintf(writer, "mlen = %d\n", fileData.Mlen[i])
+			fmt.Fprintf(writer, "msg = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Msg[i])))
+			fmt.Fprintf(writer, "pk = %s\n", strings.ToUpper(hex.EncodeToString(keypair.SeedPK))+strings.ToUpper(hex.EncodeToString(keypair.S)))
+			fmt.Fprintf(writer, "sk = %s\n", strings.ToUpper(hex.EncodeToString(keypair.Pri)))
+			fmt.Fprintf(writer, "smlen = %d\n", fileData.Smlen[i])
+			fmt.Fprintf(writer, "sm = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Msg[i]))+strings.ToUpper(hex.EncodeToString(signature.ToBytes())))
+			fmt.Fprintf(writer, "root_seed = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Root_seed[i])))
+			fmt.Fprintf(writer, "salt = %s\n\n", strings.ToUpper(hex.EncodeToString(fileData.Salt[i])))
 		}
-		keypair, err := cross.KeyGen()
-		if err != nil {
-			log.Fatalf("Error generating key pair: %v", err)
+		if err := writer.Flush(); err != nil {
+			fmt.Println("Error flushing writer:", err)
 		}
-		fmt.Println("Key pair generated successfully: ", keypair)
-
-		signature, err := cross.Sign(keypair.Pri, fileData.Msg[i])
-		if err != nil {
-			log.Fatalf("Error signing message: %v", err)
-		}
-		fmt.Println("Signature generated successfully: ", signature)
-
-		//Verify just to be sure
-		verified, err := cross.Verify(keypair.Pub, fileData.Msg[i], signature)
-		if err != nil {
-			log.Fatalf("Error verifying signature: %v", err)
-		}
-		if !verified {
-			log.Fatalf("Signature verification failed")
-		}
-
-		// TODO: Fill out the filedata struct and write it to file
-
-		// 	writer := bufio.NewWriter(file)
-
-		// 	for i := range fileData.Count {
-		// 		fmt.Fprintf(writer, "count = %d\n", fileData.Count[i])
-		// 		fmt.Fprintf(writer, "seed = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Seed[i])))
-		// 		fmt.Fprintf(writer, "mlen = %d\n", fileData.Mlen[i])
-		// 		fmt.Fprintf(writer, "msg = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Msg[i])))
-		// 		fmt.Fprint(writer, "pk =\n")
-		// 		fmt.Fprint(writer, "sk =\n")
-		// 		fmt.Fprint(writer, "smlen =\n")
-		// 		fmt.Fprint(writer, "sm =\n\n")
-		// 	}
-
-		// 	writer.Flush()
-		// 	fmt.Println("Written:", outputPath)
-		// }
 	}
 }

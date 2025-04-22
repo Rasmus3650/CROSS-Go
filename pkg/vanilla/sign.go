@@ -421,3 +421,35 @@ func (c *CROSSInstance[T, P]) TtoByte(arr []T) []byte {
 	}
 	return res
 }
+
+func flattenByteSlices(slices [][]byte) []byte {
+	var total []byte
+	for _, s := range slices {
+		total = append(total, s...)
+	}
+	return total
+}
+
+func flattenResp0(resp []resp_0_struct) []byte {
+	var total []byte
+	for _, r := range resp {
+		total = append(total, r.Y...)
+		total = append(total, r.V_bar...)
+		total = append(total, r.V_G_bar...)
+	}
+	return total
+}
+
+func (s *Signature) ToBytes() []byte {
+	var total []byte
+
+	total = append(total, s.Salt...)
+	total = append(total, s.Digest_cmt...)
+	total = append(total, s.Digest_chall_2...)
+	total = append(total, flattenByteSlices(s.Path)...)
+	total = append(total, flattenByteSlices(s.Proof)...)
+	total = append(total, s.Resp_1...)
+	total = append(total, flattenResp0(s.Resp_0)...)
+
+	return total
+}

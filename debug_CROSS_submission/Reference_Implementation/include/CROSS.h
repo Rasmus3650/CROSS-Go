@@ -86,6 +86,12 @@ void CROSS_sign(const sk_t * const SK,
                 const uint64_t mlen,
                 CROSS_sig_t * const sig);
 
+void KAT_CROSS_sign(const sk_t *SK,
+                  const char *const m,
+                  const uint64_t mlen,
+                  CROSS_sig_t *sig,
+                  uint8_t *out_root_seed,
+                  uint8_t *out_salt);
 /* verify returns 1 if signature is ok, 0 otherwise */
 int CROSS_verify(const pk_t * const PK,
                  const char * const m,
