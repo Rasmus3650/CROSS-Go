@@ -28,8 +28,6 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
-				//fmt.Println("seed: ", t[node])
-				//fmt.Println("salt: ", salt)
 				hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 				if err != nil {
 					return nil, fmt.Errorf("Error: %s", err)
