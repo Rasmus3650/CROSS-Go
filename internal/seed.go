@@ -2,7 +2,6 @@ package internal
 
 import (
 	"PQC-Master-Thesis/internal/common"
-	"fmt"
 	"math"
 )
 
@@ -17,7 +16,7 @@ func (c *CROSS[T, P]) Leaves(tree [][]byte) [][]byte {
 	return result
 }
 
-func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
+func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		t[0] = seed
@@ -28,24 +27,18 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
 				// Expand parent seed, salt and parent index
-				hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
-				if err != nil {
-					return nil, fmt.Errorf("Error: %s", err)
-				}
+				hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 				t[left_child] = hash[:c.ProtocolData.Lambda/8]
 				t[right_child] = hash[c.ProtocolData.Lambda/8:]
 			}
 			start_node += c.TreeParams.NPL[level]
 
 		}
-		return t, nil
+		return t
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		tree := make([][]byte, c.TreeParams.Total_nodes)
 		tree[0] = seed
-		quad_seeds, err := c.CSPRNG(append(tree[0], salt...), (4*c.ProtocolData.Lambda)/8, uint16(0))
-		if err != nil {
-			return nil, fmt.Errorf("Error: %s", err)
-		}
+		quad_seeds := c.CSPRNG(append(tree[0], salt...), (4*c.ProtocolData.Lambda)/8, uint16(0))
 		for i := 0; i < 4; i++ {
 			tree[i+1] = quad_seeds[i*c.ProtocolData.Lambda/8 : (i+1)*c.ProtocolData.Lambda/8]
 		}
@@ -86,30 +79,24 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) ([][]byte, error) {
 		for i := 0; i < 4; i++ {
 			dsc_counter += 1
 			copy(csprng_input, tree[i+1])
-			hash, err := c.CSPRNG(csprng_input, children[i]*(c.ProtocolData.Lambda/8), uint16(0+dsc_counter))
-			if err != nil {
-				return nil, fmt.Errorf("Error: %s", err)
-			}
+			hash := c.CSPRNG(csprng_input, children[i]*(c.ProtocolData.Lambda/8), uint16(0+dsc_counter))
 			for j := 0; j < children[i]; j++ {
 				result = append(result, hash[j*c.ProtocolData.Lambda/8:(j+1)*c.ProtocolData.Lambda/8])
 			}
 		}
-		return result, nil
+		return result
 	} else {
-		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
+		return nil
 	}
 }
-func (c *CROSS[T, P]) SeedLeaves(seed, salt []byte) ([][]byte, error) {
+func (c *CROSS[T, P]) SeedLeaves(seed, salt []byte) [][]byte {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
-		t, err := c.BuildTree(seed, salt)
-		if err != nil {
-			return nil, fmt.Errorf("Error: %s", err)
-		}
-		return c.Leaves(t), nil
+		t := c.BuildTree(seed, salt)
+		return c.Leaves(t)
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		return c.BuildTree(seed, salt)
 	} else {
-		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
+		return nil
 	}
 }
 
@@ -149,12 +136,9 @@ func (c *CROSS[T, P]) computeNodesToPublish(chall_2 []bool) []bool {
 	return result
 }
 
-func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, error) {
+func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) [][]byte {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
-		t, err := c.BuildTree(seed, salt)
-		if err != nil {
-			return nil, err
-		}
+		t := c.BuildTree(seed, salt)
 		path := c.computeNodesToPublish(chall_2)
 		seed_path := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
 		for i := 0; i < len(seed_path); i++ {
@@ -167,12 +151,9 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, err
 				published++
 			}
 		}
-		return seed_path, nil
+		return seed_path
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
-		leaves, err := c.SeedLeaves(seed, salt)
-		if err != nil {
-			return nil, err
-		}
+		leaves := c.SeedLeaves(seed, salt)
 		result := make([][]byte, c.ProtocolData.W)
 		for i := 0; i < len(result); i++ {
 			result[i] = make([]byte, c.ProtocolData.Lambda/8)
@@ -184,14 +165,13 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, err
 				published++
 			}
 		}
-		return result, nil
+		return result
 	} else {
-		return nil, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
+		return nil
 	}
 }
 
-// TODO important: Add the zero padding from line 413-419 of seedtree.c, else forgery might be possible
-func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool, error) {
+func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool) {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T_prime := c.computeNodesToPublish(chall_2)
 		t := make([][]byte, c.TreeParams.Total_nodes)
@@ -208,10 +188,7 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 					pub_nodes++
 				}
 				if T_prime[node] && i < c.TreeParams.NPL[level]-c.TreeParams.LPL[level] {
-					hash, err := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
-					if err != nil {
-						return nil, false, fmt.Errorf("Error: %s", err)
-					}
+					hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 					t[left_child] = hash[:c.ProtocolData.Lambda/8]
 					t[right_child] = hash[c.ProtocolData.Lambda/8:]
 					T_prime[left_child] = true
@@ -230,7 +207,7 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 				error_rate |= path[i][j]
 			}
 		}
-		return result, error_rate == 0, nil
+		return result, error_rate == 0
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		round_seeds := make([][]byte, c.ProtocolData.T)
 		published := 0
@@ -242,8 +219,8 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 				round_seeds[i] = make([]byte, c.ProtocolData.Lambda/8)
 			}
 		}
-		return round_seeds, true, nil
+		return round_seeds, true
 	} else {
-		return nil, false, fmt.Errorf("Scheme type not supported only balanced, small and fast are supported")
+		return nil, false
 	}
 }

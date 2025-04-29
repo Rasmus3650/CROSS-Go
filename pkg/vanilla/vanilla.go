@@ -16,31 +16,31 @@ type CROSSAllMethods interface {
 	Sign(sk, msg []byte) (Signature, error)
 	DummySign(salt, root_seed, sk, msg []byte) (Signature, error)
 	Verify(pk Pub, m []byte, sig Signature) (bool, error)
-	Expand_pk(seed_pk []byte) ([]int, []byte, error)
-	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error)
+	Expand_pk(seed_pk []byte) ([]int, []byte)
+	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte)
 
 	//arith
 	Fz_dz_norm_n(v []byte) []byte
 	Fz_inf_w_by_fz_matrix(fz_vec_e, W_mat []byte) []byte
 
 	//seed
-	SeedLeaves(seed, salt []byte) ([][]byte, error)
-	RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool, error)
-	SeedPath(seed, salt []byte, chall_2 []bool) ([][]byte, error)
+	SeedLeaves(seed, salt []byte) [][]byte
+	RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool)
+	SeedPath(seed, salt []byte, chall_2 []bool) [][]byte
 
 	//merkle
-	TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error)
-	RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool, error)
-	TreeRoot(commitments [][]byte) ([]byte, error)
+	TreeProof(commitments [][]byte, chall_2 []bool) [][]byte
+	RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool)
+	TreeRoot(commitments [][]byte) []byte
 
 	//Shake
-	CSPRNG(seed []byte, output_len int, dsc uint16) ([]byte, error)
-	CSPRNG_fp_mat(seed []byte) ([]int, error)
-	CSPRNG_fz_vec(seed []byte) ([]byte, error)
-	CSPRNG_fp_vec(seed []byte) ([]byte, error)
-	CSPRNG_fz_inf_w(seed []byte) ([]byte, error)
-	CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error)
-	Expand_digest_to_fixed_weight(digest []byte) ([]bool, error)
+	CSPRNG(seed []byte, output_len int, dsc uint16) []byte
+	CSPRNG_fp_mat(seed []byte) []int
+	CSPRNG_fz_vec(seed []byte) []byte
+	CSPRNG_fp_vec(seed []byte) []byte
+	CSPRNG_fz_inf_w(seed []byte) []byte
+	CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash)
+	Expand_digest_to_fixed_weight(digest []byte) []bool
 }
 
 type CROSSMethods interface {

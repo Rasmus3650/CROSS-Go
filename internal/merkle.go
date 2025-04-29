@@ -3,19 +3,15 @@ package internal
 import (
 	"PQC-Master-Thesis/internal/common"
 	"bytes"
-	"fmt"
 	"math"
 )
 
-func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) ([]byte, error) {
-	t, err := c.ComputeMerkleTree(commitments)
-	if err != nil {
-		return nil, err
-	}
-	return t[0], nil
+func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) []byte {
+	t := c.ComputeMerkleTree(commitments)
+	return t[0]
 }
 
-func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) {
+func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) [][]byte {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
 		T := c.placeOnLeaves(commitments)
 		startNode := c.TreeParams.LSI[0]
@@ -26,15 +22,12 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 				hash_input := make([]byte, 2*((2*c.ProtocolData.Lambda)/8))
 				copy(hash_input, T[current_node])
 				copy(hash_input[2*c.ProtocolData.Lambda/8:], T[current_node+1])
-				hash, err := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-				if err != nil {
-					return nil, err
-				}
+				hash := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 				T[parent_node] = hash
 			}
 			startNode -= c.TreeParams.NPL[level-1]
 		}
-		return T, nil
+		return T
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		T := make([][]byte, c.ProtocolData.T+5)
 		copy(T[5:c.ProtocolData.T+5], commitments)
@@ -76,22 +69,16 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) ([][]byte, error) 
 				prephash = append(prephash, T[5+j+children_offset]...)
 			}
 			children_offset += children[i]
-			hash, err := c.CSPRNG(prephash, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-			if err != nil {
-				return nil, err
-			}
+			hash := c.CSPRNG(prephash, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 			T[i+1] = hash
 		}
 		data := bytes.Join(T[1:5], nil)
-		hash, err := c.CSPRNG(data, 2*c.ProtocolData.Lambda/8, uint16(32768))
-		if err != nil {
-			return nil, err
-		}
+		hash := c.CSPRNG(data, 2*c.ProtocolData.Lambda/8, uint16(32768))
 		T[0] = hash
-		return T, nil
+		return T
 
 	} else {
-		return nil, fmt.Errorf("Invalid scheme type")
+		return nil
 	}
 }
 
@@ -121,12 +108,9 @@ func (c *CROSS[T, P]) placeOnLeaves(cmt_0 [][]byte) [][]byte {
 	return t
 }
 
-func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte, error) {
+func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) [][]byte {
 	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
-		T, err := c.ComputeMerkleTree(commitments)
-		if err != nil {
-			return nil, err
-		}
+		T := c.ComputeMerkleTree(commitments)
 		mtp := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
 		for i := 0; i < len(mtp); i++ {
 			mtp[i] = make([]byte, 2*c.ProtocolData.Lambda/8)
@@ -153,10 +137,10 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 			}
 			start_node -= c.TreeParams.NPL[level-1]
 		}
-		return mtp, nil
+		return mtp
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		if len(chall_2) != len(commitments) {
-			return nil, fmt.Errorf("Length mismatch between commitments (len: %d) and challenge (len: %d)", len(commitments), len(chall_2))
+			return nil
 		}
 		var result [][]byte
 		for i, elem := range chall_2 {
@@ -164,13 +148,13 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) ([][]byte,
 				result = append(result, commitments[i])
 			}
 		}
-		return result, nil
+		return result
 	} else {
-		return nil, fmt.Errorf("Invalid scheme type")
+		return nil
 	}
 }
 
-func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool, error) {
+func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]byte, bool) {
 	/*Their terms:
 	recomputed_leaves = cmt_0
 	mtp = proof
@@ -200,10 +184,7 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 					copy(hash_input[2*c.ProtocolData.Lambda/8:], proof[published])
 					published++
 				}
-				hash, err := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-				if err != nil {
-					return nil, false, err
-				}
+				hash := c.CSPRNG(hash_input, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 				T[parent_node] = hash
 				T_prime[parent_node] = true
 			}
@@ -217,7 +198,7 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 			}
 		}
 
-		return T[0], error_rate == 0, nil
+		return T[0], error_rate == 0
 	} else if c.ProtocolData.IsType(common.TYPE_FAST) {
 		pub_nodes := 0
 		for i := 0; i < c.ProtocolData.T; i++ {
@@ -226,9 +207,9 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 				pub_nodes++
 			}
 		}
-		root, err := c.TreeRoot(cmt_0)
-		return root, err == nil, err
+		root := c.TreeRoot(cmt_0)
+		return root, true
 	} else {
-		return nil, false, fmt.Errorf("Invalid scheme type")
+		return nil, false
 	}
 }

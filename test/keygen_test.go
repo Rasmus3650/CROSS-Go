@@ -14,10 +14,7 @@ func TestExpandSkRSDP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	V_tr, _, _, e_bar, err := cross.Expand_sk(seed)
-	if err != nil {
-		t.Fatalf("Error expanding sk: %v", err)
-	}
+	V_tr, _, _, e_bar := cross.Expand_sk(seed)
 	//fmt.Println("V_tr: ", V_tr)
 	//fmt.Println("e_bar: ", e_bar)
 	c_V_tr := []int{49, 19, 79, 100, 82, 66, 115, 25, 16, 61, 76, 33, 3, 90, 44, 27, 90, 120, 4, 121, 67, 66, 87, 20, 46, 114, 2, 77, 95, 85, 95, 41, 55, 52, 67, 17, 44, 80, 75, 24, 63, 113, 101, 81, 82, 87, 61, 101, 50, 47, 71,
@@ -115,11 +112,7 @@ func TestExpandSkRSDPG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	V_tr, W_mat, e_G_bar, e_bar, err := cross.Expand_sk(seed)
-	if err != nil {
-		t.Fatalf("Error expanding sk: %v", err)
-	}
-
+	V_tr, W_mat, e_G_bar, e_bar := cross.Expand_sk(seed)
 	c_e_G_bar := []byte{73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}
 	c_e_bar := []byte{31, 35, 122, 23, 80, 54, 85, 10, 39, 70, 62, 120, 18, 53, 62, 13, 100, 45, 45, 91, 118, 13, 46, 109, 19, 98, 9, 87, 45, 71, 73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}
 	c_W_mat := []byte{49, 19, 79, 100, 82, 66, 115, 25, 16, 61, 76, 33, 3, 90, 44, 27, 90, 120, 4, 121, 67, 66, 87, 20, 46, 114, 2, 77, 95, 85,
@@ -210,7 +203,7 @@ func TestExpandPkRSDP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	V_tr, _, err := cross.Expand_pk(seed)
+	V_tr, _ := cross.Expand_pk(seed)
 	c_V_tr := []int{15, 114, 41, 75, 27, 8, 15, 19, 57, 0, 47, 32, 86, 0, 9, 117, 50, 122, 79, 107, 51, 108, 17, 27, 20, 84, 125, 6, 52, 106, 82, 65, 107, 86, 78, 29, 90, 24, 46, 100, 93, 13, 20, 97, 101, 8, 95, 63, 54, 122, 45,
 		24, 106, 113, 51, 13, 21, 32, 75, 21, 78, 3, 102, 24, 104, 46, 77, 65, 8, 100, 85, 54, 115, 37, 110, 25, 101, 85, 122, 59, 50, 33, 33, 39, 116, 96, 61, 82, 86, 91, 106, 107, 68, 124, 76, 107, 34, 65, 23, 38, 29, 81,
 		29, 81, 98, 51, 81, 1, 11, 74, 26, 5, 19, 26, 46, 74, 69, 24, 29, 107, 76, 41, 84, 54, 8, 72, 87, 107, 10, 12, 124, 17, 0, 83, 107, 83, 31, 94, 63, 43, 101, 23, 103, 122, 49, 101, 62, 48, 40, 119, 42, 95, 2,
@@ -300,7 +293,7 @@ func TestExpandPkRSDPG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	V_tr, W_mat, err := cross.Expand_pk(seed)
+	V_tr, W_mat := cross.Expand_pk(seed)
 	c_W_mat := []byte{15, 114, 41, 75, 27, 8, 15, 19, 57, 0, 47, 32, 86, 0, 9, 117, 50, 122, 79, 107, 51, 108, 17, 27, 20, 84, 125, 6, 52, 106,
 		82, 65, 107, 86, 78, 29, 90, 24, 46, 100, 93, 13, 20, 97, 101, 8, 95, 63, 54, 122, 45, 24, 106, 113, 51, 13, 21, 32, 75, 21,
 		78, 3, 102, 24, 104, 46, 77, 65, 8, 100, 85, 54, 115, 37, 110, 25, 101, 85, 122, 59, 50, 33, 33, 39, 116, 96, 61, 82, 86, 91,
@@ -421,17 +414,11 @@ func TestKeygenRSDP(t *testing.T) {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
 	if i, ok := cross.(*vanilla.CROSSInstance[uint8, uint16]); ok {
-		seed_e_pk, err := i.CSPRNG(seed_sk, (4*i.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+		seed_e_pk := i.CSPRNG(seed_sk, (4*i.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
 		seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
 		seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
-		V_tr, _, err := i.Expand_pk(seed_pk)
-		if err != nil {
-			t.Fatalf("Error expanding pk: %v", err)
-		}
-		e_bar, err := i.CSPRNG_fz_vec(seed_e)
-		if err != nil {
-			t.Fatalf("Error generating CSPRNG fz vec: %v", err)
-		}
+		V_tr, _ := i.Expand_pk(seed_pk)
+		e_bar := i.CSPRNG_fz_vec(seed_e)
 		s_prime := i.Restr_vec_by_fp_matrix(e_bar, intToUint8(V_tr))
 		//TODO: Figure out why s_prime is not equal to c_temp_s, when i define the next s here, and only print it
 		s := i.Fp_dz_norm_synd(s_prime)
@@ -467,19 +454,12 @@ func TestKeygenRSDPG(t *testing.T) {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
 	if i, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
-		seed_e_pk, err := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+		seed_e_pk := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
 		seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
 		seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
-		V_tr, W_mat, err := cross.Expand_pk(seed_pk)
-		if err != nil {
-			t.Fatalf("Error expanding pk: %v", err)
-		}
+		V_tr, W_mat := cross.Expand_pk(seed_pk)
 		var e_bar []byte
-		e_G_bar, err := cross.CSPRNG_fz_inf_w(seed_e)
-		//fmt.Println("e_G_bar: ", e_G_bar)
-		if err != nil {
-			t.Fatalf("Error generating CSPRNG fz vec: %v", err)
-		}
+		e_G_bar := cross.CSPRNG_fz_inf_w(seed_e)
 		//fmt.Println("W_mat: ", W_mat)
 		e_bar = cross.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		c_e_bar := []byte{31, 35, 122, 23, 80, 54, 85, 10, 39, 70, 62, 120, 18, 53, 62, 13, 100, 45, 45, 91, 118, 13, 46, 109, 19, 98, 9, 87, 45, 71, 73, 36, 51, 106, 120, 52, 106, 71, 116, 44, 70, 46, 95, 50, 117, 100, 125, 2, 41, 82, 69, 117, 16, 30, 38}

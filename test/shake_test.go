@@ -4,22 +4,20 @@ import (
 	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
-	"fmt"
 	"testing"
 )
 
 func TestShake128CSPRNG(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Failed to create CROSS: %v", err)
+	}
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	T := 256
 	domain_sep := 0
 	output_len := 64
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
-	if err != nil {
-		fmt.Println("Error initializing CSPRNG:", err)
-		return
-	}
+	randomBytes := instance.CSPRNG(seed, output_len, dsc)
 	// Golang generated hashes
 	go_seed_e := randomBytes[:32]
 	go_seed_pk := randomBytes[32:]
@@ -38,16 +36,15 @@ func TestShake128CSPRNG(t *testing.T) {
 
 func TestShake256CSPRNG(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_3_BALANCED)
+	if err != nil {
+		t.Fatalf("Failed to create CROSS: %v", err)
+	}
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	T := 384
 	domain_sep := 0
 	output_len := 96
 	dsc := uint16(domain_sep + 3*T + 2)
-	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
-	if err != nil {
-		fmt.Println("Error initializing CSPRNG:", err)
-		return
-	}
+	randomBytes := instance.CSPRNG(seed, output_len, dsc)
 	// Golang generated hashes
 	go_seed_e := randomBytes[:48]
 	go_seed_pk := randomBytes[48:]
@@ -66,14 +63,13 @@ func TestShake256CSPRNG(t *testing.T) {
 
 func TestShakeHash(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	if err != nil {
+		t.Fatalf("Failed to create CROSS: %v", err)
+	}
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	output_len := 32
 	dsc := uint16(32768)
-	randomBytes, err := instance.CSPRNG(seed, output_len, dsc)
-	if err != nil {
-		fmt.Println("Error initializing CSPRNG:", err)
-		return
-	}
+	randomBytes := instance.CSPRNG(seed, output_len, dsc)
 	c_hash := []byte{11, 27, 204, 128, 161, 51, 112, 71, 20, 71, 231, 138, 67, 128, 232, 30, 91, 74, 144, 188, 233, 72, 217, 222, 72, 43, 29, 79, 152, 82, 169, 125}
 	if !bytes.Equal(randomBytes, c_hash) {
 		t.Errorf("Hashes do not match:\nGo: %v\nC:  %v", randomBytes, c_hash)
@@ -82,11 +78,11 @@ func TestShakeHash(t *testing.T) {
 
 func TestFpMat(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	mat, err := instance.CSPRNG_fp_mat(seed)
 	if err != nil {
-		t.Errorf("Error generating vector: %v", err)
+		t.Errorf("Error creating instance: %v", err)
 	}
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	mat := instance.CSPRNG_fp_mat(seed)
 	c_mat := []int{15, 114, 41, 75, 27, 8, 15, 19, 57, 0, 47, 32, 86, 0, 9, 117, 50, 122, 79, 107, 51, 108, 17, 27, 20, 84, 125, 6, 52, 106, 82, 65, 107, 86, 78, 29, 90, 24, 46, 100, 93, 13, 20, 97, 101, 8, 95, 63, 54, 122, 45,
 		24, 106, 113, 51, 13, 21, 32, 75, 21, 78, 3, 102, 24, 104, 46, 77, 65, 8, 100, 85, 54, 115, 37, 110, 25, 101, 85, 122, 59, 50, 33, 33, 39, 116, 96, 61, 82, 86, 91, 106, 107, 68, 124, 76, 107, 34, 65, 23, 38, 29, 81,
 		29, 81, 98, 51, 81, 1, 11, 74, 26, 5, 19, 26, 46, 74, 69, 24, 29, 107, 76, 41, 84, 54, 8, 72, 87, 107, 10, 12, 124, 17, 0, 83, 107, 83, 31, 94, 63, 43, 101, 23, 103, 122, 49, 101, 62, 48, 40, 119, 42, 95, 2,
@@ -173,11 +169,11 @@ func TestFpMat(t *testing.T) {
 
 func TestFzVec(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	vec, err := instance.CSPRNG_fz_vec(seed)
 	if err != nil {
-		t.Errorf("Error generating vector: %v", err)
+		t.Errorf("Error creating instance: %v", err)
 	}
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec := instance.CSPRNG_fz_vec(seed)
 	c_vec := []byte{6, 5, 2, 4, 5, 3, 2, 2, 1, 0, 0, 3, 1, 3, 1, 5, 4, 6, 2, 2, 1, 3, 0, 2, 6, 5, 1, 3, 3, 5, 2, 6, 1, 0, 3, 4, 2, 4, 3, 3, 5, 6, 5, 2, 1, 5, 2, 3, 1, 2, 1, 0, 4, 3, 3, 5, 4, 2, 5, 1, 5, 1, 6, 0, 4, 2, 0, 2, 5, 2, 3, 5, 4, 2, 2, 6, 4, 6, 4, 0, 0, 3, 5, 6, 1, 3, 5, 1, 2, 0, 2, 0, 1, 5, 6, 5, 1, 4, 3, 2, 4, 3, 0, 0, 6, 5, 3, 6, 4, 6, 2, 2, 6, 4, 3, 4, 6, 4, 3, 6, 4, 2, 3, 6, 0, 0, 6}
 	if !bytes.Equal(vec, c_vec) {
 		t.Errorf("vectors are not equal")
@@ -186,11 +182,11 @@ func TestFzVec(t *testing.T) {
 
 func TestFpVec(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	vec, err := instance.CSPRNG_fp_vec(seed)
 	if err != nil {
-		t.Errorf("Error generating vector: %v", err)
+		t.Errorf("Error creating instance: %v", err)
 	}
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec := instance.CSPRNG_fp_vec(seed)
 	c_vec := []byte{6, 121, 122, 53, 50, 9, 67, 69, 111, 58, 11, 112, 93, 117, 114, 79, 111, 106, 75, 10, 25, 18, 3, 37, 16, 125, 12, 7, 101, 42, 94, 36, 17, 42, 70, 10, 107, 74, 115, 100, 76, 80, 44, 18, 101, 49, 92, 95, 52, 0, 121, 51, 59, 72, 10, 100, 106, 36, 53, 88, 10, 43, 53, 46, 0, 10, 102, 59, 49, 49, 125, 84, 101, 82, 11, 0, 17, 18, 13, 1, 94, 124, 100, 94, 117, 31, 84, 82, 24, 115, 77, 67, 79, 26, 45, 43, 27, 64, 3, 90, 11, 125, 25, 108, 110, 125, 107, 103, 97, 64, 69, 122, 20, 87, 116, 8, 118, 72, 39, 91, 69, 13, 38, 88, 122, 0, 36}
 	if !bytes.Equal(vec, c_vec) {
 		t.Errorf("vectors are not equal")
@@ -213,11 +209,11 @@ func TestFpVecChall_1(t *testing.T) {
 
 func TestFzInfW(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
-	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	vec, err := instance.CSPRNG_fz_inf_w(seed)
 	if err != nil {
-		t.Errorf("Error generating vector: %v", err)
+		t.Errorf("Error creating instance: %v", err)
 	}
+	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec := instance.CSPRNG_fz_inf_w(seed)
 	c_vec := []byte{126, 87, 88, 19, 61, 0, 75, 61, 74, 86, 43, 6, 23, 55, 54, 21, 7, 70, 98, 45, 93, 74, 87, 118, 81}
 	if !bytes.Equal(vec, c_vec) {
 		t.Errorf("vectors are not equal")
@@ -225,8 +221,11 @@ func TestFzInfW(t *testing.T) {
 }
 func TestFzMat(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	if err != nil {
+		t.Errorf("Error creating instance: %v", err)
+	}
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	vec, _, err := instance.CSPRNG_fz_mat(seed)
+	vec, _ := instance.CSPRNG_fz_mat(seed)
 	if err != nil {
 		t.Errorf("Error generating vector: %v", err)
 	}
@@ -262,11 +261,11 @@ func TestFzMat(t *testing.T) {
 
 func TestExpandDigestFixedWeight(t *testing.T) {
 	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	digest := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	vec, err := instance.Expand_digest_to_fixed_weight(digest)
 	if err != nil {
-		t.Errorf("Error generating vector: %v", err)
+		t.Errorf("Error creating instance: %v", err)
 	}
+	digest := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+	vec := instance.Expand_digest_to_fixed_weight(digest)
 	c_vec := []byte{1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 	for i := 0; i < len(vec); i++ {
 		var val bool

@@ -22,54 +22,33 @@ type Signature struct {
 	Resp_0         []resp_0_struct
 }
 
-func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte, error) {
+func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte) {
 	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
-		seed_e_seed_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		V_tr, _, err := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		e_bar, err := c.CSPRNG_fz_vec(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		return V_tr, nil, nil, e_bar, nil
+		seed_e_seed_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
+		V_tr, _ := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
+		e_bar := c.CSPRNG_fz_vec(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
+		return V_tr, nil, nil, e_bar
 	} else if c.ProtocolData.Variant() == common.VARIANT_RSDP_G {
-		seed_e_seed_pk, err := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		V_tr, W_mat, err := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
-		e_G_bar, err := c.CSPRNG_fz_inf_w(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
-		if err != nil {
-			return nil, nil, nil, nil, err
-		}
+		seed_e_seed_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
+		V_tr, W_mat := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
+		e_G_bar := c.CSPRNG_fz_inf_w(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		norm_e_bar := c.Fz_dz_norm_n(e_bar)
-		return V_tr, W_mat, e_G_bar, norm_e_bar, nil
+		return V_tr, W_mat, e_G_bar, norm_e_bar
 	}
-	return nil, nil, nil, nil, fmt.Errorf("Invalid variant")
+	return nil, nil, nil, nil
 }
 func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	signature := Signature{}
-	V_tr, W_mat, e_G_bar, e_bar, err := c.Expand_sk(sk)
+	V_tr, W_mat, e_G_bar, e_bar := c.Expand_sk(sk)
 	salt := make([]byte, 2*c.ProtocolData.Lambda/8)
 	root_seed := make([]byte, c.ProtocolData.Lambda/8)
 	rand.Read(salt)
 	rand.Read(root_seed)
 	signature.Salt = salt
-	round_seeds, err := c.SeedLeaves(root_seed, salt)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error building seed leaves: %v", err)
-	}
+	round_seeds := c.SeedLeaves(root_seed, salt)
 	e_bar_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	v_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	u_prime := make([]T, c.ProtocolData.T*c.ProtocolData.N)
@@ -81,23 +60,14 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		var csprng_input []byte
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
 		dsc := uint16(0 + i + (2*c.ProtocolData.T - 1))
-		round_state, err := c.CSPRNG_init(csprng_input, dsc)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error initializing CSPRNG: %v", err)
-		}
+		round_state := c.CSPRNG_init(csprng_input, dsc)
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-			e_bar_prime_i, state, err := c.CSPRNG_fz_vec_prime(round_state)
+			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)
 			round_state = state
-			if err != nil {
-				return Signature{}, fmt.Errorf("Error generating e_bar_prime: %v", err)
-			}
 			copy(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], e_bar_prime_i)
 		} else {
-			e_G_bar_prime, state, err := c.CSPRNG_fz_inf_w_prime(round_state)
+			e_G_bar_prime, state := c.CSPRNG_fz_inf_w_prime(round_state)
 			round_state = state
-			if err != nil {
-				return Signature{}, fmt.Errorf("Error generating e_G_bar_prime: %v", err)
-			}
 			v_G_val := c.Fz_vec_sub_m(e_G_bar, e_G_bar_prime)
 			v_G_val = c.Fz_dz_norm_m(v_G_val)
 			copy(v_G_bar[i*c.ProtocolData.M:(i+1)*c.ProtocolData.M], v_G_val)
@@ -109,10 +79,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		v := c.Convert_restr_vec_to_fp(v_bar_i)
 		v_bar_i = c.Fz_dz_norm_n(v_bar_i)
 		copy(v_bar[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], v_bar_i)
-		u_prime_i, err := c.CSPRNG_fp_vec_prime(round_state)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error generating u_prime: %v", err)
-		}
+		u_prime_i := c.CSPRNG_fp_vec_prime(round_state)
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
 		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
 		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
@@ -130,51 +97,30 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		}
 		domain_sep_hash := uint16(32768 + i + (2*c.ProtocolData.T - 1))
 		cmt_1_i_input := make([]byte, (3*c.ProtocolData.Lambda)/8)
-		hash_val, err := c.CSPRNG(cmt_0_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
+		hash_val := c.CSPRNG(cmt_0_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
 		cmt_0[i] = hash_val
 		copy(cmt_1_i_input, round_seeds[i])
 		copy(cmt_1_i_input[c.ProtocolData.Lambda/8:], salt)
-		hash_cmt_1_val, err := c.CSPRNG(cmt_1_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error generating cmt_1: %v", err)
-		}
+		hash_cmt_1_val := c.CSPRNG(cmt_1_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
 		copy(cmt_1[i*(2*c.ProtocolData.Lambda)/8:(i+1)*(2*c.ProtocolData.Lambda)/8], hash_cmt_1_val)
 	}
 	digest_cmt0_cmt1 := make([]byte, 2*(2*c.ProtocolData.Lambda)/8)
-	root, err := c.TreeRoot(cmt_0)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_cmt0_cmt1: %v", err)
-	}
+	root := c.TreeRoot(cmt_0)
 	copy(digest_cmt0_cmt1, root)
-	hash_val, err := c.CSPRNG(cmt_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating cmt_1: %v", err)
-	}
+	hash_val := c.CSPRNG(cmt_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	copy(digest_cmt0_cmt1[(2*c.ProtocolData.Lambda)/8:], hash_val)
-	digest_cmt, err := c.CSPRNG(digest_cmt0_cmt1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_cmt: %v", err)
-	}
+	digest_cmt := c.CSPRNG(digest_cmt0_cmt1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	signature.Digest_cmt = digest_cmt
 	digest_msg_cmt_salt := make([]byte, 3*(2*c.ProtocolData.Lambda)/8)
-	digest_msg_val, err := c.CSPRNG(msg, 2*c.ProtocolData.Lambda/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_msg: %v", err)
-	}
+	digest_msg_val := c.CSPRNG(msg, 2*c.ProtocolData.Lambda/8, uint16(32768))
 	copy(digest_msg_cmt_salt, digest_msg_val)
 	copy(digest_msg_cmt_salt[(2*c.ProtocolData.Lambda)/8:], digest_cmt)
 	copy(digest_msg_cmt_salt[2*(2*c.ProtocolData.Lambda)/8:], salt)
 	// Computing first challenge
 	digest_chall_1 := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	chall_1_val, err := c.CSPRNG(digest_msg_cmt_salt, 3*(2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_chall_1: %v", err)
-	}
+	chall_1_val := c.CSPRNG(digest_msg_cmt_salt, 3*(2*c.ProtocolData.Lambda)/8, uint16(32768))
 	copy(digest_chall_1, chall_1_val)
-	chall_1, err := c.CSPRNG_fp_vec_chall_1(digest_chall_1)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating chall_1: %v", err)
-	}
+	chall_1 := c.CSPRNG_fp_vec_chall_1(digest_chall_1)
 	// Computing first response
 	y := make([][]T, c.ProtocolData.T)
 
@@ -188,24 +134,12 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		copy(y_digest_chall_1[i*c.DenselyPackedFpVecSize():(i+1)*c.DenselyPackedFpVecSize()], val)
 	}
 	copy(y_digest_chall_1[c.ProtocolData.T*c.DenselyPackedFpVecSize():], digest_chall_1)
-	digest_chall_2, err := c.CSPRNG(y_digest_chall_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_chall_2: %v", err)
-	}
+	digest_chall_2 := c.CSPRNG(y_digest_chall_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	signature.Digest_chall_2 = digest_chall_2
-	chall_2, err := c.Expand_digest_to_fixed_weight(digest_chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error expanding digest to fixed weight: %v", err)
-	}
+	chall_2 := c.Expand_digest_to_fixed_weight(digest_chall_2)
 	// Computing second round of responses
-	proof, err := c.TreeProof(cmt_0, chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating proof: %v", err)
-	}
-	path, err := c.SeedPath(root_seed, salt, chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating seed path: %v", err)
-	}
+	proof := c.TreeProof(cmt_0, chall_2)
+	path := c.SeedPath(root_seed, salt, chall_2)
 	signature.Proof = proof
 	signature.Path = path
 	published_rsps := 0
@@ -232,12 +166,9 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 
 func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signature, error) {
 	signature := Signature{}
-	V_tr, W_mat, e_G_bar, e_bar, err := c.Expand_sk(sk)
+	V_tr, W_mat, e_G_bar, e_bar := c.Expand_sk(sk)
 	signature.Salt = salt
-	round_seeds, err := c.SeedLeaves(root_seed, salt)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error building seed leaves: %v", err)
-	}
+	round_seeds := c.SeedLeaves(root_seed, salt)
 	e_bar_prime := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	v_bar := make([]byte, c.ProtocolData.T*c.ProtocolData.N)
 	u_prime := make([]T, c.ProtocolData.T*c.ProtocolData.N)
@@ -249,23 +180,14 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		var csprng_input []byte
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
 		dsc := uint16(0 + i + (2*c.ProtocolData.T - 1))
-		round_state, err := c.CSPRNG_init(csprng_input, dsc)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error initializing CSPRNG: %v", err)
-		}
+		round_state := c.CSPRNG_init(csprng_input, dsc)
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
-			e_bar_prime_i, state, err := c.CSPRNG_fz_vec_prime(round_state)
+			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)
 			round_state = state
-			if err != nil {
-				return Signature{}, fmt.Errorf("Error generating e_bar_prime: %v", err)
-			}
 			copy(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], e_bar_prime_i)
 		} else {
-			e_G_bar_prime, state, err := c.CSPRNG_fz_inf_w_prime(round_state)
+			e_G_bar_prime, state := c.CSPRNG_fz_inf_w_prime(round_state)
 			round_state = state
-			if err != nil {
-				return Signature{}, fmt.Errorf("Error generating e_G_bar_prime: %v", err)
-			}
 			v_G_val := c.Fz_vec_sub_m(e_G_bar, e_G_bar_prime)
 			v_G_val = c.Fz_dz_norm_m(v_G_val)
 			copy(v_G_bar[i*c.ProtocolData.M:(i+1)*c.ProtocolData.M], v_G_val)
@@ -277,10 +199,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		v := c.Convert_restr_vec_to_fp(v_bar_i)
 		v_bar_i = c.Fz_dz_norm_n(v_bar_i)
 		copy(v_bar[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], v_bar_i)
-		u_prime_i, err := c.CSPRNG_fp_vec_prime(round_state)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error generating u_prime: %v", err)
-		}
+		u_prime_i := c.CSPRNG_fp_vec_prime(round_state)
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
 		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
 		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
@@ -298,51 +217,30 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		}
 		domain_sep_hash := uint16(32768 + i + (2*c.ProtocolData.T - 1))
 		cmt_1_i_input := make([]byte, (3*c.ProtocolData.Lambda)/8)
-		hash_val, err := c.CSPRNG(cmt_0_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
+		hash_val := c.CSPRNG(cmt_0_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
 		cmt_0[i] = hash_val
 		copy(cmt_1_i_input, round_seeds[i])
 		copy(cmt_1_i_input[c.ProtocolData.Lambda/8:], salt)
-		hash_cmt_1_val, err := c.CSPRNG(cmt_1_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
-		if err != nil {
-			return Signature{}, fmt.Errorf("Error generating cmt_1: %v", err)
-		}
+		hash_cmt_1_val := c.CSPRNG(cmt_1_i_input, (2*c.ProtocolData.Lambda)/8, domain_sep_hash)
 		copy(cmt_1[i*(2*c.ProtocolData.Lambda)/8:(i+1)*(2*c.ProtocolData.Lambda)/8], hash_cmt_1_val)
 	}
 	digest_cmt0_cmt1 := make([]byte, 2*(2*c.ProtocolData.Lambda)/8)
-	root, err := c.TreeRoot(cmt_0)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_cmt0_cmt1: %v", err)
-	}
+	root := c.TreeRoot(cmt_0)
 	copy(digest_cmt0_cmt1, root)
-	hash_val, err := c.CSPRNG(cmt_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating cmt_1: %v", err)
-	}
+	hash_val := c.CSPRNG(cmt_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	copy(digest_cmt0_cmt1[(2*c.ProtocolData.Lambda)/8:], hash_val)
-	digest_cmt, err := c.CSPRNG(digest_cmt0_cmt1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_cmt: %v", err)
-	}
+	digest_cmt := c.CSPRNG(digest_cmt0_cmt1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	signature.Digest_cmt = digest_cmt
 	digest_msg_cmt_salt := make([]byte, 3*(2*c.ProtocolData.Lambda)/8)
-	digest_msg_val, err := c.CSPRNG(msg, 2*c.ProtocolData.Lambda/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_msg: %v", err)
-	}
+	digest_msg_val := c.CSPRNG(msg, 2*c.ProtocolData.Lambda/8, uint16(32768))
 	copy(digest_msg_cmt_salt, digest_msg_val)
 	copy(digest_msg_cmt_salt[(2*c.ProtocolData.Lambda)/8:], digest_cmt)
 	copy(digest_msg_cmt_salt[2*(2*c.ProtocolData.Lambda)/8:], salt)
 	// Computing first challenge
 	digest_chall_1 := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	chall_1_val, err := c.CSPRNG(digest_msg_cmt_salt, 3*(2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_chall_1: %v", err)
-	}
+	chall_1_val := c.CSPRNG(digest_msg_cmt_salt, 3*(2*c.ProtocolData.Lambda)/8, uint16(32768))
 	copy(digest_chall_1, chall_1_val)
-	chall_1, err := c.CSPRNG_fp_vec_chall_1(digest_chall_1)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating chall_1: %v", err)
-	}
+	chall_1 := c.CSPRNG_fp_vec_chall_1(digest_chall_1)
 	// Computing first response
 	y := make([][]T, c.ProtocolData.T)
 
@@ -356,24 +254,12 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		copy(y_digest_chall_1[i*c.DenselyPackedFpVecSize():(i+1)*c.DenselyPackedFpVecSize()], val)
 	}
 	copy(y_digest_chall_1[c.ProtocolData.T*c.DenselyPackedFpVecSize():], digest_chall_1)
-	digest_chall_2, err := c.CSPRNG(y_digest_chall_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating digest_chall_2: %v", err)
-	}
+	digest_chall_2 := c.CSPRNG(y_digest_chall_1, (2*c.ProtocolData.Lambda)/8, uint16(32768))
 	signature.Digest_chall_2 = digest_chall_2
-	chall_2, err := c.Expand_digest_to_fixed_weight(digest_chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error expanding digest to fixed weight: %v", err)
-	}
+	chall_2 := c.Expand_digest_to_fixed_weight(digest_chall_2)
 	// Computing second round of responses
-	proof, err := c.TreeProof(cmt_0, chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating proof: %v", err)
-	}
-	path, err := c.SeedPath(root_seed, salt, chall_2)
-	if err != nil {
-		return Signature{}, fmt.Errorf("Error generating seed path: %v", err)
-	}
+	proof := c.TreeProof(cmt_0, chall_2)
+	path := c.SeedPath(root_seed, salt, chall_2)
 	signature.Proof = proof
 	signature.Path = path
 	published_rsps := 0

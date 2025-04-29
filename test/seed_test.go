@@ -666,7 +666,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 		},
 	}
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		if err != nil {
 			t.Fatalf("Error generating leaves: %v", err)
 		}
@@ -683,10 +683,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -1148,10 +1145,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -1165,10 +1159,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -1997,10 +1988,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -2014,10 +2002,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -2191,10 +2176,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -2208,10 +2190,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -2550,10 +2529,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -2567,10 +2543,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -3126,10 +3099,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -3143,10 +3113,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -3284,10 +3251,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 
 		if !bytes.Equal(common.Flatten(leaves), test.leaves) {
 			t.Fatalf("Leaves not equal")
@@ -3300,10 +3264,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		if len(common.Flatten(path)) != len(test.path) {
 			t.Fatalf("Paths not equal length")
 		}
@@ -3555,10 +3516,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -3572,10 +3530,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
@@ -3945,10 +3900,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 	}
 
 	for _, test := range test_vectors {
-		leaves, err := cross.SeedLeaves(test.root_seed, test.salt)
-		if err != nil {
-			t.Fatalf("Error generating leaves: %v", err)
-		}
+		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 		for i := 0; i < cross.GetProtocolData().T; i++ {
 			if !bytes.Equal(leaves[i], test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)]) {
 				t.Fatalf("Leaves not equal test_vector: %v, leaves: %v", test.leaves[i*(cross.GetProtocolData().Lambda/8):(i+1)*(cross.GetProtocolData().Lambda/8)], leaves[i])
@@ -3962,10 +3914,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 				bool_chall_2 = append(bool_chall_2, false)
 			}
 		}
-		path, err := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if err != nil {
-			t.Fatalf("Error generating path: %v", err)
-		}
+		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
 		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)

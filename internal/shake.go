@@ -1,19 +1,18 @@
 package internal
 
 import (
-	"fmt"
 	"math"
 
 	"golang.org/x/crypto/sha3"
 )
 
-func (c *CROSS[T, P]) CSPRNG_state(state sha3.ShakeHash, output_len int) ([]byte, sha3.ShakeHash, error) {
+func (c *CROSS[T, P]) CSPRNG_state(state sha3.ShakeHash, output_len int) ([]byte, sha3.ShakeHash) {
 	output := make([]byte, output_len)
 	state.Read(output)
-	return output, state, nil
+	return output, state
 }
 
-func (c *CROSS[T, P]) CSPRNG(seed []byte, output_len int, dsc uint16) ([]byte, error) {
+func (c *CROSS[T, P]) CSPRNG(seed []byte, output_len int, dsc uint16) []byte {
 	var shake sha3.ShakeHash
 	if c.ProtocolData.Level() == 1 {
 		shake = sha3.NewShake128()
@@ -28,12 +27,12 @@ func (c *CROSS[T, P]) CSPRNG(seed []byte, output_len int, dsc uint16) ([]byte, e
 	}
 
 	shake.Write(dscOrdered)
-	output := make([]byte, output_len) // Adjust length as needed
+	output := make([]byte, output_len)
 	shake.Read(output)
-	return output, nil
+	return output
 }
 
-func (c *CROSS[T, P]) CSPRNG_prime(seed []byte, output_len int, dsc uint16) ([]byte, sha3.ShakeHash, error) {
+func (c *CROSS[T, P]) CSPRNG_prime(seed []byte, output_len int, dsc uint16) ([]byte, sha3.ShakeHash) {
 	var shake sha3.ShakeHash
 	if c.ProtocolData.Level() == 1 {
 		shake = sha3.NewShake128()
@@ -48,11 +47,12 @@ func (c *CROSS[T, P]) CSPRNG_prime(seed []byte, output_len int, dsc uint16) ([]b
 	}
 
 	shake.Write(dscOrdered)
-	output := make([]byte, output_len) // Adjust length as needed
+	output := make([]byte, output_len)
 	shake.Read(output)
-	return output, shake, nil
+	return output, shake
 }
-func (c *CROSS[T, P]) CSPRNG_init(seed []byte, dsc uint16) (sha3.ShakeHash, error) {
+
+func (c *CROSS[T, P]) CSPRNG_init(seed []byte, dsc uint16) sha3.ShakeHash {
 	var shake sha3.ShakeHash
 	if c.ProtocolData.Level() == 1 {
 		shake = sha3.NewShake128()
@@ -67,7 +67,7 @@ func (c *CROSS[T, P]) CSPRNG_init(seed []byte, dsc uint16) (sha3.ShakeHash, erro
 	}
 
 	shake.Write(dscOrdered)
-	return shake, nil
+	return shake
 }
 
 func isRepresentableInDBits(d, n uint) int {
@@ -92,7 +92,7 @@ func RoundUp(amount, roundAmt uint) uint {
 	return ((amount + roundAmt - 1) / roundAmt) * roundAmt
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) ([]int, error) {
+func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []int {
 	res := make([]int, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
@@ -100,11 +100,7 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) ([]int, error) {
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
 	//TODO: Switch case on the dsc + the real value
 	dsc := uint16(0 + 3*c.ProtocolData.T + 2)
-	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_V_CT_RNG), 8)/8), dsc)
-	//fmt.Println("CSPRNG_buffer:", CSPRNG_buffer)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_V_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -132,10 +128,10 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) ([]int, error) {
 		sub_buffer >>= BITS_FOR_P
 		bits_in_sub_buf -= BITS_FOR_P
 	}
-	return res, nil
+	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) ([]int, error) {
+func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) []int {
 	res := make([]int, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
@@ -171,19 +167,15 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) ([]int, error) {
 		sub_buffer >>= BITS_FOR_P
 		bits_in_sub_buf -= BITS_FOR_P
 	}
-	return res, nil
+	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) ([]byte, error) {
+func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
-	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	dsc := uint16(0 + 2*c.ProtocolData.T - 1)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
-	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8), dsc)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -211,17 +203,14 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) ([]byte, error) {
 		sub_buffer >>= BITS_FOR_P
 		bits_in_sub_buf -= BITS_FOR_P
 	}
-	return res, nil
+	return res
 }
-func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]T, error) {
+func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) []T {
 	res := make([]T, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint16(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
-	CSPRNG_buffer, _, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8))
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer, _ := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8))
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -249,19 +238,16 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_prime(state sha3.ShakeHash) ([]T, error) {
 		sub_buffer >>= BITS_FOR_P
 		bits_in_sub_buf -= BITS_FOR_P
 	}
-	return res, nil
+	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fz_vec(seed []byte) ([]byte, error) {
+func (c *CROSS[T, P]) CSPRNG_fz_vec(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
 	dsc := uint16(0 + 3*c.ProtocolData.T + 3)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
-	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8), dsc)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -289,18 +275,15 @@ func (c *CROSS[T, P]) CSPRNG_fz_vec(seed []byte) ([]byte, error) {
 		sub_buffer >>= BITS_FOR_Z
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
-	return res, nil
+	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fz_vec_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash, error) {
+func (c *CROSS[T, P]) CSPRNG_fz_vec_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash) {
 	res := make([]byte, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
-	CSPRNG_buffer, state, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8))
-	if err != nil {
-		return nil, state, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer, state := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8))
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -328,19 +311,16 @@ func (c *CROSS[T, P]) CSPRNG_fz_vec_prime(state sha3.ShakeHash) ([]byte, sha3.Sh
 		sub_buffer >>= BITS_FOR_Z
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
-	return res, state, nil
+	return res, state
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) ([]T, error) {
+func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) []T {
 	res := make([]T, c.ProtocolData.T)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (T(1) << BitsToRepresent(uint(c.ProtocolData.P-2))) - 1
 	dsc := uint16(0 + 3*c.ProtocolData.T - 1)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 2))
-	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_CHALL_1_FPSTAR_CT_RNG), 8)/8), dsc)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_CHALL_1_FPSTAR_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -368,19 +348,16 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) ([]T, error) {
 		sub_buffer >>= BITS_FOR_P
 		bits_in_sub_buf -= BITS_FOR_P
 	}
-	return res, nil
+	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fz_inf_w(seed []byte) ([]byte, error) {
+func (c *CROSS[T, P]) CSPRNG_fz_inf_w(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.M)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
 	dsc := uint16(0 + 3*c.ProtocolData.T + 3)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
-	CSPRNG_buffer, err := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8), dsc)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -408,17 +385,14 @@ func (c *CROSS[T, P]) CSPRNG_fz_inf_w(seed []byte) ([]byte, error) {
 		sub_buffer >>= BITS_FOR_Z
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
-	return res, nil
+	return res
 }
-func (c *CROSS[T, P]) CSPRNG_fz_inf_w_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash, error) {
+func (c *CROSS[T, P]) CSPRNG_fz_inf_w_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash) {
 	res := make([]byte, c.ProtocolData.M)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
-	CSPRNG_buffer, state, err := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8))
-	if err != nil {
-		return nil, state, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer, state := c.CSPRNG_state(state, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8))
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -446,19 +420,16 @@ func (c *CROSS[T, P]) CSPRNG_fz_inf_w_prime(state sha3.ShakeHash) ([]byte, sha3.
 		sub_buffer >>= BITS_FOR_Z
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
-	return res, state, nil
+	return res, state
 }
 
-func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error) {
+func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash) {
 	res := make([]byte, c.ProtocolData.M*(c.ProtocolData.N-c.ProtocolData.M))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
 	dsc := uint16(0 + 3*c.ProtocolData.T + 2)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
-	CSPRNG_buffer, state, err := c.CSPRNG_prime(seed, int(RoundUp(uint(c.ProtocolData.BITS_W_CT_RNG), 8)/8), dsc)
-	if err != nil {
-		return nil, nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer, state := c.CSPRNG_prime(seed, int(RoundUp(uint(c.ProtocolData.BITS_W_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -486,16 +457,13 @@ func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash, error)
 		sub_buffer >>= BITS_FOR_Z
 		bits_in_sub_buf -= BITS_FOR_Z
 	}
-	return res, state, nil
+	return res, state
 }
 
-func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) ([]bool, error) {
+func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) []bool {
 	fixed_weight_string := make([]byte, c.ProtocolData.T)
 	dsc_csprng_b := uint16(0 + 3*c.ProtocolData.T)
-	CSPRNG_buffer, err := c.CSPRNG(digest, int(RoundUp(uint(c.ProtocolData.BITS_CWSTR_RNG), 8)/8), dsc_csprng_b)
-	if err != nil {
-		return nil, fmt.Errorf("Error in CSPRNG: %v", err)
-	}
+	CSPRNG_buffer := c.CSPRNG(digest, int(RoundUp(uint(c.ProtocolData.BITS_CWSTR_RNG), 8)/8), dsc_csprng_b)
 	for i := 0; i < c.ProtocolData.W; i++ {
 		fixed_weight_string[i] = 1
 	}
@@ -540,5 +508,5 @@ func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) ([]bool, erro
 			result[i] = false
 		}
 	}
-	return result, nil
+	return result
 }

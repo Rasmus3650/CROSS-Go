@@ -45,30 +45,18 @@ func TestMerkle(t *testing.T) {
 				commitments[i] = make([]byte, (2*instance.GetProtocolData().Lambda)/8)
 				rand.Read(commitments[i])
 			}
-			root, err := instance.TreeRoot(commitments)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-			}
+			root := instance.TreeRoot(commitments)
 			digest := make([]byte, 32)
 			rand.Read(digest)
-			chall_2, err := instance.Expand_digest_to_fixed_weight(digest)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-			}
-			proof, err := instance.TreeProof(commitments, chall_2)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-			}
+			chall_2 := instance.Expand_digest_to_fixed_weight(digest)
+			proof := instance.TreeProof(commitments, chall_2)
 			cmt_0 := make([][]byte, len(chall_2))
 			for i := 0; i < len(chall_2); i++ {
 				if !chall_2[i] {
 					cmt_0[i] = commitments[i]
 				}
 			}
-			root_prime, _, err := instance.RecomputeRoot(cmt_0, proof, chall_2)
-			if err != nil {
-				t.Errorf("Error: %s", err)
-			}
+			root_prime, _ := instance.RecomputeRoot(cmt_0, proof, chall_2)
 			if len(root) != len(root_prime) {
 				t.Errorf("Error: Length of roots do not match")
 			}
@@ -139,10 +127,7 @@ func load(prefix string, count int, t *testing.T) []MERKLE_STRUCT {
 func run(cross vanilla.CROSSAllMethods, test_vectors []MERKLE_STRUCT, t *testing.T) {
 	for _, test := range test_vectors {
 		commitments := convertLeavesTo2DByte(cross.GetProtocolData().T, cross.GetProtocolData().Lambda, test.leaves)
-		root, err := cross.TreeRoot(commitments)
-		if err != nil {
-			t.Fatalf("Error computing tree root: %v", err)
-		}
+		root := cross.TreeRoot(commitments)
 		if !bytes.Equal(root, test.root) {
 			t.Fatalf("Computed root does not match expected root")
 		}
@@ -154,10 +139,7 @@ func run(cross vanilla.CROSSAllMethods, test_vectors []MERKLE_STRUCT, t *testing
 				chall_2[i] = false
 			}
 		}
-		proof, err := cross.TreeProof(commitments, chall_2)
-		if err != nil {
-			t.Fatalf("Error computing tree proof: %v", err)
-		}
+		proof := cross.TreeProof(commitments, chall_2)
 		//Test proof was copied without trailing zeroes
 		new_proof := make([]byte, len(common.Flatten(proof)))
 		copy(new_proof, test.proof)
