@@ -15,7 +15,7 @@ func (c *CROSSInstance[T, P]) int16ToT(arr []int) []T {
 }
 
 // TODO: Check if we are allowed to bail out early, maybe should wait till final check
-func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, error) {
+func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, error) {
 	// Length checks for all attributes of the signature
 	valid_signature := true
 	if len(sig.Salt) != 2*c.ProtocolData.Lambda/8 {
@@ -85,7 +85,6 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 		copy(cmt_0_i_input[int(c.DenselyPackedFpSynSize())+c.DenselyPackedFzRSDPGVecSize():], sig.Salt)
 
 	}
-	//remember to add salt, makes every dish more tasty
 	cmt_1_i_input := make([]byte, 3*c.ProtocolData.Lambda/8)
 	copy(cmt_1_i_input[c.ProtocolData.Lambda/8:], sig.Salt)
 	cmt_0 := make([][]byte, c.ProtocolData.T)
@@ -144,7 +143,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pub, m []byte, sig Signature) (bool, err
 			used_rsps++
 			v := c.Convert_restr_vec_to_fp(v_bar)
 			y_prime = c.Fp_vec_by_fp_vec_pointwise(v, y[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N])
-			y_prime_H = c.Fp_vec_by_fp_matrix(y_prime, c.int16ToT(V_tr))
+			y_prime_H = c.Fp_vec_by_fp_matrix(y_prime, V_tr)
 			y_prime_H = c.Fp_dz_norm_synd(y_prime_H)
 			s_prime = c.Fp_synd_minus_fp_vec_scaled(y_prime_H, chall_1[i], s)
 			s_prime = c.Fp_dz_norm_synd(s_prime)

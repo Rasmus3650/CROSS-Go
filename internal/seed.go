@@ -26,7 +26,6 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 				node := start_node + i
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
-				// Expand parent seed, salt and parent index
 				hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
 				t[left_child] = hash[:c.ProtocolData.Lambda/8]
 				t[right_child] = hash[c.ProtocolData.Lambda/8:]

@@ -22,7 +22,7 @@ type Signature struct {
 	Resp_0         []resp_0_struct
 }
 
-func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte) {
+func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]T, []byte, []byte, []byte) {
 	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
@@ -82,7 +82,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		u_prime_i := c.CSPRNG_fp_vec_prime(round_state)
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
 		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
-		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
+		s_prime = c.Fp_vec_by_fp_matrix(u, V_tr)
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
@@ -202,7 +202,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		u_prime_i := c.CSPRNG_fp_vec_prime(round_state)
 		copy(u_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], u_prime_i)
 		u := c.Fp_vec_by_fp_vec_pointwise(v, u_prime_i)
-		s_prime = c.Fp_vec_by_fp_matrix(u, c.intToT(V_tr))
+		s_prime = c.Fp_vec_by_fp_matrix(u, V_tr)
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {

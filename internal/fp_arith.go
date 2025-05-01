@@ -1,6 +1,9 @@
 package internal
 
-import "PQC-Master-Thesis/internal/common"
+import (
+	"PQC-Master-Thesis/internal/common"
+	"sync"
+)
 
 func (c *CROSS[T, P]) FPRED_SINGLE(x P) P {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
@@ -119,14 +122,63 @@ func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []T) []T {
 	return res
 }
 
+/*
+	 Original version
+		func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
+				result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+				copy(result, e[c.ProtocolData.K:])
+				for i := 0; i < c.ProtocolData.K; i++ {
+					e_i := FP_DOUBLE_PREC[T, P](e[i])
+					for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+						result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*FP_DOUBLE_PREC[T, P](V_tr[i * (c.ProtocolData.N - c.ProtocolData.K)+j])))
+					}
+				}
+
+				return result
+			}
+
+		 Unoptimized version
+			func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
+				result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+				first_val := (c.ProtocolData.N - c.ProtocolData.K)
+				copy(result, e[c.ProtocolData.K:])
+				for i := 0; i < c.ProtocolData.K; i++ {
+					idx := i * first_val
+					e_i := FP_DOUBLE_PREC[T, P](e[i])
+					for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+						result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*FP_DOUBLE_PREC[T, P](V_tr[idx+j])))
+					}
+				}
+
+				return result
+			}
+*/
+
 func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
 	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	copy(result, e[c.ProtocolData.K:])
+
+	// Precompute values outside the loop that don't change
+	nMinusK := c.ProtocolData.N - c.ProtocolData.K
+	var wg sync.WaitGroup
+
 	for i := 0; i < c.ProtocolData.K; i++ {
-		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + FP_DOUBLE_PREC[T, P](e[i])*FP_DOUBLE_PREC[T, P](V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
-		}
+		// Using a closure to capture 'i' and pass it to the goroutine
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			e_i := FP_DOUBLE_PREC[T, P](e[i])
+
+			// We calculate the base index once per iteration of i to avoid redundant multiplication
+			baseIdx := i * nMinusK
+			for j := 0; j < nMinusK; j++ {
+				// Fetch value from V_tr and apply the computation
+				VtrValue := FP_DOUBLE_PREC[T, P](V_tr[baseIdx+j])
+				result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*VtrValue))
+			}
+		}(i)
 	}
+	wg.Wait()
 
 	return result
 }

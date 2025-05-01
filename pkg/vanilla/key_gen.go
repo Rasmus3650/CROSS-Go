@@ -5,17 +5,17 @@ import (
 	"crypto/rand"
 )
 
-type Pub struct {
+type Pk struct {
 	SeedPK []byte
 	S      []byte
 }
 
 type KeyPair struct {
-	Pri []byte
-	Pub
+	Sk []byte
+	Pk
 }
 
-func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]int, []byte) {
+func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]T, []byte) {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		V_tr := c.CSPRNG_fp_mat(seed_pk)
 		return V_tr, nil
@@ -40,19 +40,19 @@ func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
 	V_tr, W_mat := c.Expand_pk(seed_pk)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		e_bar := c.CSPRNG_fz_vec(seed_e)
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
 
 	} else {
 		e_G_bar := c.CSPRNG_fz_inf_w(seed_e)
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
 	}
 }
 
@@ -64,26 +64,18 @@ func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 	V_tr, W_mat := c.Expand_pk(seed_pk)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		e_bar := c.CSPRNG_fz_vec(seed_e)
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
 
 	} else {
 		e_G_bar := c.CSPRNG_fz_inf_w(seed_e)
 		e_bar := c.Fz_inf_w_by_fz_matrix(e_G_bar, W_mat)
 		e_bar = c.Fz_dz_norm_n(e_bar)
-		temp_s := c.Restr_vec_by_fp_matrix(e_bar, c.intToT(V_tr))
+		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Pri: seed_sk, Pub: Pub{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
 	}
-}
-
-func (c *CROSSInstance[T, P]) intToT(V []int) []T {
-	result := make([]T, len(V))
-	for i := range V {
-		result[i] = T(V[i])
-	}
-	return result
 }

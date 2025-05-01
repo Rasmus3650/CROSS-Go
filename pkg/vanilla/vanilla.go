@@ -15,9 +15,7 @@ type CROSSAllMethods interface {
 	DummyKeyGen(seed_sk []byte) (KeyPair, error)
 	Sign(sk, msg []byte) (Signature, error)
 	DummySign(salt, root_seed, sk, msg []byte) (Signature, error)
-	Verify(pk Pub, m []byte, sig Signature) (bool, error)
-	Expand_pk(seed_pk []byte) ([]int, []byte)
-	Expand_sk(seed_sk []byte) ([]int, []byte, []byte, []byte)
+	Verify(pk Pk, m []byte, sig Signature) (bool, error)
 
 	//arith
 	Fz_dz_norm_n(v []byte) []byte
@@ -35,7 +33,6 @@ type CROSSAllMethods interface {
 
 	//Shake
 	CSPRNG(seed []byte, output_len int, dsc uint16) []byte
-	CSPRNG_fp_mat(seed []byte) []int
 	CSPRNG_fz_vec(seed []byte) []byte
 	CSPRNG_fp_vec(seed []byte) []byte
 	CSPRNG_fz_inf_w(seed []byte) []byte

@@ -222,14 +222,14 @@ func TestRSDP1BalancedSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -478,14 +478,14 @@ func TestRSDP1SmallSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -847,14 +847,14 @@ func TestRSDP1FastSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -1268,14 +1268,14 @@ func TestRSDP3BalancedSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_3_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -1673,14 +1673,14 @@ func TestRSDP3SmallSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_3_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -2238,14 +2238,14 @@ func TestRSDP3FastSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_3_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -2826,14 +2826,14 @@ func TestRSDP5BalancedSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_5_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -3399,14 +3399,14 @@ func TestRSDP5SmallSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_5_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -4194,14 +4194,14 @@ func TestRSDP5FastSign(t *testing.T) {
 		},
 	}
 	for _, test := range test_vector {
-		pk := vanilla.Pub{SeedPK: test.Pk, S: test.S}
-		key := vanilla.KeyPair{Pri: test.Sk, Pub: pk}
+		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
+		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
 		cross, err := vanilla.NewCROSS(common.RSDP_5_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
 		m := []byte("Hello, World!")
-		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Pri, m)
+		signature, err := cross.DummySign(test.Salt, test.Root_seed, key.Sk, m)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}

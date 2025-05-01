@@ -19,7 +19,7 @@ func TestBitFlip(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate key: %v", err)
 	}
-	signature, err := cross.Sign(key.Pri, msg)
+	signature, err := cross.Sign(key.Sk, msg)
 	if err != nil {
 		t.Fatalf("Failed to sign message: %v", err)
 	}
@@ -30,7 +30,7 @@ func TestBitFlip(t *testing.T) {
 	}
 
 	verify := func(sig *vanilla.Signature) bool {
-		ok, err := cross.Verify(key.Pub, msg, *sig)
+		ok, err := cross.Verify(key.Pk, msg, *sig)
 		return err == nil && ok
 	}
 

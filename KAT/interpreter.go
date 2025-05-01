@@ -236,14 +236,14 @@ func WriteRespFiles(filesData []FileData) {
 			}
 			fmt.Println("Key pair generated successfully")
 
-			signature, err := cross.DummySign(fileData.Salt[i], fileData.Root_seed[i], keypair.Pri, fileData.Msg[i])
+			signature, err := cross.DummySign(fileData.Salt[i], fileData.Root_seed[i], keypair.Sk, fileData.Msg[i])
 			if err != nil {
 				log.Fatalf("Error signing message: %v", err)
 			}
 			fmt.Println("Signature generated successfully")
 
 			//Verify just to be sure
-			verified, err := cross.Verify(keypair.Pub, fileData.Msg[i], signature)
+			verified, err := cross.Verify(keypair.Pk, fileData.Msg[i], signature)
 			if err != nil {
 				log.Fatalf("Error verifying signature: %v", err)
 			}
@@ -255,7 +255,7 @@ func WriteRespFiles(filesData []FileData) {
 			fmt.Fprintf(writer, "mlen = %d\n", fileData.Mlen[i])
 			fmt.Fprintf(writer, "msg = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Msg[i])))
 			fmt.Fprintf(writer, "pk = %s\n", strings.ToUpper(hex.EncodeToString(keypair.SeedPK))+strings.ToUpper(hex.EncodeToString(keypair.S)))
-			fmt.Fprintf(writer, "sk = %s\n", strings.ToUpper(hex.EncodeToString(keypair.Pri)))
+			fmt.Fprintf(writer, "sk = %s\n", strings.ToUpper(hex.EncodeToString(keypair.Sk)))
 			fmt.Fprintf(writer, "smlen = %d\n", fileData.Smlen[i])
 			fmt.Fprintf(writer, "sm = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Msg[i]))+strings.ToUpper(hex.EncodeToString(signature.ToBytes())))
 			fmt.Fprintf(writer, "root_seed = %s\n", strings.ToUpper(hex.EncodeToString(fileData.Root_seed[i])))
