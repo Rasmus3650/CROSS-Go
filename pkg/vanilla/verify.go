@@ -6,14 +6,6 @@ import (
 	"fmt"
 )
 
-func (c *CROSSInstance[T, P]) int16ToT(arr []int) []T {
-	res := make([]T, len(arr))
-	for i := range arr {
-		res[i] = T(arr[i])
-	}
-	return res
-}
-
 // TODO: Check if we are allowed to bail out early, maybe should wait till final check
 func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, error) {
 	// Length checks for all attributes of the signature

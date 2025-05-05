@@ -175,7 +175,7 @@ func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
 	for i := 0; i < c.ProtocolData.K; i++ {
 		idx := i * first_val
 		e_i := FP_DOUBLE_PREC[T, P](e[i])
-		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
+		for j := 0; j < first_val; j++ {
 			result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*FP_DOUBLE_PREC[T, P](V_tr[idx+j])))
 		}
 	}

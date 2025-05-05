@@ -292,14 +292,6 @@ func (c *CROSSInstance[T, P]) byteToT(arr []byte) []T {
 	return res
 }
 
-func (c *CROSSInstance[T, P]) uint16ToT(arr []uint16) []T {
-	res := make([]T, len(arr))
-	for i := range arr {
-		res[i] = T(arr[i])
-	}
-	return res
-}
-
 func (c *CROSSInstance[T, P]) TtoByte(arr []T) []byte {
 	res := make([]byte, len(arr))
 	for i := range arr {
