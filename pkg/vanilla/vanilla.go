@@ -11,8 +11,8 @@ import (
 type CROSSAllMethods interface {
 	GetProtocolData() common.ProtocolData
 	GetTreeParams() common.TreeParams
-	KeyGen() (KeyPair, error)
-	DummyKeyGen(seed_sk []byte) (KeyPair, error)
+	KeyGen() KeyPair
+	DummyKeyGen(seed_sk []byte) KeyPair
 	Sign(sk, msg []byte) (Signature, error)
 	DummySign(salt, root_seed, sk, msg []byte) (Signature, error)
 	Verify(pk Pk, m []byte, sig Signature) (bool, error)

@@ -374,10 +374,7 @@ func TestKeyGenRSDP(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	pk, err := cross.DummyKeyGen(seed)
-	if err != nil {
-		t.Fatalf("Error generating dummy key: %v", err)
-	}
+	pk := cross.DummyKeyGen(seed)
 	fmt.Println(pk)
 }
 
@@ -387,10 +384,7 @@ func TestKeyGenRSDPG(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
-	pk, err := cross.DummyKeyGen(seed)
-	if err != nil {
-		t.Fatalf("Error generating dummy key: %v", err)
-	}
+	pk := cross.DummyKeyGen(seed)
 	fmt.Println(pk)
 }
 
@@ -713,10 +707,8 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 		},
 	}
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -841,10 +833,8 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -968,10 +958,8 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1097,10 +1085,8 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1224,10 +1210,8 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1352,10 +1336,8 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1482,10 +1464,8 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1610,10 +1590,8 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1738,10 +1716,8 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1868,10 +1844,8 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -1998,10 +1972,8 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2126,10 +2098,8 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2255,10 +2225,8 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2385,10 +2353,8 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2513,10 +2479,8 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2643,10 +2607,8 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2773,10 +2735,8 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
+
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}
@@ -2901,10 +2861,7 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 	}
 
 	for _, test := range seedList {
-		pk, err := cross.DummyKeyGen(test.seed)
-		if err != nil {
-			t.Fatalf("Error generating dummy key: %v", err)
-		}
+		pk := cross.DummyKeyGen(test.seed)
 		if !bytes.Equal(pk.Sk, test.seed) {
 			t.Fatalf("Error in private key")
 		}

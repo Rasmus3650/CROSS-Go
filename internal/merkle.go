@@ -118,7 +118,6 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) [][]byte {
 		flag_tree := c.label_leaves(chall_2)
 		published := 0
 		start_node := c.TreeParams.LSI[0]
-		// -1 in len?
 		for level := len(c.TreeParams.NPL) - 1; level > 0; level-- {
 			for i := c.TreeParams.NPL[level] - 2; i >= 0; i -= 2 {
 				current_node := start_node + i

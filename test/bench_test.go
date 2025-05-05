@@ -40,14 +40,14 @@ import (
 func BenchmarkKeyGen(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-		_, _ = cross.KeyGen()
+		_ = cross.KeyGen()
 	}
 }
 
 func BenchmarkSign(b *testing.B) {
 	msg := []byte("Hello, world!")
 	cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	keys, _ := cross.KeyGen()
+	keys := cross.KeyGen()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -58,7 +58,7 @@ func BenchmarkSign(b *testing.B) {
 func BenchmarkVerify(b *testing.B) {
 	msg := []byte("Hello, world!")
 	cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-	keys, _ := cross.KeyGen()
+	keys := cross.KeyGen()
 	sig, _ := cross.Sign(keys.Sk, msg)
 
 	b.ResetTimer()

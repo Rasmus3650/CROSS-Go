@@ -28,12 +28,11 @@ func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]T, []byte) {
 	}
 }
 
-func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
+func (c *CROSSInstance[T, P]) KeyGen() KeyPair {
 	seed_sk := make([]byte, (2*c.ProtocolData.Lambda)/8)
-	_, err := rand.Read(seed_sk)
-	if err != nil {
-		return KeyPair{}, err
-	}
+	//rand.Read can return an error, but according to documentation it never returns an error
+	// according to the documentation, rand.Read can only error on very old linux systems, and this should crash the program completely
+	rand.Read(seed_sk)
 	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
@@ -43,7 +42,7 @@ func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}
 
 	} else {
 		e_G_bar := c.CSPRNG_fz_inf_w(seed_e)
@@ -52,12 +51,12 @@ func (c *CROSSInstance[T, P]) KeyGen() (KeyPair, error) {
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}
 	}
 }
 
 // Dummy KeyGen function for testing purposes ONLY
-func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
+func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) KeyPair {
 	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
@@ -67,7 +66,7 @@ func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}
 
 	} else {
 		e_G_bar := c.CSPRNG_fz_inf_w(seed_e)
@@ -76,6 +75,6 @@ func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) (KeyPair, error) {
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
 		S := c.Pack_fp_syn(s)
-		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}, nil
+		return KeyPair{Sk: seed_sk, Pk: Pk{SeedPK: seed_pk, S: S}}
 	}
 }

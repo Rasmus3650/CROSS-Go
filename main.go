@@ -12,10 +12,8 @@ func test() {
 		panic(err)
 	}
 	// Generate keys
-	keys, err := cross.KeyGen()
-	if err != nil {
-		panic(err)
-	}
+	keys := cross.KeyGen()
+
 	// Sign a message
 	msg := []byte("Hello, world!")
 	sig, err := cross.Sign(keys.Sk, msg)

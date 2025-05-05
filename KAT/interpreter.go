@@ -230,10 +230,7 @@ func WriteRespFiles(filesData []FileData) {
 			if err != nil {
 				log.Fatalf("Error creating CROSS instance: %v", err)
 			}
-			keypair, err := cross.DummyKeyGen(fileData.Sk[i])
-			if err != nil {
-				log.Fatalf("Error generating key pair: %v", err)
-			}
+			keypair := cross.DummyKeyGen(fileData.Sk[i])
 			fmt.Println("Key pair generated successfully")
 
 			signature, err := cross.DummySign(fileData.Salt[i], fileData.Root_seed[i], keypair.Sk, fileData.Msg[i])

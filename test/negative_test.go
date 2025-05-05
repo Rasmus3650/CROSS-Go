@@ -15,10 +15,7 @@ func TestBitFlip(t *testing.T) {
 	}
 	msg := make([]byte, 32)
 	rand.Read(msg)
-	key, err := cross.KeyGen()
-	if err != nil {
-		t.Fatalf("Failed to generate key: %v", err)
-	}
+	key := cross.KeyGen()
 	signature, err := cross.Sign(key.Sk, msg)
 	if err != nil {
 		t.Fatalf("Failed to sign message: %v", err)

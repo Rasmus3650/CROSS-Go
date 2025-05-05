@@ -25,7 +25,7 @@ func main() {
 	result := testing.Benchmark(func(b *testing.B) {
 		msg := []byte("Hello, world!")
 		cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-		keys, _ := cross.KeyGen()
+		keys := cross.KeyGen()
 		b.ResetTimer()
 		for i := 0; i < 100; i++ {
 			_, _ = cross.Sign(keys.Sk, msg)
