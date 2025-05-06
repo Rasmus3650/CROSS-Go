@@ -6,6 +6,61 @@ import (
 	"fmt"
 )
 
+func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
+	sig := Signature{}
+	offset := 0
+	lambdaBytes := c.ProtocolData.Lambda / 8
+
+	// Helper to slice and advance offset
+	readBytes := func(n int) []byte {
+		data := inp[offset : offset+n]
+		offset += n
+		return data
+	}
+
+	sig.Salt = readBytes(2 * lambdaBytes)
+	sig.Digest_cmt = readBytes(2 * lambdaBytes)
+	sig.Digest_chall_2 = readBytes(2 * lambdaBytes)
+
+	// Determine count for Path and Proof
+	var treeCount int
+	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
+		treeCount = c.ProtocolData.TREE_NODES_TO_STORE
+	} else {
+		treeCount = c.ProtocolData.W
+	}
+
+	sig.Path = make([][]byte, treeCount)
+	for i := 0; i < treeCount; i++ {
+		sig.Path[i] = readBytes(lambdaBytes)
+	}
+
+	sig.Proof = make([][]byte, treeCount)
+	for i := 0; i < treeCount; i++ {
+		sig.Proof[i] = readBytes(2 * lambdaBytes)
+	}
+
+	// Parse Resp_0
+	resp0Count := c.ProtocolData.T - c.ProtocolData.W
+	sig.Resp_0 = make([]resp_0_struct, resp0Count)
+	for i := 0; i < resp0Count; i++ {
+		r0 := resp_0_struct{}
+		r0.Y = readBytes(c.DenselyPackedFpVecSize())
+
+		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			r0.V_bar = readBytes(c.DenselyPackedFzVecSize())
+		} else {
+			r0.V_G_bar = readBytes(c.DenselyPackedFzRSDPGVecSize())
+		}
+		sig.Resp_0[i] = r0
+	}
+
+	// Parse Resp_1
+	sig.Resp_1 = readBytes(resp0Count * (2 * c.ProtocolData.Lambda / 8))
+
+	return sig
+}
+
 // TODO: Check if we are allowed to bail out early, maybe should wait till final check
 func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, error) {
 	// Length checks for all attributes of the signature
