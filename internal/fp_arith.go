@@ -166,23 +166,47 @@ func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []T) []T {
 
 		return result
 	}
-*/
 
+	func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
+		result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+		first_val := (c.ProtocolData.N - c.ProtocolData.K)
+		copy(result, e[c.ProtocolData.K:])
+		for i := 0; i < c.ProtocolData.K; i++ {
+			idx := i * first_val
+			e_i := FP_DOUBLE_PREC[T, P](e[i])
+			for j := 0; j < first_val; j++ {
+				result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*FP_DOUBLE_PREC[T, P](V_tr[idx+j])))
+			}
+		}
+
+		return result
+	}
+*/
 func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
-	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
-	first_val := (c.ProtocolData.N - c.ProtocolData.K)
-	copy(result, e[c.ProtocolData.K:])
+	n_minus_k := c.ProtocolData.N - c.ProtocolData.K
+	res_dprec := make([]P, n_minus_k)
+	e_new := make([]P, c.ProtocolData.N)
+	for i := 0; i < c.ProtocolData.N; i++ {
+		e_new[i] = FP_DOUBLE_PREC[T, P](e[i])
+	}
+	for i := 0; i < n_minus_k; i++ {
+		res_dprec[i] = e_new[c.ProtocolData.K+i]
+	}
 	for i := 0; i < c.ProtocolData.K; i++ {
-		idx := i * first_val
-		e_i := FP_DOUBLE_PREC[T, P](e[i])
-		for j := 0; j < first_val; j++ {
-			result[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](result[j]) + e_i*FP_DOUBLE_PREC[T, P](V_tr[idx+j])))
+		for j := 0; j < n_minus_k; j++ {
+			res_dprec[j] += c.FPRED_SINGLE(e_new[i] * FP_DOUBLE_PREC[T, P](V_tr[i*(n_minus_k)+j]))
+			if i == c.ProtocolData.P-1 {
+				res_dprec[j] = c.FPRED_SINGLE(res_dprec[j])
+			}
 		}
 	}
-
-	return result
+	res := make([]T, c.ProtocolData.N-c.ProtocolData.K)
+	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
+		//T conversion here is custom but needed due to Go type
+		res[i] = T(c.FPRED_SINGLE(res_dprec[i]))
+	}
+	return res
 }
-
 func (c *CROSS[T, P]) Fp_synd_minus_fp_vec_scaled(y_prime_H []T, chall_1 T, s []T) []T {
 	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
