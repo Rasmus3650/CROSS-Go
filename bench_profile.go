@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func main() {
+func test1() {
 	// Create the CPU profile file
 	f, err := os.Create("cpu.prof")
 	if err != nil {
