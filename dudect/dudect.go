@@ -43,6 +43,7 @@ func prepare_inputs_sign() (input_data [][]byte, classes []int) {
 		}
 		return
 	}
+	return
 }
 
 // TODO: unflatten signature
@@ -67,19 +68,24 @@ func prepare_inputs_verify() (input_data [][]byte, classes []int) {
 		if classes[i] == 0 {
 			// Class 0: valid signature
 			signature, _ := cross.Sign(keys.Sk, message)
-			copy(input_data[i][32:], signature)
+			signature_bytes := signature.ToBytes()
+			copy(input_data[i][32:], signature_bytes)
 		} else if classes[i] == 1 {
 			// Class 1: valid signature, but invalid message
 			signature, _ := cross.Sign(keys.Sk, message)
-			copy(input_data[i][32:], signature)
+			signature_bytes := signature.ToBytes()
+			copy(input_data[i][32:], signature_bytes)
 		} else if classes[i] == 2 {
 			// Class 2: valid message, but invalid signature
 			signature, _ := cross.Sign(keys.Sk, message)
-			// flip a random bit in the signature
-			bit, _ := rand.Int(rand.Reader, big.NewInt(signature_size))
+			signature_bytes := signature.ToBytes()
+			copy(input_data[i][32:], signature_bytes)
+			// Select a random byte to flip
+			bite, _ := rand.Int(rand.Reader, big.NewInt(int64(len(signature_bytes))))
+			bit, _ := rand.Int(rand.Reader, big.NewInt(9))
 			//TODO: fix this to flip properly in signature, need language server
-			signature[bit] ^= 1
-			copy(input_data[i][32:], signature)
+			signature_bytes[bite.Int64()] ^= 1 << bit.Int64()
+			copy(input_data[i][32:], signature_bytes)
 		} else if classes[i] == 3 {
 			// Class 3: Completely invalid signature, assume bytes of random data is invalid
 			signature := make([]byte, signature_size)
@@ -90,7 +96,8 @@ func prepare_inputs_verify() (input_data [][]byte, classes []int) {
 			message = make([]byte, 32)
 			copy(message, "Hello World!")
 			signature, _ := cross.Sign(keys.Sk, message)
-			copy(input_data[i][32:], signature)
+			signature_bytes := signature.ToBytes()
+			copy(input_data[i][32:], signature_bytes)
 		}
 	}
 	return
@@ -102,6 +109,6 @@ func do_one_computation_verify(data []byte) {
 	message := data[:32]
 	// Extract the signature from the data
 	signature_raw := data[32:]
-	signature := &vanilla.Signature{}
+	signature := cross.ToSig(signature_raw)
 	_, _ = cross.Verify(keys.Pk, message, signature)
 }
