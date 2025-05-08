@@ -4,7 +4,6 @@ import (
 	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
 	"bytes"
-	"fmt"
 	"testing"
 )
 
@@ -366,8 +365,7 @@ func TestExpandPkRSDPG(t *testing.T) {
 			t.Fatalf("W_mat[%d] = %d, expected %d", i, v, c_W_mat[i])
 		}
 	}
-}*/
-
+}
 func TestKeyGenRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
@@ -387,6 +385,7 @@ func TestKeyGenRSDPG(t *testing.T) {
 	pk := cross.DummyKeyGen(seed)
 	fmt.Println(pk)
 }
+*/
 
 func intToUint8(arr []int) []uint8 {
 	result := make([]uint8, len(arr))
@@ -1853,8 +1852,6 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 			t.Fatalf("Error in seed pk")
 		}
 		if !bytes.Equal(pk.S, test.S) {
-			fmt.Println(pk.S)
-			fmt.Println(test.S)
 			t.Fatalf("Error in S")
 		}
 	}
@@ -2234,8 +2231,6 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 			t.Fatalf("Error in seed pk")
 		}
 		if !bytes.Equal(pk.S, test.S) {
-			fmt.Println(pk.S)
-			fmt.Println(test.S)
 			t.Fatalf("Error in S")
 		}
 	}
@@ -2616,8 +2611,6 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 			t.Fatalf("Error in seed pk")
 		}
 		if !bytes.Equal(pk.S, test.S) {
-			fmt.Println(pk.S)
-			fmt.Println(test.S)
 			t.Fatalf("Error in S")
 		}
 	}
