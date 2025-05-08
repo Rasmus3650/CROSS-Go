@@ -1,28 +1,44 @@
 package dudect
 
 import (
+	"PQC-Master-Thesis/internal/common"
 	"PQC-Master-Thesis/pkg/vanilla"
 	"crypto/rand"
+	"math/big"
 )
 
-cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
-keys, _ := cross.KeyGen()
-signature_size := 13152
+var cross vanilla.CROSSInstance[uint8, uint16]
+var keys vanilla.KeyPair
+
+const signature_size = 13152
+
+// TODO: remove this constant
+const number_measurements = 1000
+
+func init() {
+	//Careful when testing RSDP-G, the type assertion below will fail
+	tmp, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	cross = *tmp.(*vanilla.CROSSInstance[uint8, uint16])
+	keys = cross.KeyGen()
+}
+
 // TODO: flatten signature to byte array when we generate valid ones
 func prepare_inputs_sign() (input_data [][]byte, classes []int) {
 	input_data = make([][]byte, number_measurements)
 	classes = make([]int, number_measurements)
 	for i := 0; i < number_measurements; i++ {
 		//all messages should be valid to sign, doesn't make sense to test with no data
-		classes[i] = rand.Int(2)
+		temp, _ := rand.Int(rand.Reader, big.NewInt(2))
+		classes[i] = int(temp.Int64())
 		if classes[i] == 0 {
 			// Class 0: fixed message
-			message[i] = make([]byte, "Hello World!")
-			input_data[i] = message[i]
+			message := []byte("Hello World!")
+			input_data[i] = message
 		} else {
 			// Class 1: random message
-			msg_length := rand.Int(5000) + 1
-			input_data[i] = make([]byte, 5000)
+			temp_msg_length, _ := rand.Int(rand.Reader, big.NewInt(5000))
+			msg_length := int(temp_msg_length.Int64()) + 1
+			input_data[i] = make([]byte, msg_length)
 			_, _ = rand.Read(input_data[i])
 		}
 		return
@@ -43,36 +59,38 @@ func prepare_inputs_verify() (input_data [][]byte, classes []int) {
 		input_data[i] = make([]byte, innerLength)
 	}
 	for i := 0; i < number_measurements; i++ {
-		classes[i] = rand.Int(5)
-		message[i] = make([]byte, 32)
-		_, _ = rand.Read(message[i])
-		input_data[i][:32] = message[i]
+		temp, _ := rand.Int(rand.Reader, big.NewInt(5))
+		classes[i] = int(temp.Int64())
+		message := make([]byte, 32)
+		_, _ = rand.Read(message)
+		copy(input_data[i][:32], message)
 		if classes[i] == 0 {
 			// Class 0: valid signature
-			signature, _ := cross.Sign(keys.Sk, message[i])
-			input_data[i][32:] = signature
+			signature, _ := cross.Sign(keys.Sk, message)
+			copy(input_data[i][32:], signature)
 		} else if classes[i] == 1 {
 			// Class 1: valid signature, but invalid message
-			signature, _ := cross.Sign(keys.Sk, message[i])
-			input_data[i][32:] = signature
+			signature, _ := cross.Sign(keys.Sk, message)
+			copy(input_data[i][32:], signature)
 		} else if classes[i] == 2 {
 			// Class 2: valid message, but invalid signature
-			signature, _ := cross.Sign(keys.Sk, message[i])
+			signature, _ := cross.Sign(keys.Sk, message)
 			// flip a random bit in the signature
-			bit := rand.Int(signature_size)
-
+			bit, _ := rand.Int(rand.Reader, big.NewInt(signature_size))
 			//TODO: fix this to flip properly in signature, need language server
 			signature[bit] ^= 1
-			input_data[i][32:] = signature
+			copy(input_data[i][32:], signature)
 		} else if classes[i] == 3 {
 			// Class 3: Completely invalid signature, assume bytes of random data is invalid
-			input_data[i][32:] = make([]byte, signature_size)
+			signature := make([]byte, signature_size)
 			_, _ = rand.Read(input_data[i])
+			copy(input_data[i][32:], signature)
 		} else if classes[i] == 4 {
 			// Class 4: fixed message, valid signature
-			message[i] = make([]byte, 32)
-			copy(message[i], "Hello World!")
-			signature, _ := cross.Sign(keys.Sk, message[i])
+			message = make([]byte, 32)
+			copy(message, "Hello World!")
+			signature, _ := cross.Sign(keys.Sk, message)
+			copy(input_data[i][32:], signature)
 		}
 	}
 	return
