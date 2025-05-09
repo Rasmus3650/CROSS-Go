@@ -37,7 +37,6 @@ func prepare_inputs() (input_data [][]byte, classes []int) {
 			input_data[i] = make([]byte, msg_length)
 			_, _ = rand.Read(input_data[i])
 		}
-		return
 	}
 	return
 }
@@ -66,7 +65,7 @@ func prepare_inputs_verify() (input_data [][]byte, classes []int) {
 			copy(input_data[i][32:], signature_bytes)
 		} else if classes[i] == 1 {
 			// Class 1: valid signature, but invalid message
-			signature, _ := cross.Sign(keys.Sk, message)
+			signature, _ := cross.Sign(keys.Sk, message[:16])
 			signature_bytes := signature.ToBytes()
 			copy(input_data[i][32:], signature_bytes)
 		} else if classes[i] == 2 {
