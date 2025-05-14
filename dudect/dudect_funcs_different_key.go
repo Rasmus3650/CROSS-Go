@@ -36,7 +36,7 @@ func prepare_inputs() (input_data [][]byte, classes []int) {
 		} else {
 			// Class 1: random message
 			msg_length := 12
-			message = make([]byte, msg_length)
+			message := make([]byte, msg_length)
 			_, _ = rand.Read(message)
 			input_data[i] = make([]byte, secret_key_size_dudect + 12)
 			copy(input_data[i][:12], message)
