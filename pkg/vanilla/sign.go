@@ -22,7 +22,7 @@ type Signature struct {
 	Resp_0         []resp_0_struct
 }
 
-func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]T, []byte, []byte, []byte) {
+func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]P, []byte, []byte, []byte) {
 	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 

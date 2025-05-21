@@ -141,7 +141,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 	cmt_1 := make([]byte, c.ProtocolData.T*(2*c.ProtocolData.Lambda/8))
 	e_bar_prime := make([]byte, c.ProtocolData.N)
 	u_prime := make([]T, c.ProtocolData.N)
-	y_prime := make([]T, c.ProtocolData.N)
+	y_prime := make([]P, c.ProtocolData.N)
 	y_prime_H := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	s_prime := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	y := make([]T, c.ProtocolData.T*c.ProtocolData.N)

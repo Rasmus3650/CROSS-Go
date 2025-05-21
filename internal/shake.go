@@ -92,8 +92,8 @@ func RoundUp(amount, roundAmt uint) uint {
 	return ((amount + roundAmt - 1) / roundAmt) * roundAmt
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []T {
-	res := make([]T, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
+func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []P {
+	res := make([]P, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	//CSPRNG_buffer := make([]uint8, RoundUp(uint(bitsVCTRng), 8)/8)
@@ -121,8 +121,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []T {
 			bits_in_sub_buf += 8 * refresh_amount
 			pos_remaining -= refresh_amount
 		}
-		res[placed] = T(sub_buffer & uint64(FP_ELEM_mask))
-		if res[placed] < T(c.ProtocolData.P) {
+		res[placed] = P(sub_buffer & uint64(FP_ELEM_mask))
+		if res[placed] < P(c.ProtocolData.P) {
 			placed++
 		}
 		sub_buffer >>= BITS_FOR_P
@@ -131,8 +131,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []T {
 	return res
 }
 
-func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) []T {
-	res := make([]T, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
+func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) []P {
+	res := make([]P, c.ProtocolData.K*(c.ProtocolData.N-c.ProtocolData.K))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (uint(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
 	//CSPRNG_buffer := make([]uint8, RoundUp(uint(bitsVCTRng), 8)/8)
@@ -160,8 +160,8 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) []T {
 			bits_in_sub_buf += 8 * refresh_amount
 			pos_remaining -= refresh_amount
 		}
-		res[placed] = T(sub_buffer & uint64(FP_ELEM_mask))
-		if res[placed] < T(c.ProtocolData.P) {
+		res[placed] = P(sub_buffer & uint64(FP_ELEM_mask))
+		if res[placed] < P(c.ProtocolData.P) {
 			placed++
 		}
 		sub_buffer >>= BITS_FOR_P

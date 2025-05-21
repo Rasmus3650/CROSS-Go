@@ -92,10 +92,10 @@ func (c *CROSS[T, P]) Convert_restr_vec_to_fp(in []byte) []T {
 	return result
 }
 
-func (c *CROSS[T, P]) Fp_vec_by_fp_vec_pointwise(a, b []T) []T {
-	result := make([]T, c.ProtocolData.N)
+func (c *CROSS[T, P]) Fp_vec_by_fp_vec_pointwise(a, b []T) []P {
+	result := make([]P, c.ProtocolData.N)
 	for i := 0; i < c.ProtocolData.N; i++ {
-		result[i] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](T(a[i])) * FP_DOUBLE_PREC[T, P](b[i])))
+		result[i] = P(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](T(a[i])) * FP_DOUBLE_PREC[T, P](b[i])))
 	}
 	return result
 }
@@ -108,14 +108,14 @@ func (c *CROSS[T, P]) Fp_vec_by_restr_vec_scaled(e, u_prime []T, chall_1 T) []T 
 	return result
 }
 
-func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []T) []T {
+func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []P) []T {
 	res := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for i := c.ProtocolData.K; i < c.ProtocolData.N; i++ {
 		res[i-c.ProtocolData.K] = T(c.RESTR_TO_VAL(T(e_bar[i])))
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
 		for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {
-			res[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](res[j]) + FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(T(e_bar[i]))))*FP_DOUBLE_PREC[T, P](V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j])))
+			res[j] = T(c.FPRED_DOUBLE(FP_DOUBLE_PREC[T, P](res[j]) + FP_DOUBLE_PREC[T, P](T(c.RESTR_TO_VAL(T(e_bar[i]))))*V_tr[i*(c.ProtocolData.N-c.ProtocolData.K)+j]))
 		}
 	}
 	return res
@@ -182,19 +182,16 @@ func (c *CROSS[T, P]) Restr_vec_by_fp_matrix(e_bar []byte, V_tr []T) []T {
 		return result
 	}
 */
-func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
+func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []P) []T {
 	n_minus_k := c.ProtocolData.N - c.ProtocolData.K
 	res_dprec := make([]P, n_minus_k)
-	e_new := make([]P, c.ProtocolData.N)
-	for i := 0; i < c.ProtocolData.N; i++ {
-		e_new[i] = FP_DOUBLE_PREC[T, P](e[i])
-	}
 	for i := 0; i < n_minus_k; i++ {
-		res_dprec[i] = e_new[c.ProtocolData.K+i]
+		res_dprec[i] = e[c.ProtocolData.K+i]
 	}
 	for i := 0; i < c.ProtocolData.K; i++ {
+		idx := i * (n_minus_k)
 		for j := 0; j < n_minus_k; j++ {
-			res_dprec[j] += c.FPRED_SINGLE(e_new[i] * FP_DOUBLE_PREC[T, P](V_tr[i*(n_minus_k)+j]))
+			res_dprec[j] += c.FPRED_SINGLE(e[i] * V_tr[idx+j])
 			if i == c.ProtocolData.P-1 {
 				res_dprec[j] = c.FPRED_SINGLE(res_dprec[j])
 			}
@@ -202,7 +199,6 @@ func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []T) []T {
 	}
 	res := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for i := 0; i < c.ProtocolData.N-c.ProtocolData.K; i++ {
-		//T conversion here is custom but needed due to Go type
 		res[i] = T(c.FPRED_SINGLE(res_dprec[i]))
 	}
 	return res

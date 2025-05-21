@@ -15,7 +15,7 @@ type KeyPair struct {
 	Pk
 }
 
-func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]T, []byte) {
+func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]P, []byte) {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 		V_tr := c.CSPRNG_fp_mat(seed_pk)
 		return V_tr, nil
