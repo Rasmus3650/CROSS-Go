@@ -61,7 +61,6 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 	return sig
 }
 
-// TODO: Check if we are allowed to bail out early, maybe should wait till final check
 func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, error) {
 	// Length checks for all attributes of the signature
 	valid_signature := true
@@ -213,14 +212,6 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 	digest_chall_2_prime := c.CSPRNG(y_digest_chall_1, 2*c.ProtocolData.Lambda/8, uint16(32768))
 	does_digest_cmt_match := bytes.Equal(digest_cmt_prime, sig.Digest_cmt)
 	does_digest_chall_2_match := bytes.Equal(digest_chall_2_prime, sig.Digest_chall_2)
-	// fmt.Println("is_signature_ok: ", is_signature_ok)
-	// fmt.Println("does_digest_cmt_match: ", does_digest_cmt_match)
-	// fmt.Println("does_digest_chall_2_match: ", does_digest_chall_2_match)
-	// fmt.Println("is_mtree_padding_ok: ", is_mtree_padding_ok)
-	// fmt.Println("is_stree_padding_ok: ", is_stree_padding_ok)
-	// fmt.Println("is_padd_key_ok: ", is_padd_key_ok)
-	// fmt.Println("is_packed_padd_ok: ", is_packed_padd_ok)
-
 	is_signature_ok = is_signature_ok &&
 		does_digest_cmt_match &&
 		does_digest_chall_2_match &&

@@ -11,7 +11,7 @@ var cross vanilla.CROSSInstance[uint8, uint16]
 var keys vanilla.KeyPair
 
 const signature_size_dudect = 13152
-const secret_key_size_dudect = (2*128)/8
+const secret_key_size_dudect = (2 * 128) / 8
 
 func init() {
 	//Careful when testing RSDP-G, the type assertion below will fail
@@ -29,7 +29,7 @@ func prepare_inputs() (input_data [][]byte, classes []int) {
 		classes[i] = int(temp.Int64())
 		if classes[i] == 0 {
 			// Class 0: fixed message
-			message := make([]byte, secret_key_size_dudect + 12)
+			message := make([]byte, secret_key_size_dudect+12)
 			copy(message[:12], "Hello World!")
 			copy(message[12:], keys.Sk)
 			input_data[i] = message
@@ -38,7 +38,7 @@ func prepare_inputs() (input_data [][]byte, classes []int) {
 			msg_length := 12
 			message := make([]byte, msg_length)
 			_, _ = rand.Read(message)
-			input_data[i] = make([]byte, secret_key_size_dudect + 12)
+			input_data[i] = make([]byte, secret_key_size_dudect+12)
 			copy(input_data[i][:12], message)
 			new_key := cross.KeyGen()
 			copy(input_data[i][12:], new_key.Sk)

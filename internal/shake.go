@@ -387,6 +387,7 @@ func (c *CROSS[T, P]) CSPRNG_fz_inf_w(seed []byte) []byte {
 	}
 	return res
 }
+
 func (c *CROSS[T, P]) CSPRNG_fz_inf_w_prime(state sha3.ShakeHash) ([]byte, sha3.ShakeHash) {
 	res := make([]byte, c.ProtocolData.M)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
@@ -461,11 +462,11 @@ func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash) {
 }
 
 func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) []bool {
-	fixed_weight_string := make([]byte, c.ProtocolData.T)
+	fixed_weight_string := make([]bool, c.ProtocolData.T)
 	dsc_csprng_b := uint16(0 + 3*c.ProtocolData.T)
 	CSPRNG_buffer := c.CSPRNG(digest, int(RoundUp(uint(c.ProtocolData.BITS_CWSTR_RNG), 8)/8), dsc_csprng_b)
 	for i := 0; i < c.ProtocolData.W; i++ {
-		fixed_weight_string[i] = 1
+		fixed_weight_string[i] = true
 	}
 	sub_buffer := uint64(0)
 	for i := 0; i < 8; i++ {
@@ -500,13 +501,5 @@ func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) []bool {
 		sub_buffer >>= uint64(bits_for_pos)
 		bits_in_sub_buf -= bits_for_pos
 	}
-	result := make([]bool, c.ProtocolData.T)
-	for i := 0; i < c.ProtocolData.T; i++ {
-		if fixed_weight_string[i] == 1 {
-			result[i] = true
-		} else {
-			result[i] = false
-		}
-	}
-	return result
+	return fixed_weight_string
 }

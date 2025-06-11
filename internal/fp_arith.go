@@ -203,6 +203,7 @@ func (c *CROSS[T, P]) Fp_vec_by_fp_matrix(e, V_tr []P) []T {
 	}
 	return res
 }
+
 func (c *CROSS[T, P]) Fp_synd_minus_fp_vec_scaled(y_prime_H []T, chall_1 T, s []T) []T {
 	result := make([]T, c.ProtocolData.N-c.ProtocolData.K)
 	for j := 0; j < c.ProtocolData.N-c.ProtocolData.K; j++ {

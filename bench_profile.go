@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func test1() {
+func main() {
 	// Create the CPU profile file
 	f, err := os.Create("cpu.prof")
 	if err != nil {
@@ -37,8 +37,8 @@ func test1() {
 	log.Println(result)
 }
 
-func main() {
-	const iterations = 100
+func test1() {
+	const iterations = 1000
 	var totalKeyGen, totalSign, totalVerify time.Duration
 
 	msg := []byte("Hello, world!")
@@ -76,5 +76,4 @@ func main() {
 	fmt.Printf("Average KeyGen time: %v\n", totalKeyGen/time.Duration(iterations))
 	fmt.Printf("Average Sign time:   %v\n", totalSign/time.Duration(iterations))
 	fmt.Printf("Average Verify time: %v\n", totalVerify/time.Duration(iterations))
-
 }
