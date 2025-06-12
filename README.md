@@ -60,3 +60,11 @@
     ├── sign_rsdpg_test.go
     └── sign_rsdp_test.go
 ```
+
+• Supporting_Documentation
+
+A PDF document will be linked here, which contains the Master's thesis that supports this implementation
+
+• LICENSE.txt
+
+The file containing the public domain license.
