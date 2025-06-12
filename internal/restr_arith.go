@@ -1,6 +1,6 @@
 package internal
 
-import "PQC-Master-Thesis/internal/common"
+import "CROSS-Go/internal/common"
 
 func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {

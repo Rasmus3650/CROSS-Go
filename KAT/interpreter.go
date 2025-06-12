@@ -1,8 +1,8 @@
 package kat
 
 import (
-	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/pkg/vanilla"
+	"CROSS-Go/internal/common"
+	"CROSS-Go/pkg/vanilla"
 	"bufio"
 	"encoding/hex"
 	"fmt"

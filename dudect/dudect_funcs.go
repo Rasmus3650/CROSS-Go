@@ -1,21 +1,25 @@
 package main
 
 import (
-	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/pkg/vanilla"
+	"CROSS-Go/internal/common"
+	"CROSS-Go/pkg/vanilla"
 	"crypto/rand"
 	"math/big"
 )
 
 var cross vanilla.CROSSInstance[uint8, uint16]
+
+// var cross vanilla.CROSSInstance[uint16, uint32]
 var keys vanilla.KeyPair
 
-const signature_size = 13152
+const signature_size = 9120
 
 func init() {
 	//Careful when testing RSDP-G, the type assertion below will fail
-	tmp, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	tmp, _ := vanilla.NewCROSS(common.RSDP_1_FAST)
 	cross = *tmp.(*vanilla.CROSSInstance[uint8, uint16])
+	//tmp, _ := vanilla.NewCROSS(common.RSDP_G_1_SMALL)
+	//cross = *tmp.(*vanilla.CROSSInstance[uint16, uint32])
 	keys = cross.KeyGen()
 }
 
@@ -32,8 +36,7 @@ func prepare_inputs() (input_data [][]byte, classes []int) {
 			input_data[i] = message
 		} else {
 			// Class 1: random message
-			temp_msg_length, _ := rand.Int(rand.Reader, big.NewInt(5000))
-			msg_length := int(temp_msg_length.Int64()) + 1
+			msg_length := 12
 			input_data[i] = make([]byte, msg_length)
 			_, _ = rand.Read(input_data[i])
 		}

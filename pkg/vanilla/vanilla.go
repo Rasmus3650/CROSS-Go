@@ -1,8 +1,8 @@
 package vanilla
 
 import (
-	"PQC-Master-Thesis/internal"
-	"PQC-Master-Thesis/internal/common"
+	"CROSS-Go/internal"
+	"CROSS-Go/internal/common"
 	"fmt"
 
 	"golang.org/x/crypto/sha3"

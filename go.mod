@@ -1,4 +1,4 @@
-module PQC-Master-Thesis
+module CROSS-Go
 
 go 1.23.5
 

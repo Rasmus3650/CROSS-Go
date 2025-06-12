@@ -1,7 +1,7 @@
 package vanilla
 
 import (
-	"PQC-Master-Thesis/internal/common"
+	"CROSS-Go/internal/common"
 	"crypto/rand"
 	"fmt"
 )

@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"PQC-Master-Thesis/internal/common"
+	"CROSS-Go/internal/common"
 	"bytes"
 	"math"
 )

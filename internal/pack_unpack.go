@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"PQC-Master-Thesis/internal/common"
+	"CROSS-Go/internal/common"
 )
 
 func (c *CROSS[T, P]) generic_pack_7_bit(in []T, outlen, inlen int) []uint8 {

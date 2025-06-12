@@ -1,12 +1,11 @@
 package main
 
 import (
-	"PQC-Master-Thesis/internal/common"
-	"PQC-Master-Thesis/pkg/vanilla"
-	"fmt"
+	"CROSS-Go/internal/common"
+	"CROSS-Go/pkg/vanilla"
 )
 
-func test() {
+func main() {
 	// Initialize the CROSS instance
 	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
@@ -29,13 +28,4 @@ func test() {
 	if !ok {
 		panic("Signature verification failed")
 	}
-}
-
-func main() {
-	x := []byte{1, 2, 3, 4, 5}
-	slice := x[:3]
-	fmt.Println("slice: ", slice)
-	slice = append(slice, 6)
-	fmt.Println("x: ", x)
-	fmt.Println("slice: ", slice)
 }

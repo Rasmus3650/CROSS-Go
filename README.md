@@ -1,4 +1,4 @@
-# PQC-Master-Thesis
+# CROSS-Go
 ```
 ├── README.md               # Project documentation, setup instructions
 ├── go.mod                 # Go module definition
