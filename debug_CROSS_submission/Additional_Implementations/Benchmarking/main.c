@@ -4,70 +4,86 @@
 #include <stdlib.h>
 #include "CROSS.h"
 
-//printf(KEYPAIR_SEED_LENGTH_BYTES);
-//printf("CROSS_sig_t size: \n");
-//print("%u", sizeof(CROSS_sig_t));
+void print_array(uint8_t *arr, size_t size) {
+    int ctr = 0;
+    for (size_t i = 0; i < size; i++) {
+        printf("%u, ", arr[i]);
+        ctr++;
+    }
+    printf("\n");
+}
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <stdbool.h>
+void print_pk(FZ_ELEM s[DENSELY_PACKED_FP_SYN_SIZE]){
+    for (int i = 0; i < DENSELY_PACKED_FP_SYN_SIZE; i++) {
+        printf("%u, ", s[i]);
+    }
+    printf("\n");
+    return;
+}
 
-// Placeholder for actual CROSS library
-#include "CROSS.h" // You need to define this based on your CROSS implementation
-
-#define ITERATIONS 1000
-
-// Timing helper
-long long time_diff_ns(struct timespec start, struct timespec end) {
-    return (end.tv_sec - start.tv_sec) * 1000000000LL + (end.tv_nsec - start.tv_nsec);
+void print_large_array(uint8_t *arr, size_t size) {
+    int ctr = 0;
+    for (size_t i = 0; i < size; i++) {
+        if (ctr % 64 == 0){
+            printf("\n");
+        }
+        printf("%u, ", arr[i]);
+        ctr++;
+    }
+    printf("\n");
 }
 
 int main() {
-    long long totalKeyGen = 0;
-    long long totalSign = 0;
-    long long totalVerify = 0;
-
-    const unsigned char msg[] = "Hello, world!";
-    const size_t msg_len = sizeof(msg) - 1;
-
-    for (int i = 0; i < ITERATIONS; i++) {
-        struct timespec start, end;
-        sk_t *SK = malloc(sizeof(sk_t));
-        pk_t *PK = malloc(sizeof(pk_t));
-        // KeyGen timing
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        CROSS_keygen(SK, PK);
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        totalKeyGen += time_diff_ns(start, end);
-
-        // Sign timing
-        CROSS_sig_t *SIG = malloc(sizeof(CROSS_sig_t));
-        if (SIG) {
-            memset(SIG, 0, sizeof(CROSS_sig_t));
-        }
-        
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        CROSS_sign(SK, "Hello, World!", 13, SIG);
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        totalSign += time_diff_ns(start, end);
-
-        // Verify timing
-        clock_gettime(CLOCK_MONOTONIC, &start);
-        int ok = CROSS_verify(PK, "Hello, World!", 13, SIG);
-        clock_gettime(CLOCK_MONOTONIC, &end);
-        totalVerify += time_diff_ns(start, end);
-
-        if (ok != 1) {
-            fprintf(stderr, "Signature verification failed at iteration %d\n", i);
-            continue;
-        }
+    sk_t *SK = malloc(sizeof(sk_t));
+    pk_t *PK = malloc(sizeof(pk_t));
+    CROSS_keygen(SK, PK);
+    printf("seed_SK: \n");
+    print_array(SK->seed_sk, KEYPAIR_SEED_LENGTH_BYTES);
+    printf("seed_PK: \n");
+    print_array(PK->seed_pk, KEYPAIR_SEED_LENGTH_BYTES);
+    printf("PK->s: \n");
+    print_pk(PK->s);
+    CROSS_sig_t *SIG = malloc(sizeof(CROSS_sig_t));
+    if (SIG) {
+        memset(SIG, 0, sizeof(CROSS_sig_t));
     }
-
-    printf("Average KeyGen time: %.2f ms\n", totalKeyGen / (ITERATIONS * 1e6));
-    printf("Average Sign time:   %.2f ms\n", totalSign / (ITERATIONS * 1e6));
-    printf("Average Verify time: %.2f ms\n", totalVerify / (ITERATIONS * 1e6));
-
+    CROSS_sign(SK, "Hello, World!", 13, SIG);
+    printf("------ Signature ------\n");
+    printf("Salt: ");
+    print_array(SIG->salt, SALT_LENGTH_BYTES);
+    printf("\n");
+    printf("Digest CMT: ");
+    print_array(SIG->digest_cmt, HASH_DIGEST_LENGTH);
+    printf("\n");
+    printf("Digest Chall 2: ");
+    print_array(SIG->digest_chall_2, HASH_DIGEST_LENGTH);
+    printf("\n");
+    //Variate next two if in speed
+    printf("Path: \n");
+    print_large_array(SIG->path, TREE_NODES_TO_STORE*SEED_LENGTH_BYTES);
+    //print_large_array(SIG->path, W*SEED_LENGTH_BYTES);
+    printf("\n");
+    printf("Proof: \n");
+    print_large_array(SIG->proof, TREE_NODES_TO_STORE*HASH_DIGEST_LENGTH);
+    //print_large_array(SIG->proof, W*HASH_DIGEST_LENGTH);
+    //
+    printf("\n");
+    printf("Resp 1: \n");
+    for (int i = 0; i < T-W; i++) {
+        print_array(SIG->resp_1[i], HASH_DIGEST_LENGTH);
+    }
+    printf("\n");
+    printf("Resp 0: \n");
+    printf("y: \n");
+    for (int i = 0; i < T-W; i++) {
+        print_array(SIG->resp_0[i].y, DENSELY_PACKED_FP_VEC_SIZE);
+    }
+    printf("v_bar: \n");
+    for (int i = 0; i < T-W; i++) {
+    //print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
+    print_array(SIG->resp_0[i].v_bar, DENSELY_PACKED_FZ_VEC_SIZE);
+    }
+    
+    printf("\n");
     return 0;
 }

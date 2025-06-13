@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-type resp_0_struct struct {
+type Resp_0_struct struct {
 	Y       []byte
 	V_bar   []byte
 	V_G_bar []byte
@@ -19,7 +19,7 @@ type Signature struct {
 	Path           [][]byte
 	Proof          [][]byte
 	Resp_1         []byte
-	Resp_0         []resp_0_struct
+	Resp_0         []Resp_0_struct
 }
 
 func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]P, []byte, []byte, []byte) {
@@ -143,7 +143,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	signature.Proof = proof
 	signature.Path = path
 	published_rsps := 0
-	signature.Resp_0 = make([]resp_0_struct, c.ProtocolData.T-c.ProtocolData.W)
+	signature.Resp_0 = make([]Resp_0_struct, c.ProtocolData.T-c.ProtocolData.W)
 	signature.Resp_1 = make([]byte, (c.ProtocolData.T-c.ProtocolData.W)*((2*c.ProtocolData.Lambda)/8))
 	for i := 0; i < c.ProtocolData.T; i++ {
 		if !chall_2[i] {
@@ -263,7 +263,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 	signature.Proof = proof
 	signature.Path = path
 	published_rsps := 0
-	signature.Resp_0 = make([]resp_0_struct, c.ProtocolData.T-c.ProtocolData.W)
+	signature.Resp_0 = make([]Resp_0_struct, c.ProtocolData.T-c.ProtocolData.W)
 	signature.Resp_1 = make([]byte, (c.ProtocolData.T-c.ProtocolData.W)*((2*c.ProtocolData.Lambda)/8))
 	for i := 0; i < c.ProtocolData.T; i++ {
 		if !chall_2[i] {
@@ -308,7 +308,7 @@ func flattenByteSlices(slices [][]byte) []byte {
 	return total
 }
 
-func flattenResp0(resp []resp_0_struct) []byte {
+func flattenResp0(resp []Resp_0_struct) []byte {
 	var total []byte
 	for _, r := range resp {
 		total = append(total, r.Y...)

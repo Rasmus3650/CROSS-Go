@@ -42,9 +42,9 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 
 	// Parse Resp_0
 	resp0Count := c.ProtocolData.T - c.ProtocolData.W
-	sig.Resp_0 = make([]resp_0_struct, resp0Count)
+	sig.Resp_0 = make([]Resp_0_struct, resp0Count)
 	for i := 0; i < resp0Count; i++ {
-		r0 := resp_0_struct{}
+		r0 := Resp_0_struct{}
 		r0.Y = readBytes(c.DenselyPackedFpVecSize())
 
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
