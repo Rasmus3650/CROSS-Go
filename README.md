@@ -47,7 +47,6 @@
 ├── main.go
 ├── pkg
 │   └── vanilla
-├── PQC-Master-Thesis
 ├── README.md
 └── test
     ├── bench_test.go
