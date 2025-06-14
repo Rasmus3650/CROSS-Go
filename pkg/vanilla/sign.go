@@ -23,7 +23,7 @@ type Signature struct {
 }
 
 func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]P, []byte, []byte, []byte) {
-	dsc := uint16(0 + 3*c.ProtocolData.T + 1)
+	dsc := uint16(3*c.ProtocolData.T + 1)
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 
 		seed_e_seed_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
@@ -59,7 +59,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 	for i := 0; i < c.ProtocolData.T; i++ {
 		var csprng_input []byte
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
-		dsc := uint16(0 + i + (2*c.ProtocolData.T - 1))
+		dsc := uint16(i + (2*c.ProtocolData.T - 1))
 		round_state := c.CSPRNG_init(csprng_input, dsc)
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)
@@ -179,7 +179,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 	for i := 0; i < c.ProtocolData.T; i++ {
 		var csprng_input []byte
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
-		dsc := uint16(0 + i + (2*c.ProtocolData.T - 1))
+		dsc := uint16(i + (2*c.ProtocolData.T - 1))
 		round_state := c.CSPRNG_init(csprng_input, dsc)
 		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
 			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)

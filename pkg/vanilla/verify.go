@@ -149,7 +149,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 	is_signature_ok := true
 	is_packed_padd_ok := true
 	for i := 0; i < c.ProtocolData.T; i++ {
-		domain_sep_csprng := uint16(0 + i + (2*c.ProtocolData.T - 1))
+		domain_sep_csprng := uint16(i + (2*c.ProtocolData.T - 1))
 		domain_sep_hash := uint16(32768 + i + (2*c.ProtocolData.T - 1))
 		if chall_2[i] {
 			copy(cmt_1_i_input, round_seeds[i])

@@ -26,7 +26,7 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 				node := start_node + i
 				left_child := c.LeftChild(node, level)
 				right_child := left_child + 1
-				hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
+				hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(node))
 				t[left_child] = hash[:c.ProtocolData.Lambda/8]
 				t[right_child] = hash[c.ProtocolData.Lambda/8:]
 			}
@@ -78,7 +78,7 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 		for i := 0; i < 4; i++ {
 			dsc_counter += 1
 			copy(csprng_input, tree[i+1])
-			hash := c.CSPRNG(csprng_input, children[i]*(c.ProtocolData.Lambda/8), uint16(0+dsc_counter))
+			hash := c.CSPRNG(csprng_input, children[i]*(c.ProtocolData.Lambda/8), uint16(dsc_counter))
 			for j := 0; j < children[i]; j++ {
 				result = append(result, hash[j*c.ProtocolData.Lambda/8:(j+1)*c.ProtocolData.Lambda/8])
 			}
@@ -187,7 +187,7 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 					pub_nodes++
 				}
 				if T_prime[node] && i < c.TreeParams.NPL[level]-c.TreeParams.LPL[level] {
-					hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(0+node))
+					hash := c.CSPRNG(append(t[node], salt...), (2*c.ProtocolData.Lambda)/8, uint16(node))
 					t[left_child] = hash[:c.ProtocolData.Lambda/8]
 					t[right_child] = hash[c.ProtocolData.Lambda/8:]
 					T_prime[left_child] = true

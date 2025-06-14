@@ -408,7 +408,7 @@ func TestKeygenRSDP(t *testing.T) {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
 	if i, ok := cross.(*vanilla.CROSSInstance[uint8, uint16]); ok {
-		seed_e_pk := i.CSPRNG(seed_sk, (4*i.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+		seed_e_pk := i.CSPRNG(seed_sk, (4*i.GetProtocolData().Lambda)/8, uint16(3*cross.GetProtocolData().T+1))
 		seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
 		seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
 		V_tr, _ := i.Expand_pk(seed_pk)
@@ -449,7 +449,7 @@ func TestKeygenRSDPG(t *testing.T) {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
 	if i, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
-		seed_e_pk := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(0+3*cross.GetProtocolData().T+1))
+		seed_e_pk := cross.CSPRNG(seed_sk, (4*cross.GetProtocolData().Lambda)/8, uint16(3*cross.GetProtocolData().T+1))
 		seed_e := seed_e_pk[:2*cross.GetProtocolData().Lambda/8]
 		seed_pk := seed_e_pk[2*cross.GetProtocolData().Lambda/8:]
 		V_tr, W_mat := cross.Expand_pk(seed_pk)

@@ -99,7 +99,7 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat(seed []byte) []P {
 	//CSPRNG_buffer := make([]uint8, RoundUp(uint(bitsVCTRng), 8)/8)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
 	//TODO: Switch case on the dsc + the real value
-	dsc := uint16(0 + 3*c.ProtocolData.T + 2)
+	dsc := uint16(3*c.ProtocolData.T + 2)
 	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_V_CT_RNG), 8)/8), dsc)
 	placed := 0
 	sub_buffer := uint64(0)
@@ -173,7 +173,7 @@ func (c *CROSS[T, P]) CSPRNG_fp_mat_prime(state sha3.ShakeHash) []P {
 func (c *CROSS[T, P]) CSPRNG_fp_vec(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
 	FP_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.P-1))) - 1
-	dsc := uint16(0 + 2*c.ProtocolData.T - 1)
+	dsc := uint16(2*c.ProtocolData.T - 1)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 1))
 	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FP_CT_RNG), 8)/8), dsc)
 	placed := 0
@@ -245,7 +245,7 @@ func (c *CROSS[T, P]) CSPRNG_fz_vec(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.N)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
-	dsc := uint16(0 + 3*c.ProtocolData.T + 3)
+	dsc := uint16(3*c.ProtocolData.T + 3)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
 	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_N_FZ_CT_RNG), 8)/8), dsc)
 	placed := 0
@@ -318,7 +318,7 @@ func (c *CROSS[T, P]) CSPRNG_fp_vec_chall_1(seed []byte) []T {
 	res := make([]T, c.ProtocolData.T)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FP_ELEM_mask := (T(1) << BitsToRepresent(uint(c.ProtocolData.P-2))) - 1
-	dsc := uint16(0 + 3*c.ProtocolData.T - 1)
+	dsc := uint16(3*c.ProtocolData.T - 1)
 	BITS_FOR_P := BitsToRepresent(uint(c.ProtocolData.P - 2))
 	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_CHALL_1_FPSTAR_CT_RNG), 8)/8), dsc)
 	placed := 0
@@ -355,7 +355,7 @@ func (c *CROSS[T, P]) CSPRNG_fz_inf_w(seed []byte) []byte {
 	res := make([]byte, c.ProtocolData.M)
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
-	dsc := uint16(0 + 3*c.ProtocolData.T + 3)
+	dsc := uint16(3*c.ProtocolData.T + 3)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
 	CSPRNG_buffer := c.CSPRNG(seed, int(RoundUp(uint(c.ProtocolData.BITS_M_FZ_CT_RNG), 8)/8), dsc)
 	placed := 0
@@ -428,7 +428,7 @@ func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash) {
 	res := make([]byte, c.ProtocolData.M*(c.ProtocolData.N-c.ProtocolData.M))
 	// TODO: uint16 for RSDP-G, uint8 for RSDP
 	FZ_ELEM_mask := (uint8(1) << BitsToRepresent(uint(c.ProtocolData.Z-1))) - 1
-	dsc := uint16(0 + 3*c.ProtocolData.T + 2)
+	dsc := uint16(3*c.ProtocolData.T + 2)
 	BITS_FOR_Z := BitsToRepresent(uint(c.ProtocolData.Z - 1))
 	CSPRNG_buffer, state := c.CSPRNG_prime(seed, int(RoundUp(uint(c.ProtocolData.BITS_W_CT_RNG), 8)/8), dsc)
 	placed := 0
@@ -463,7 +463,7 @@ func (c *CROSS[T, P]) CSPRNG_fz_mat(seed []byte) ([]byte, sha3.ShakeHash) {
 
 func (c *CROSS[T, P]) Expand_digest_to_fixed_weight(digest []byte) []bool {
 	fixed_weight_string := make([]bool, c.ProtocolData.T)
-	dsc_csprng_b := uint16(0 + 3*c.ProtocolData.T)
+	dsc_csprng_b := uint16(3 * c.ProtocolData.T)
 	CSPRNG_buffer := c.CSPRNG(digest, int(RoundUp(uint(c.ProtocolData.BITS_CWSTR_RNG), 8)/8), dsc_csprng_b)
 	for i := 0; i < c.ProtocolData.W; i++ {
 		fixed_weight_string[i] = true

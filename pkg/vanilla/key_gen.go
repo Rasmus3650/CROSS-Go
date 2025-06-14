@@ -33,7 +33,7 @@ func (c *CROSSInstance[T, P]) KeyGen() KeyPair {
 	//rand.Read can return an error, but according to documentation it never returns an error
 	// according to the documentation, rand.Read can only error on very old linux systems, and this should crash the program completely
 	rand.Read(seed_sk)
-	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
+	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
 	V_tr, W_mat := c.Expand_pk(seed_pk)
@@ -57,7 +57,7 @@ func (c *CROSSInstance[T, P]) KeyGen() KeyPair {
 
 // Dummy KeyGen function for testing purposes ONLY
 func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) KeyPair {
-	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(0+3*c.ProtocolData.T+1))
+	seed_e_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, uint16(3*c.ProtocolData.T+1))
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
 	V_tr, W_mat := c.Expand_pk(seed_pk)
