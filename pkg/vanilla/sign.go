@@ -1,9 +1,10 @@
 package vanilla
 
 import (
-	"CROSS-Go/internal/common"
 	"crypto/rand"
 	"fmt"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 type Resp_0_struct struct {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func main() {

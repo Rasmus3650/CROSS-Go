@@ -1,6 +1,6 @@
 package internal
 
-import "CROSS-Go/internal/common"
+import "github.com/Rasmus3650/CROSS-Go/internal/common"
 
 func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
 	if c.ProtocolData.Variant() == common.VARIANT_RSDP {

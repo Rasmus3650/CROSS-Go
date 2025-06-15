@@ -1,8 +1,9 @@
 package vanilla
 
 import (
-	"CROSS-Go/internal/common"
 	"crypto/rand"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 type Pk struct {

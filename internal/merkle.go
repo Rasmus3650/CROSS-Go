@@ -1,9 +1,10 @@
 package internal
 
 import (
-	"CROSS-Go/internal/common"
 	"bytes"
 	"math"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) []byte {

@@ -1,13 +1,14 @@
 package test_suite
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"bytes"
 	"crypto/rand"
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 const (

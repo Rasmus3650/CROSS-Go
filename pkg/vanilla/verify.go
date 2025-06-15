@@ -1,9 +1,10 @@
 package vanilla
 
 import (
-	"CROSS-Go/internal/common"
 	"bytes"
 	"fmt"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {

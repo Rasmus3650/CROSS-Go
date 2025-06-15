@@ -1,14 +1,15 @@
 package main
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"fmt"
 	"log"
 	"os"
 	"runtime/pprof"
 	"testing"
 	"time"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func test2() {

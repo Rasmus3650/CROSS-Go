@@ -1,4 +1,4 @@
-module CROSS-Go
+module github.com/Rasmus3650/CROSS-Go
 
 go 1.23.5
 

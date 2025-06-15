@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"CROSS-Go/internal/common"
 	"math"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 func (c *CROSS[T, P]) Leaves(tree [][]byte) [][]byte {

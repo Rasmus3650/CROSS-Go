@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"CROSS-Go/internal/common"
 	"fmt"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 type FP_ELEM interface {

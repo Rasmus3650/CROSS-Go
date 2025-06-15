@@ -1,10 +1,11 @@
 package main
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"crypto/rand"
 	"math/big"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 var cross_inst vanilla.CROSSInstance[uint8, uint16]

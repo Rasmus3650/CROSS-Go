@@ -1,9 +1,10 @@
 package vanilla
 
 import (
-	"CROSS-Go/internal"
-	"CROSS-Go/internal/common"
 	"fmt"
+
+	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 
 	"golang.org/x/crypto/sha3"
 )

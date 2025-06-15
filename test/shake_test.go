@@ -1,10 +1,11 @@
 package test_suite
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"bytes"
 	"testing"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func TestShake128CSPRNG(t *testing.T) {

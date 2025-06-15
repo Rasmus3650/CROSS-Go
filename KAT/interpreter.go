@@ -1,8 +1,6 @@
 package kat
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"bufio"
 	"encoding/hex"
 	"fmt"
@@ -12,6 +10,9 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 type FileData struct {
