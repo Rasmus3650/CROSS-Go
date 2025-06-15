@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -16,7 +16,7 @@ const secret_key_size_dudect = (2 * 128) / 8
 
 func init() {
 	//Careful when testing RSDP-G, the type assertion below will fail
-	tmp, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	tmp, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	cross_inst = *tmp.(*vanilla.CROSSInstance[uint8, uint16])
 	keypair = cross_inst.KeyGen()
 }

@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -27,7 +27,7 @@ func test2() {
 	defer pprof.StopCPUProfile() // Run the benchmark manually
 	result := testing.Benchmark(func(b *testing.B) {
 		msg := []byte("Hello, world!")
-		cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+		cross, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 		keys := cross.KeyGen()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
@@ -46,7 +46,7 @@ func test1() {
 
 	for i := 0; i < iterations; i++ {
 		// KeyGen timing
-		cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+		cross, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 		startKeyGen := time.Now()
 		keys := cross.KeyGen()
 		totalKeyGen += time.Since(startKeyGen)

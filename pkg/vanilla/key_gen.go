@@ -3,7 +3,7 @@ package vanilla
 import (
 	"crypto/rand"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 )
 
 type Pk struct {
@@ -17,10 +17,10 @@ type KeyPair struct {
 }
 
 func (c *CROSSInstance[T, P]) Expand_pk(seed_pk []byte) ([]P, []byte) {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		V_tr := c.CSPRNG_fp_mat(seed_pk)
 		return V_tr, nil
-	} else if c.ProtocolData.Variant() == common.VARIANT_RSDP_G {
+	} else if c.ProtocolData.Variant() == internal.VARIANT_RSDP_G {
 		W_mat, state := c.CSPRNG_fz_mat(seed_pk)
 		V_tr := c.CSPRNG_fp_mat_prime(state)
 		return V_tr, W_mat
@@ -38,7 +38,7 @@ func (c *CROSSInstance[T, P]) KeyGen() KeyPair {
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
 	V_tr, W_mat := c.Expand_pk(seed_pk)
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		e_bar := c.CSPRNG_fz_vec(seed_e)
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)
@@ -62,7 +62,7 @@ func (c *CROSSInstance[T, P]) DummyKeyGen(seed_sk []byte) KeyPair {
 	seed_e := seed_e_pk[:2*c.ProtocolData.Lambda/8]
 	seed_pk := seed_e_pk[2*c.ProtocolData.Lambda/8:]
 	V_tr, W_mat := c.Expand_pk(seed_pk)
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		e_bar := c.CSPRNG_fz_vec(seed_e)
 		temp_s := c.Restr_vec_by_fp_matrix(e_bar, V_tr)
 		s := c.Fp_dz_norm_synd(temp_s)

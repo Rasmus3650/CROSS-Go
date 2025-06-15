@@ -1,9 +1,9 @@
 package internal
 
-import "github.com/Rasmus3650/CROSS-Go/internal/common"
+import "github.com/Rasmus3650/CROSS-Go/internal"
 
 func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return (x & 0x07) + (x >> 3)
 	} else {
 		return (x & 0x7F) + (x >> 7)
@@ -11,7 +11,7 @@ func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
 }
 
 func (c *CROSS[T, P]) FZRED_OPPOSITE(x T) T {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return x ^ 0x07
 	} else {
 		return x ^ 0x7F
@@ -22,7 +22,7 @@ func (c *CROSS[T, P]) FZRED_DOUBLE(x T) T {
 	return c.FZRED_SINGLE(c.FZRED_SINGLE(x))
 }
 func (c *CROSS[T, P]) FZ_DOUBLE_ZERO_NORM(x int) int {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return (((x) + (((x) + 1) >> 3)) & 0x07)
 	} else {
 		return (((x) + (((x) + 1) >> 7)) & 0x7f)

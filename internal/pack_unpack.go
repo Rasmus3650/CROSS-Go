@@ -1,8 +1,6 @@
 package internal
 
-import (
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
-)
+import "github.com/Rasmus3650/CROSS-Go/internal"
 
 func (c *CROSS[T, P]) generic_pack_7_bit(in []T, outlen, inlen int) []uint8 {
 	out := make([]byte, outlen) // Allocate the output array
@@ -124,7 +122,7 @@ func (c *CROSS[T, P]) generic_pack_9_bit(in []T, outlen, inlen int) []uint8 {
 
 func (c *CROSS[T, P]) generic_pack_fp(input_arr []T, out_len, in_len int) []uint8 {
 	var res []uint8
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		res = c.generic_pack_7_bit(input_arr, out_len, in_len)
 	} else {
 		res = c.generic_pack_9_bit(input_arr, out_len, in_len)

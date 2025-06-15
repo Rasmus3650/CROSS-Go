@@ -1,11 +1,9 @@
 package internal
 
-import (
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
-)
+import "github.com/Rasmus3650/CROSS-Go/internal"
 
 func (c *CROSS[T, P]) FPRED_SINGLE(x P) P {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return (x & 0x7F) + (x >> 7)
 	} else {
 		return P(uint64(x) - (((uint64(x) * 2160140723) >> 40) * uint64(c.ProtocolData.P)))
@@ -13,14 +11,14 @@ func (c *CROSS[T, P]) FPRED_SINGLE(x P) P {
 }
 
 func (c *CROSS[T, P]) FPRED_DOUBLE(x P) P {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return c.FPRED_SINGLE(c.FPRED_SINGLE(x))
 	} else {
 		return c.FPRED_SINGLE(x)
 	}
 }
 func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x P) P {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return (x + ((x + 1) >> 7)) & 0x7F
 	} else {
 		return x
@@ -28,7 +26,7 @@ func (c *CROSS[T, P]) FP_DOUBLE_ZERO_NORM(x P) P {
 }
 
 func (c *CROSS[T, P]) FPRED_OPPOSITE(x P) P {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return (x ^ 0x7F)
 	} else {
 		return c.FPRED_SINGLE(FP_DOUBLE_PREC[T, P](T(c.ProtocolData.P)) - x)
@@ -54,7 +52,7 @@ func (c *CROSS[T, P]) FP_ELEM_CMOV(bit T, trueV, falseV uint16) uint32 {
 
 // Might be returning uint16 instead of 8 in RSDP
 func (c *CROSS[T, P]) RESTR_TO_VAL(x T) P {
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		return P((RESTR_G_TABLE >> (8 * uint64(x))))
 	} else {
 		res1 := (c.FP_ELEM_CMOV(((x >> 0) & 1), RESTR_G_GEN_1, 1)) *

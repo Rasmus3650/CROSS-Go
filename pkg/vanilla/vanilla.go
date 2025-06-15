@@ -4,14 +4,13 @@ import (
 	"fmt"
 
 	"github.com/Rasmus3650/CROSS-Go/internal"
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
 
 	"golang.org/x/crypto/sha3"
 )
 
 type CROSSAllMethods interface {
-	GetProtocolData() common.ProtocolData
-	GetTreeParams() common.TreeParams
+	GetProtocolData() internal.ProtocolData
+	GetTreeParams() internal.TreeParams
 	KeyGen() KeyPair
 	DummyKeyGen(seed_sk []byte) KeyPair
 	Sign(sk, msg []byte) (Signature, error)
@@ -45,10 +44,10 @@ type CROSSMethods interface {
 	KeyGen() (KeyPair, error)
 }
 
-func (c *CROSSInstance[T, P]) GetProtocolData() common.ProtocolData {
+func (c *CROSSInstance[T, P]) GetProtocolData() internal.ProtocolData {
 	return c.CROSS.ProtocolData
 }
-func (c *CROSSInstance[T, P]) GetTreeParams() common.TreeParams {
+func (c *CROSSInstance[T, P]) GetTreeParams() internal.TreeParams {
 	return c.CROSS.TreeParams
 }
 
@@ -57,23 +56,23 @@ type CROSSInstance[T internal.FP_ELEM, P internal.FP_PREC] struct {
 }
 
 // NewCROSS creates a new CROSS instance
-func NewCROSS(scheme_identifier common.CONFIG_IDENT) (CROSSAllMethods, error) {
-	protocolData, err := common.GetProtocolConfig(scheme_identifier)
+func NewCROSS(scheme_identifier internal.CONFIG_IDENT) (CROSSAllMethods, error) {
+	protocolData, err := internal.GetProtocolConfig(scheme_identifier)
 	if err != nil {
 		return nil, err
 	}
-	treeParams, err := common.GetTreeParams(scheme_identifier)
+	treeParams, err := internal.GetTreeParams(scheme_identifier)
 	if err != nil {
 		return nil, err
 	}
-	if protocolData.Variant() == common.VARIANT_RSDP {
+	if protocolData.Variant() == internal.VARIANT_RSDP {
 		return &CROSSInstance[uint8, uint16]{
 			CROSS: &internal.CROSS[uint8, uint16]{
 				ProtocolData: protocolData,
 				TreeParams:   treeParams,
 			},
 		}, nil
-	} else if protocolData.Variant() == common.VARIANT_RSDP_G {
+	} else if protocolData.Variant() == internal.VARIANT_RSDP_G {
 		return &CROSSInstance[uint16, uint32]{
 			CROSS: &internal.CROSS[uint16, uint32]{
 				ProtocolData: protocolData,

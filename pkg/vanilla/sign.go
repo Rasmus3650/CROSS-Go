@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 )
 
 type Resp_0_struct struct {
@@ -25,13 +25,13 @@ type Signature struct {
 
 func (c *CROSSInstance[T, P]) Expand_sk(seed_sk []byte) ([]P, []byte, []byte, []byte) {
 	dsc := uint16(3*c.ProtocolData.T + 1)
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 
 		seed_e_seed_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
 		V_tr, _ := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
 		e_bar := c.CSPRNG_fz_vec(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
 		return V_tr, nil, nil, e_bar
-	} else if c.ProtocolData.Variant() == common.VARIANT_RSDP_G {
+	} else if c.ProtocolData.Variant() == internal.VARIANT_RSDP_G {
 		seed_e_seed_pk := c.CSPRNG(seed_sk, (4*c.ProtocolData.Lambda)/8, dsc)
 		V_tr, W_mat := c.Expand_pk(seed_e_seed_pk[2*c.ProtocolData.Lambda/8:])
 		e_G_bar := c.CSPRNG_fz_inf_w(seed_e_seed_pk[:2*c.ProtocolData.Lambda/8])
@@ -62,7 +62,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
 		dsc := uint16(i + (2*c.ProtocolData.T - 1))
 		round_state := c.CSPRNG_init(csprng_input, dsc)
-		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)
 			round_state = state
 			copy(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], e_bar_prime_i)
@@ -86,7 +86,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 		s_prime = c.Fp_vec_by_fp_matrix(u, V_tr)
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
-		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 			s_prime = c.byteToT(c.Pack_fp_syn(s_prime))
 			v_bar_packed := c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 
@@ -152,7 +152,7 @@ func (c *CROSSInstance[T, P]) Sign(sk, msg []byte) (Signature, error) {
 				return Signature{}, fmt.Errorf("Too many responses published")
 			}
 			signature.Resp_0[published_rsps].Y = c.Pack_fp_vec(y[i])
-			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 				signature.Resp_0[published_rsps].V_bar = c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 			} else {
 				signature.Resp_0[published_rsps].V_G_bar = c.Pack_fz_rsdpg_vec(c.byteToT(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M]))
@@ -182,7 +182,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		csprng_input = append(append(csprng_input, round_seeds[i]...), salt...)
 		dsc := uint16(i + (2*c.ProtocolData.T - 1))
 		round_state := c.CSPRNG_init(csprng_input, dsc)
-		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 			e_bar_prime_i, state := c.CSPRNG_fz_vec_prime(round_state)
 			round_state = state
 			copy(e_bar_prime[i*c.ProtocolData.N:(i+1)*c.ProtocolData.N], e_bar_prime_i)
@@ -206,7 +206,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 		s_prime = c.Fp_vec_by_fp_matrix(u, V_tr)
 		s_prime = c.Fp_dz_norm_synd(s_prime)
 		var cmt_0_i_input []byte
-		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 			s_prime = c.byteToT(c.Pack_fp_syn(s_prime))
 			v_bar_packed := c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 
@@ -272,7 +272,7 @@ func (c *CROSSInstance[T, P]) DummySign(salt, root_seed, sk, msg []byte) (Signat
 				return Signature{}, fmt.Errorf("Too many responses published")
 			}
 			signature.Resp_0[published_rsps].Y = c.Pack_fp_vec(y[i])
-			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 				signature.Resp_0[published_rsps].V_bar = c.Pack_fz_vec(c.byteToT(v_bar[i*c.ProtocolData.N : (i+1)*c.ProtocolData.N]))
 			} else {
 				signature.Resp_0[published_rsps].V_G_bar = c.Pack_fz_rsdpg_vec(c.byteToT(v_G_bar[i*c.ProtocolData.M : (i+1)*c.ProtocolData.M]))

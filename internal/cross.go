@@ -2,8 +2,6 @@ package internal
 
 import (
 	"fmt"
-
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 type FP_ELEM interface {
@@ -27,6 +25,6 @@ func FP_DOUBLE_PREC[T FP_ELEM, P FP_PREC](input T) P {
 }
 
 type CROSS[T FP_ELEM, P FP_PREC] struct {
-	ProtocolData common.ProtocolData
-	TreeParams   common.TreeParams
+	ProtocolData internal.ProtocolData
+	TreeParams   TreeParams
 }

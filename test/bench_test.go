@@ -3,7 +3,7 @@ package test_suite
 import (
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -12,7 +12,7 @@ import (
 
 	for i := 0; i < 10; i++ {
 		// Initialize the CROSS instance
-		cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+		cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 		if err != nil {
 			b.Fatalf("failed to initialize CROSS: %v", err)
 		}
@@ -40,14 +40,14 @@ import (
 
 func BenchmarkKeyGen(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+		cross, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 		_ = cross.KeyGen()
 	}
 }
 
 func BenchmarkSign(b *testing.B) {
 	msg := []byte("Hello, world!")
-	cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	cross, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	keys := cross.KeyGen()
 
 	b.ResetTimer()
@@ -58,7 +58,7 @@ func BenchmarkSign(b *testing.B) {
 
 func BenchmarkVerify(b *testing.B) {
 	msg := []byte("Hello, world!")
-	cross, _ := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	cross, _ := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	keys := cross.KeyGen()
 	sig, _ := cross.Sign(keys.Sk, msg)
 

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 )
 
 func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
@@ -25,7 +25,7 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 
 	// Determine count for Path and Proof
 	var treeCount int
-	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
+	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
 		treeCount = c.ProtocolData.TREE_NODES_TO_STORE
 	} else {
 		treeCount = c.ProtocolData.W
@@ -48,7 +48,7 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 		r0 := Resp_0_struct{}
 		r0.Y = readBytes(c.DenselyPackedFpVecSize())
 
-		if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+		if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 			r0.V_bar = readBytes(c.DenselyPackedFzVecSize())
 		} else {
 			r0.V_G_bar = readBytes(c.DenselyPackedFzRSDPGVecSize())
@@ -75,7 +75,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 		valid_signature = false
 	}
 
-	if c.ProtocolData.IsType(common.TYPE_BALANCED, common.TYPE_SMALL) {
+	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
 		if len(sig.Path) != c.ProtocolData.TREE_NODES_TO_STORE {
 			valid_signature = false
 		}
@@ -95,7 +95,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 			if len(sig.Resp_0[i].Y) != c.DenselyPackedFpVecSize() {
 				valid_signature = false
 			}
-			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 				if len(sig.Resp_0[i].V_bar) != c.DenselyPackedFzVecSize() {
 					valid_signature = false
 				}
@@ -124,7 +124,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 	chall_2 := c.Expand_digest_to_fixed_weight(sig.Digest_chall_2)
 	round_seeds, is_stree_padding_ok := c.RebuildLeaves(sig.Path, sig.Salt, chall_2)
 	var cmt_0_i_input []byte
-	if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+	if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 		cmt_0_i_input = make([]byte, int(c.DenselyPackedFpSynSize())+c.DenselyPackedFzVecSize()+(2*c.ProtocolData.Lambda/8))
 		copy(cmt_0_i_input[int(c.DenselyPackedFpSynSize())+c.DenselyPackedFzVecSize():], sig.Salt)
 	} else {
@@ -160,7 +160,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 			copy(csprng_input, round_seeds[i])
 			copy(csprng_input[c.ProtocolData.Lambda/8:], sig.Salt)
 			state := c.CSPRNG_init(csprng_input, domain_sep_csprng)
-			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 				e_bar_prime, _ = c.CSPRNG_fz_vec_prime(state)
 			} else {
 				e_G_bar_prime, _ := c.CSPRNG_fz_inf_w_prime(state)
@@ -174,7 +174,7 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 			temp_val, bool_res := c.Unpack_fp_vec(sig.Resp_0[used_rsps].Y)
 			copy(y[i*c.ProtocolData.N:], temp_val)
 			is_packed_padd_ok = is_packed_padd_ok && bool_res
-			if c.ProtocolData.Variant() == common.VARIANT_RSDP {
+			if c.ProtocolData.Variant() == internal.VARIANT_RSDP {
 				v_bar, bool_res = c.Unpack_fz_vec(sig.Resp_0[used_rsps].V_bar)
 				is_packed_padd_ok = is_packed_padd_ok && bool_res
 				copy(cmt_0_i_input[c.DenselyPackedFpSynSize():], sig.Resp_0[used_rsps].V_bar)

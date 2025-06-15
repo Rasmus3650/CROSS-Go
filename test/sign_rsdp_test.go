@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -225,7 +225,7 @@ func TestRSDP1BalancedSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+		cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -244,14 +244,14 @@ func TestRSDP1BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -481,7 +481,7 @@ func TestRSDP1SmallSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
+		cross, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -500,14 +500,14 @@ func TestRSDP1SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -850,7 +850,7 @@ func TestRSDP1FastSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
+		cross, err := vanilla.NewCROSS(internal.RSDP_1_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -869,14 +869,14 @@ func TestRSDP1FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -1271,7 +1271,7 @@ func TestRSDP3BalancedSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_3_BALANCED)
+		cross, err := vanilla.NewCROSS(internal.RSDP_3_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -1290,14 +1290,14 @@ func TestRSDP3BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -1676,7 +1676,7 @@ func TestRSDP3SmallSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_3_SMALL)
+		cross, err := vanilla.NewCROSS(internal.RSDP_3_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -1695,14 +1695,14 @@ func TestRSDP3SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -2241,7 +2241,7 @@ func TestRSDP3FastSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_3_FAST)
+		cross, err := vanilla.NewCROSS(internal.RSDP_3_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -2260,14 +2260,14 @@ func TestRSDP3FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -2829,7 +2829,7 @@ func TestRSDP5BalancedSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_5_BALANCED)
+		cross, err := vanilla.NewCROSS(internal.RSDP_5_BALANCED)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -2848,14 +2848,14 @@ func TestRSDP5BalancedSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -3402,7 +3402,7 @@ func TestRSDP5SmallSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_5_SMALL)
+		cross, err := vanilla.NewCROSS(internal.RSDP_5_SMALL)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -3421,14 +3421,14 @@ func TestRSDP5SmallSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {
@@ -4197,7 +4197,7 @@ func TestRSDP5FastSign(t *testing.T) {
 	for _, test := range test_vector {
 		pk := vanilla.Pk{SeedPK: test.Pk, S: test.S}
 		key := vanilla.KeyPair{Sk: test.Sk, Pk: pk}
-		cross, err := vanilla.NewCROSS(common.RSDP_5_FAST)
+		cross, err := vanilla.NewCROSS(internal.RSDP_5_FAST)
 		if err != nil {
 			t.Fatal("Err: ", err)
 		}
@@ -4216,14 +4216,14 @@ func TestRSDP5FastSign(t *testing.T) {
 		if !bytes.Equal(test.Digest_chall_2, signature.Digest_chall_2) {
 			t.Fatal("Digest_chall_2 not equal")
 		}
-		new_path := make([]byte, len(common.Flatten(signature.Path)))
+		new_path := make([]byte, len(internal.Flatten(signature.Path)))
 		copy(new_path, test.Path)
-		if !bytes.Equal(new_path, common.Flatten(signature.Path)) {
+		if !bytes.Equal(new_path, internal.Flatten(signature.Path)) {
 			t.Fatal("Path not equal")
 		}
-		new_proof := make([]byte, len(common.Flatten(signature.Proof)))
+		new_proof := make([]byte, len(internal.Flatten(signature.Proof)))
 		copy(new_proof, test.Proof)
-		if !bytes.Equal(new_proof, common.Flatten(signature.Proof)) {
+		if !bytes.Equal(new_proof, internal.Flatten(signature.Proof)) {
 			t.Fatal("Proof not equal")
 		}
 		if !bytes.Equal(test.Resp_1, signature.Resp_1) {

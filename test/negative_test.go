@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func TestBitFlip(t *testing.T) {
-	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Failed to create CROSS: %v", err)
 	}

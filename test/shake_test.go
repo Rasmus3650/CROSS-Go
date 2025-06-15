@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func TestShake128CSPRNG(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Failed to create CROSS: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestShake128CSPRNG(t *testing.T) {
 }
 
 func TestShake256CSPRNG(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_3_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_3_BALANCED)
 	if err != nil {
 		t.Fatalf("Failed to create CROSS: %v", err)
 	}
@@ -63,7 +63,7 @@ func TestShake256CSPRNG(t *testing.T) {
 }
 
 func TestShakeHash(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Failed to create CROSS: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestShakeHash(t *testing.T) {
 /*
 	 outcommented due to csprng_fp_mat outputs T which vanilla.go can't handle
 		func TestFpMat(t *testing.T) {
-			instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+			instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 			if err != nil {
 				t.Errorf("Error creating instance: %v", err)
 			}
@@ -171,7 +171,7 @@ func TestShakeHash(t *testing.T) {
 		}
 */
 func TestFzVec(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	}
@@ -184,7 +184,7 @@ func TestFzVec(t *testing.T) {
 }
 
 func TestFpVec(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	}
@@ -198,7 +198,7 @@ func TestFpVec(t *testing.T) {
 
 /*
 func TestFpVecChall_1(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 	vec, err := instance.CSPRNG_fp_vec_chall_1(seed)
 	if err != nil {
@@ -211,7 +211,7 @@ func TestFpVecChall_1(t *testing.T) {
 }*/
 
 func TestFzInfW(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	}
@@ -223,7 +223,7 @@ func TestFzInfW(t *testing.T) {
 	}
 }
 func TestFzMat(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	}
@@ -263,7 +263,7 @@ func TestFzMat(t *testing.T) {
 }
 
 func TestExpandDigestFixedWeight(t *testing.T) {
-	instance, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	instance, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
 	if err != nil {
 		t.Errorf("Error creating instance: %v", err)
 	}
