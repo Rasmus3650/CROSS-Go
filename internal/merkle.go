@@ -3,8 +3,6 @@ package internal
 import (
 	"bytes"
 	"math"
-
-	"github.com/Rasmus3650/CROSS-Go/internal"
 )
 
 func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) []byte {
@@ -13,7 +11,7 @@ func (c *CROSS[T, P]) TreeRoot(commitments [][]byte) []byte {
 }
 
 func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) [][]byte {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		T := c.placeOnLeaves(commitments)
 		startNode := c.TreeParams.LSI[0]
 		for level := len(c.TreeParams.NPL) - 1; level > 0; level-- {
@@ -29,7 +27,7 @@ func (c *CROSS[T, P]) ComputeMerkleTree(commitments [][]byte) [][]byte {
 			startNode -= c.TreeParams.NPL[level-1]
 		}
 		return T
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		T := make([][]byte, c.ProtocolData.T+5)
 		copy(T[5:c.ProtocolData.T+5], commitments)
 		children := make([]int, 4)
@@ -110,7 +108,7 @@ func (c *CROSS[T, P]) placeOnLeaves(cmt_0 [][]byte) [][]byte {
 }
 
 func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) [][]byte {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		T := c.ComputeMerkleTree(commitments)
 		mtp := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
 		for i := 0; i < len(mtp); i++ {
@@ -138,7 +136,7 @@ func (c *CROSS[T, P]) TreeProof(commitments [][]byte, chall_2 []bool) [][]byte {
 			start_node -= c.TreeParams.NPL[level-1]
 		}
 		return mtp
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		if len(chall_2) != len(commitments) {
 			return nil
 		}
@@ -159,7 +157,7 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 	recomputed_leaves = cmt_0
 	mtp = proof
 	leaves_to_reveal = chall_2*/
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		T := c.placeOnLeaves(cmt_0)
 		T_prime := c.label_leaves(chall_2)
 		published := 0
@@ -199,7 +197,7 @@ func (c *CROSS[T, P]) RecomputeRoot(cmt_0, proof [][]byte, chall_2 []bool) ([]by
 		}
 
 		return T[0], error_rate == 0
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		pub_nodes := 0
 		for i := 0; i < c.ProtocolData.T; i++ {
 			if chall_2[i] {

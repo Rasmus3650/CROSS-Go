@@ -25,6 +25,6 @@ func FP_DOUBLE_PREC[T FP_ELEM, P FP_PREC](input T) P {
 }
 
 type CROSS[T FP_ELEM, P FP_PREC] struct {
-	ProtocolData internal.ProtocolData
+	ProtocolData ProtocolData
 	TreeParams   TreeParams
 }

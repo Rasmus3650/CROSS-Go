@@ -2,8 +2,6 @@ package internal
 
 import (
 	"math"
-
-	"github.com/Rasmus3650/CROSS-Go/internal"
 )
 
 func (c *CROSS[T, P]) Leaves(tree [][]byte) [][]byte {
@@ -18,7 +16,7 @@ func (c *CROSS[T, P]) Leaves(tree [][]byte) [][]byte {
 }
 
 func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		t[0] = seed
 		start_node := 0
@@ -35,7 +33,7 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 
 		}
 		return t
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		tree := make([][]byte, c.TreeParams.Total_nodes)
 		tree[0] = seed
 		quad_seeds := c.CSPRNG(append(tree[0], salt...), (4*c.ProtocolData.Lambda)/8, uint16(0))
@@ -90,10 +88,10 @@ func (c *CROSS[T, P]) BuildTree(seed, salt []byte) [][]byte {
 	}
 }
 func (c *CROSS[T, P]) SeedLeaves(seed, salt []byte) [][]byte {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		t := c.BuildTree(seed, salt)
 		return c.Leaves(t)
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		return c.BuildTree(seed, salt)
 	} else {
 		return nil
@@ -137,7 +135,7 @@ func (c *CROSS[T, P]) computeNodesToPublish(chall_2 []bool) []bool {
 }
 
 func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) [][]byte {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		t := c.BuildTree(seed, salt)
 		path := c.computeNodesToPublish(chall_2)
 		seed_path := make([][]byte, c.ProtocolData.TREE_NODES_TO_STORE)
@@ -152,7 +150,7 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) [][]byte {
 			}
 		}
 		return seed_path
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		leaves := c.SeedLeaves(seed, salt)
 		result := make([][]byte, c.ProtocolData.W)
 		for i := 0; i < len(result); i++ {
@@ -172,7 +170,7 @@ func (c *CROSS[T, P]) SeedPath(seed, salt []byte, chall_2 []bool) [][]byte {
 }
 
 func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) ([][]byte, bool) {
-	if c.ProtocolData.IsType(internal.TYPE_BALANCED, internal.TYPE_SMALL) {
+	if c.ProtocolData.IsType(TYPE_BALANCED, TYPE_SMALL) {
 		T_prime := c.computeNodesToPublish(chall_2)
 		t := make([][]byte, c.TreeParams.Total_nodes)
 		start_node := 1
@@ -208,7 +206,7 @@ func (c *CROSS[T, P]) RebuildLeaves(path [][]byte, salt []byte, chall_2 []bool) 
 			}
 		}
 		return result, error_rate == 0
-	} else if c.ProtocolData.IsType(internal.TYPE_FAST) {
+	} else if c.ProtocolData.IsType(TYPE_FAST) {
 		round_seeds := make([][]byte, c.ProtocolData.T)
 		published := 0
 		for i := 0; i < c.ProtocolData.T; i++ {
