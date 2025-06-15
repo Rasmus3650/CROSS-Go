@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
 )
 
 func (c *CROSS[T, P]) generic_pack_7_bit(in []T, outlen, inlen int) []uint8 {

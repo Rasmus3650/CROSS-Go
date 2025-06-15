@@ -1,11 +1,12 @@
 package test_suite
 
 import (
-	"CROSS-Go/internal/common"
-	"CROSS-Go/pkg/vanilla"
 	"crypto/rand"
 	"fmt"
 	"testing"
+
+	"github.com/Rasmus3650/CROSS-Go/internal/common"
+	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func TestBitFlip(t *testing.T) {
