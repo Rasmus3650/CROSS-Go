@@ -1,6 +1,17 @@
 # CROSS-Go
 ```
 ├── bench_profile.go
+├── common
+│   ├── cross.go
+│   ├── fp_arith.go
+│   ├── merkle.go
+│   ├── pack_unpack.go
+│   ├── params.go
+│   ├── restr_arith.go
+│   ├── seed.go
+│   ├── shake.go
+│   ├── tree_aux.go
+│   └── utils.go
 ├── cpu.prof
 ├── debug_CROSS_submission
 │   ├── Additional_Implementations
@@ -28,17 +39,6 @@
 │   ├── memory_graph.py
 │   ├── runtime_graph.py
 │   └── tree_graphs.py
-├── internal
-│   ├── cross.go
-│   ├── fp_arith.go
-│   ├── merkle.go
-│   ├── pack_unpack.go
-│   ├── params.go
-│   ├── restr_arith.go
-│   ├── seed.go
-│   ├── shake.go
-│   ├── tree_aux.go
-│   └── utils.go
 ├── KAT
 │   ├── interpreter.go
 │   ├── KAT_DATA
