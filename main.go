@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 func main() {
 	// Initialize the CROSS instance
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		panic(err)
 	}

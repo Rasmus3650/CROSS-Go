@@ -1,4 +1,4 @@
-package internal
+package common
 
 func (c *CROSS[T, P]) FZRED_SINGLE(x T) T {
 	if c.ProtocolData.Variant() == VARIANT_RSDP {

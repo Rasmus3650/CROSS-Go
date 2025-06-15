@@ -11,7 +11,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -30,30 +30,30 @@ type FileData struct {
 }
 
 type KATData struct {
-	variant  internal.CONFIG_IDENT
+	variant  common.CONFIG_IDENT
 	pk_size  int
 	sig_size int
 }
 
 var katDataList = []KATData{
-	{variant: internal.RSDP_1_BALANCED, pk_size: 77, sig_size: 13152},
-	{variant: internal.RSDP_G_1_BALANCED, pk_size: 54, sig_size: 9120},
-	{variant: internal.RSDP_3_BALANCED, pk_size: 115, sig_size: 29853},
-	{variant: internal.RSDP_G_3_BALANCED, pk_size: 83, sig_size: 22464},
-	{variant: internal.RSDP_5_BALANCED, pk_size: 153, sig_size: 53527},
-	{variant: internal.RSDP_G_5_BALANCED, pk_size: 106, sig_size: 40100},
-	{variant: internal.RSDP_1_SMALL, pk_size: 77, sig_size: 12432},
-	{variant: internal.RSDP_G_1_SMALL, pk_size: 54, sig_size: 8960},
-	{variant: internal.RSDP_3_SMALL, pk_size: 115, sig_size: 28391},
-	{variant: internal.RSDP_G_3_SMALL, pk_size: 83, sig_size: 20452},
-	{variant: internal.RSDP_5_SMALL, pk_size: 153, sig_size: 50818},
-	{variant: internal.RSDP_G_5_SMALL, pk_size: 106, sig_size: 36454},
-	{variant: internal.RSDP_1_FAST, pk_size: 77, sig_size: 18432},
-	{variant: internal.RSDP_G_1_FAST, pk_size: 54, sig_size: 11980},
-	{variant: internal.RSDP_3_FAST, pk_size: 115, sig_size: 41406},
-	{variant: internal.RSDP_G_3_FAST, pk_size: 83, sig_size: 26772},
-	{variant: internal.RSDP_5_FAST, pk_size: 153, sig_size: 74590},
-	{variant: internal.RSDP_G_5_FAST, pk_size: 106, sig_size: 48102},
+	{variant: common.RSDP_1_BALANCED, pk_size: 77, sig_size: 13152},
+	{variant: common.RSDP_G_1_BALANCED, pk_size: 54, sig_size: 9120},
+	{variant: common.RSDP_3_BALANCED, pk_size: 115, sig_size: 29853},
+	{variant: common.RSDP_G_3_BALANCED, pk_size: 83, sig_size: 22464},
+	{variant: common.RSDP_5_BALANCED, pk_size: 153, sig_size: 53527},
+	{variant: common.RSDP_G_5_BALANCED, pk_size: 106, sig_size: 40100},
+	{variant: common.RSDP_1_SMALL, pk_size: 77, sig_size: 12432},
+	{variant: common.RSDP_G_1_SMALL, pk_size: 54, sig_size: 8960},
+	{variant: common.RSDP_3_SMALL, pk_size: 115, sig_size: 28391},
+	{variant: common.RSDP_G_3_SMALL, pk_size: 83, sig_size: 20452},
+	{variant: common.RSDP_5_SMALL, pk_size: 153, sig_size: 50818},
+	{variant: common.RSDP_G_5_SMALL, pk_size: 106, sig_size: 36454},
+	{variant: common.RSDP_1_FAST, pk_size: 77, sig_size: 18432},
+	{variant: common.RSDP_G_1_FAST, pk_size: 54, sig_size: 11980},
+	{variant: common.RSDP_3_FAST, pk_size: 115, sig_size: 41406},
+	{variant: common.RSDP_G_3_FAST, pk_size: 83, sig_size: 26772},
+	{variant: common.RSDP_5_FAST, pk_size: 153, sig_size: 74590},
+	{variant: common.RSDP_G_5_FAST, pk_size: 106, sig_size: 48102},
 }
 
 func ExtractData() {
@@ -182,13 +182,13 @@ func WriteReqFiles(filesData []FileData) {
 		fmt.Println("Written:", outputPath)
 	}
 }
-func findVariant(pkSize, sigSize int) (internal.CONFIG_IDENT, bool) {
+func findVariant(pkSize, sigSize int) (common.CONFIG_IDENT, bool) {
 	for _, data := range katDataList {
 		if data.pk_size == pkSize && data.sig_size == sigSize {
 			return data.variant, true
 		}
 	}
-	return internal.RSDP_1_BALANCED, false
+	return common.RSDP_1_BALANCED, false
 }
 
 func WriteRespFiles(filesData []FileData) {

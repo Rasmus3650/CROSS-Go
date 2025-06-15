@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 /*
 	func TestSeedLeaves(t *testing.T) {
-		instance, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
+		instance, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 		//seed := []byte{43, 148, 59, 167, 93, 54, 150, 240, 118, 242, 17, 189, 110, 37, 177, 233, 145, 37, 208, 231, 119, 140, 95, 52, 196, 36, 184, 227, 28, 139, 44, 186}
 		//salt := []byte{192, 59, 162, 242, 246, 191, 105, 42, 253, 225, 222, 208, 146, 232, 184, 5, 90, 116, 41, 195, 36, 35, 47, 25, 244, 170, 177, 189, 66, 249, 112, 96, 135, 191, 180, 177, 199, 173, 163, 226, 75, 145, 26, 12, 108, 67, 188, 62, 39, 64, 255, 39, 231, 167, 214, 232, 48, 191, 134, 57, 35, 34, 100, 203}
 		seed := make([]byte, 32)
@@ -24,7 +24,7 @@ import (
 	}
 
 	func TestFastSeedLeaves(t *testing.T) {
-		instance, err := vanilla.NewCROSS(internal.RSDP_1_FAST)
+		instance, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 		seed := make([]byte, 32)
 		salt := make([]byte, 64)
 		rand.Read(seed)
@@ -37,7 +37,7 @@ import (
 
 	func TestIntegration(t *testing.T) {
 		// Run through all configs 10 times, and make sure nothing returns an error
-		configs := internal.Configs()
+		configs := common.Configs()
 		for _, config := range configs {
 			instance, err := vanilla.NewCROSS(config)
 			if err != nil {
@@ -86,7 +86,7 @@ import (
 	}
 
 	func TestInt(t *testing.T) {
-		instance, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
+		instance, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 		if err != nil {
 			t.Errorf("Error: %s", err)
 		}
@@ -145,7 +145,7 @@ func InSet(set [][]byte, element []byte) bool {
 }
 
 func TestSeedTreeRSDPSmall(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -686,15 +686,15 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1162,15 +1162,15 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2005,9 +2005,9 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
@@ -2016,7 +2016,7 @@ func TestSeedTreeRSDPSmall(t *testing.T) {
 }
 
 func TestSeedTreeRSDPBalanced(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2193,14 +2193,14 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
 	}
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2546,14 +2546,14 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
 	}
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -3116,9 +3116,9 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 
@@ -3126,7 +3126,7 @@ func TestSeedTreeRSDPBalanced(t *testing.T) {
 }
 
 func TestSeedTreeRSDPFast(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_FAST)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -3254,7 +3254,7 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 	for _, test := range test_vectors {
 		leaves := cross.SeedLeaves(test.root_seed, test.salt)
 
-		if !bytes.Equal(internal.Flatten(leaves), test.leaves) {
+		if !bytes.Equal(common.Flatten(leaves), test.leaves) {
 			t.Fatalf("Leaves not equal")
 		}
 		bool_chall_2 := []bool{}
@@ -3266,18 +3266,18 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 			}
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
-		if len(internal.Flatten(path)) != len(test.path) {
+		if len(common.Flatten(path)) != len(test.path) {
 			t.Fatalf("Paths not equal length")
 		}
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -3533,13 +3533,13 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 	}
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -3917,9 +3917,9 @@ func TestSeedTreeRSDPFast(t *testing.T) {
 		}
 		path := cross.SeedPath(test.root_seed, test.salt, bool_chall_2)
 		// Test vector was copied without trailing zeros
-		new_path := make([]byte, len(internal.Flatten(path)))
+		new_path := make([]byte, len(common.Flatten(path)))
 		copy(new_path, test.path)
-		if !bytes.Equal(internal.Flatten(path), new_path) {
+		if !bytes.Equal(common.Flatten(path), new_path) {
 			t.Fatalf("Paths not equal")
 		}
 	}

@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
 /* Outcommented due to vanilla.go not being able to handle T type
 func TestExpandSkRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestExpandSkRSDP(t *testing.T) {
 
 func TestExpandSkRSDPG(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -200,7 +200,7 @@ func TestExpandSkRSDPG(t *testing.T) {
 }
 func TestExpandPkRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -290,7 +290,7 @@ func TestExpandPkRSDP(t *testing.T) {
 
 func TestExpandPkRSDPG(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -369,7 +369,7 @@ func TestExpandPkRSDPG(t *testing.T) {
 }
 func TestKeyGenRSDP(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -379,7 +379,7 @@ func TestKeyGenRSDP(t *testing.T) {
 
 func TestKeyGenRSDPG(t *testing.T) {
 	seed := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -404,7 +404,7 @@ func intToUint16(arr []int) []uint16 {
 }
 func TestKeygenRSDP(t *testing.T) {
 	seed_sk := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -445,7 +445,7 @@ func TestKeygenRSDP(t *testing.T) {
 /* vanilla.go can't handle T so can't use expand_pk
 func TestKeygenRSDPG(t *testing.T) {
 	seed_sk := []byte("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -537,7 +537,7 @@ func TestKeygenRSDPG(t *testing.T) {
 }*/
 
 func TestFP_ELEM_CMOV(t *testing.T) {
-	cross, _ := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if i, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
 		if 256 != i.FP_ELEM_CMOV(1, 256, 1) {
 			t.Fatalf("Error in CMOV")
@@ -555,7 +555,7 @@ func TestFP_ELEM_CMOV(t *testing.T) {
 }
 
 func TestFPRED_SINGLE(t *testing.T) {
-	cross, _ := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if i, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
 		if i.FPRED_SINGLE(1) != 1 {
 			t.Fatalf("Error in FPRED_SINGLE")
@@ -573,7 +573,7 @@ func TestFPRED_SINGLE(t *testing.T) {
 }
 
 func TestRESTR_TO_VALRSDPG(t *testing.T) {
-	cross, _ := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, _ := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if i, ok := cross.(*vanilla.CROSSInstance[uint16, uint32]); ok {
 		if i.RESTR_TO_VAL(1) != 16 {
 			t.Fatalf("Error in RESTR_TO_VAL")
@@ -595,7 +595,7 @@ func TestRESTR_TO_VALRSDPG(t *testing.T) {
 
 func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 	// 20 tests for RSDP_1_BALANCED
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -720,7 +720,7 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -845,7 +845,7 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 			t.Fatalf("Error in S")
 		}
 	}
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -972,7 +972,7 @@ func TestKeyGenRSDPBalancedIntegration(t *testing.T) {
 	}
 }
 func TestKeyGenRSDPSmallIntegration(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1098,7 +1098,7 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1223,7 +1223,7 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1351,7 +1351,7 @@ func TestKeyGenRSDPSmallIntegration(t *testing.T) {
 }
 
 func TestKeyGenRSDPFastIntegration(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_FAST)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1477,7 +1477,7 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1603,7 +1603,7 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1731,7 +1731,7 @@ func TestKeyGenRSDPFastIntegration(t *testing.T) {
 }
 
 func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1857,7 +1857,7 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_3_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_3_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -1983,7 +1983,7 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_5_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_5_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2110,7 +2110,7 @@ func TestKeyGenRSDPGBalancedIntegration(t *testing.T) {
 	}
 }
 func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_SMALL)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2236,7 +2236,7 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_3_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_3_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2362,7 +2362,7 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_5_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_5_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2490,7 +2490,7 @@ func TestKeyGenRSDPGSmallIntegration(t *testing.T) {
 }
 
 func TestKeyGenRSDPGFastIntegration(t *testing.T) {
-	cross, err := vanilla.NewCROSS(internal.RSDP_G_1_FAST)
+	cross, err := vanilla.NewCROSS(common.RSDP_G_1_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2616,7 +2616,7 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_3_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_3_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -2742,7 +2742,7 @@ func TestKeyGenRSDPGFastIntegration(t *testing.T) {
 		}
 	}
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_G_5_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_G_5_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}

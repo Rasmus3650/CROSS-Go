@@ -3,7 +3,7 @@ package test_suite
 import (
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -358,7 +358,7 @@ func TestCompatibility(t *testing.T) {
 		69, 18, 43, 176, 29, 2, 13, 27, 74, 44, 203, 128, 157, 215, 216, 2, 201, 82, 35, 151, 56, 96, 138, 105, 69, 173, 120, 149, 139, 162, 20, 163, 184, 170, 172, 82, 237, 84, 180, 211, 208, 25, 81, 21, 143, 81, 76, 16,
 		219, 18, 166, 131, 82, 80, 105, 0, 86, 139, 198, 217, 134, 55, 162, 22, 215, 210, 114, 224, 8, 0, 225, 45, 92, 45, 111, 38, 36, 217, 45, 186, 102, 134, 0, 85, 146, 22, 205, 104, 209, 18, 158, 225, 45, 181, 154, 24}
 	signature := vanilla.Signature{Salt: salt, Digest_cmt: digest_cmt, Digest_chall_2: digest_chall_2, Path: path, Proof: proof, Resp_1: resp_1, Resp_0: splitResp0(256, 215, resp_0_y, resp_0_v_bar)}
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		panic(err)
 	}

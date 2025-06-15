@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -34,7 +34,7 @@ type MERKLE_STRUCT struct {
 
 func TestMerkle(t *testing.T) {
 	// Run through all configs 10 times, and make sure nothing returns an error
-	configs := internal.Configs()
+	configs := common.Configs()
 	for _, config := range configs {
 		instance, err := vanilla.NewCROSS(config)
 		if err != nil {
@@ -142,9 +142,9 @@ func run(cross vanilla.CROSSAllMethods, test_vectors []MERKLE_STRUCT, t *testing
 		}
 		proof := cross.TreeProof(commitments, chall_2)
 		//Test proof was copied without trailing zeroes
-		new_proof := make([]byte, len(internal.Flatten(proof)))
+		new_proof := make([]byte, len(common.Flatten(proof)))
 		copy(new_proof, test.proof)
-		if !bytes.Equal(internal.Flatten(proof), new_proof) {
+		if !bytes.Equal(common.Flatten(proof), new_proof) {
 			t.Fatalf("Computed proof does not match expected proof")
 		}
 	}
@@ -153,7 +153,7 @@ func run(cross vanilla.CROSSAllMethods, test_vectors []MERKLE_STRUCT, t *testing
 func TestMerkleRSDPFast(t *testing.T) {
 	test_vectors := []MERKLE_STRUCT{}
 
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_FAST)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestMerkleRSDPFast(t *testing.T) {
 
 	run(cross, test_vectors, t)
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -171,7 +171,7 @@ func TestMerkleRSDPFast(t *testing.T) {
 
 	run(cross, test_vectors, t)
 
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_FAST)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_FAST)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -185,7 +185,7 @@ func TestMerkleRSDPSmall(t *testing.T) {
 	var test_vectors []MERKLE_STRUCT
 
 	// Level 1
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_SMALL)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -195,7 +195,7 @@ func TestMerkleRSDPSmall(t *testing.T) {
 	run(cross, test_vectors, t)
 
 	// Level 3
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -205,7 +205,7 @@ func TestMerkleRSDPSmall(t *testing.T) {
 	run(cross, test_vectors, t)
 
 	// Level 5
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_SMALL)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_SMALL)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -220,7 +220,7 @@ func TestMerkleRSDPBalanced(t *testing.T) {
 	var test_vectors []MERKLE_STRUCT
 
 	// Level 1
-	cross, err := vanilla.NewCROSS(internal.RSDP_1_BALANCED)
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -230,7 +230,7 @@ func TestMerkleRSDPBalanced(t *testing.T) {
 	run(cross, test_vectors, t)
 
 	// Level 3
-	cross, err = vanilla.NewCROSS(internal.RSDP_3_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_3_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestMerkleRSDPBalanced(t *testing.T) {
 	run(cross, test_vectors, t)
 
 	// Level 5
-	cross, err = vanilla.NewCROSS(internal.RSDP_5_BALANCED)
+	cross, err = vanilla.NewCROSS(common.RSDP_5_BALANCED)
 	if err != nil {
 		t.Fatalf("Error creating CROSS instance: %v", err)
 	}

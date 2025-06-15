@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	"github.com/Rasmus3650/CROSS-Go/internal"
+	"github.com/Rasmus3650/CROSS-Go/common"
 	"github.com/Rasmus3650/CROSS-Go/pkg/vanilla"
 )
 
@@ -17,7 +17,7 @@ const signature_size = 9120
 
 func init() {
 	//Careful when testing RSDP-G, the type assertion below will fail
-	tmp, _ := vanilla.NewCROSS(internal.RSDP_1_FAST)
+	tmp, _ := vanilla.NewCROSS(common.RSDP_1_FAST)
 	cross = *tmp.(*vanilla.CROSSInstance[uint8, uint16])
 	//tmp, _ := vanilla.NewCROSS(internal.RSDP_G_1_SMALL)
 	//cross = *tmp.(*vanilla.CROSSInstance[uint16, uint32])
