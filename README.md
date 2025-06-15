@@ -29,16 +29,16 @@
 │   ├── runtime_graph.py
 │   └── tree_graphs.py
 ├── internal
-│   ├── common
 │   ├── cross.go
 │   ├── fp_arith.go
-│   ├── matrix
 │   ├── merkle.go
 │   ├── pack_unpack.go
+│   ├── params.go
 │   ├── restr_arith.go
 │   ├── seed.go
 │   ├── shake.go
-│   └── tree_aux.go
+│   ├── tree_aux.go
+│   └── utils.go
 ├── KAT
 │   ├── interpreter.go
 │   ├── KAT_DATA
@@ -50,6 +50,7 @@
 ├── README.md
 └── test
     ├── bench_test.go
+    ├── compatibility_test.go
     ├── data
     ├── keygen_test.go
     ├── merkle_test.go
