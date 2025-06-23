@@ -20,6 +20,36 @@ go mod init <your_project_name>
 ```bash
 go get github.com/Rasmus3650/CROSS-Go@v1.0.0
 ```
+## 🚀 Example Usage
+```go
+func main() {
+	// Initialize the CROSS instance
+	cross, err := vanilla.NewCROSS(common.RSDP_1_BALANCED)
+	if err != nil {
+		panic(err)
+	}
+	// Generate keys
+	keys, err := cross.KeyGen()
+	if err != nil {
+		panic(err)
+	}
+	// Sign a message
+	msg := []byte("Hello, world!")
+	sig, err := cross.Sign(keys.Sk, msg)
+	if err != nil {
+		panic(err)
+	}
+	// Verify the signature
+	ok, err := cross.Verify(keys.Pk, msg, sig)
+	if err != nil {
+		panic(err)
+	}
+	if !ok {
+		panic("Signature verification failed")
+	}
+}
+
+```
 
 ## 🗂️ Project Structure
 ```bash
