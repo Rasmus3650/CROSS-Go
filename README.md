@@ -1,4 +1,15 @@
 # CROSS-Go
+
+## How to Use
+Initialize a Go project
+`go mod init <name of project>`
+
+Import the CROSS library
+`go get github.com/Rasmus3650/CROSS-Go@v1.0.0`
+
+Now you should be ready to go
+
+## Project Structure
 ```
 ├── bench_profile.go
 ├── common
