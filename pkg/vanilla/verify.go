@@ -41,8 +41,12 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 		sig.Proof[i] = readBytes(2 * lambdaBytes)
 	}
 
-	// Parse Resp_0
 	resp0Count := c.ProtocolData.T - c.ProtocolData.W
+	// Parse Resp_1
+	sig.Resp_1 = readBytes(resp0Count * (2 * c.ProtocolData.Lambda / 8))
+
+	
+	// Parse Resp_0
 	sig.Resp_0 = make([]Resp_0_struct, resp0Count)
 	for i := 0; i < resp0Count; i++ {
 		r0 := Resp_0_struct{}
@@ -56,8 +60,7 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 		sig.Resp_0[i] = r0
 	}
 
-	// Parse Resp_1
-	sig.Resp_1 = readBytes(resp0Count * (2 * c.ProtocolData.Lambda / 8))
+	
 
 	return sig
 }
