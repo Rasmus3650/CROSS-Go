@@ -32,10 +32,16 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 	}
 
 	sig.Path = make([][]byte, treeCount)
-	for i := 0; i < treeCount; i++ {
-		sig.Path[i] = readBytes(lambdaBytes)
-	}
 
+	for i := 0; i < treeCount; i++ {
+		temp := readBytes(lambdaBytes)
+
+		// Make a copy to avoid reusing shared memory
+		tempCopy := make([]byte, lambdaBytes)
+		copy(tempCopy, temp)
+
+		sig.Path[i] = tempCopy
+	}
 	sig.Proof = make([][]byte, treeCount)
 	for i := 0; i < treeCount; i++ {
 		sig.Proof[i] = readBytes(2 * lambdaBytes)
@@ -45,7 +51,6 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 	// Parse Resp_1
 	sig.Resp_1 = readBytes(resp0Count * (2 * c.ProtocolData.Lambda / 8))
 
-	
 	// Parse Resp_0
 	sig.Resp_0 = make([]Resp_0_struct, resp0Count)
 	for i := 0; i < resp0Count; i++ {
@@ -59,8 +64,6 @@ func (c *CROSSInstance[T, P]) ToSig(inp []byte) Signature {
 		}
 		sig.Resp_0[i] = r0
 	}
-
-	
 
 	return sig
 }
@@ -216,6 +219,13 @@ func (c *CROSSInstance[T, P]) Verify(pk Pk, m []byte, sig Signature) (bool, erro
 	digest_chall_2_prime := c.CSPRNG(y_digest_chall_1, 2*c.ProtocolData.Lambda/8, uint16(32768))
 	does_digest_cmt_match := bytes.Equal(digest_cmt_prime, sig.Digest_cmt)
 	does_digest_chall_2_match := bytes.Equal(digest_chall_2_prime, sig.Digest_chall_2)
+	/*fmt.Println("is_signature_ok:", is_signature_ok)
+	fmt.Println("does_digest_cmt_match:", does_digest_cmt_match)
+	fmt.Println("does_digest_chall_2_match:", does_digest_chall_2_match)
+	fmt.Println("is_mtree_padding_ok:", is_mtree_padding_ok)
+	fmt.Println("is_stree_padding_ok:", is_stree_padding_ok)
+	fmt.Println("is_padd_key_ok:", is_padd_key_ok)
+	fmt.Println("is_packed_padd_ok:", is_packed_padd_ok)*/
 	is_signature_ok = is_signature_ok &&
 		does_digest_cmt_match &&
 		does_digest_chall_2_match &&
